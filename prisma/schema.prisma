@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images Image[]
+  orders Order[]
+}
+
+model Image {
+  id           String   @id @default(uuid())
+  userId       String
+  originalUrl  String
+  generatedUrl String?
+  style        String
+  status       String   @default("pending")
+  prompt       String?
+  createdAt    DateTime @default(now())
+
+  user   User    @relation(fields: [userId], references: [id])
+  orders Order[]
+}
+
+model Order {
+  id          String   @id @default(uuid())
+  userId      String
+  imageId     String
+  productType String
+  size        String   @default("16x20")
+  price       Float
+  status      String   @default("pending")
+  printfulId  String?
+  stripeId    String?
+  shippingName     String?
+  shippingAddress  String?
+  shippingAddress2 String?
+  shippingCity     String?
+  shippingState    String?
+  shippingZip      String?
+  shippingCountry  String?
+  shippingPhone    String?
+  shippingMethod   String?  @default("STANDARD")
+  trackingNumber   String?
+  trackingUrl      String?
+  digitalCopy      Boolean  @default(false)
+  extraCopy        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  image Image @relation(fields: [imageId], references: [id])
+}
