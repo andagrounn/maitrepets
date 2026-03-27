@@ -3,7 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
 import { createPrintfulOrder, PRODUCT_VARIANTS } from '@/lib/printful';
 
-export const config = { api: { bodyParser: false } };
+export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   const body = await req.text();

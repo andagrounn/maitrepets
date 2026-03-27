@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useStore } from '@/store/useStore';
@@ -58,7 +58,7 @@ function PostPurchaseUpsell({ orderId }) {
   );
 }
 
-export default function SuccessPage() {
+function SuccessInner() {
   const { resetCreate } = useStore();
   const params    = useSearchParams();
   const orderId   = params.get('order');
@@ -197,5 +197,13 @@ export default function SuccessPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
+      <SuccessInner />
+    </Suspense>
   );
 }
