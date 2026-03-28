@@ -18,8 +18,8 @@ export default function UploadZone({ onFile, preview }) {
 
   if (preview) {
     return (
-      <div className="relative rounded-2xl overflow-hidden aspect-square bg-gray-100">
-        <img src={preview} alt="Your pet" className="w-full h-full object-cover" />
+      <div className="relative rounded-2xl overflow-hidden bg-gray-900" style={{ aspectRatio: '4/3' }}>
+        <img src={preview} alt="Your pet" className="w-full h-full object-contain" />
         <label className="absolute bottom-3 right-3 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700 cursor-pointer hover:bg-white shadow-sm border border-gray-200">
           Change photo
           <input type="file" accept="image/*" className="hidden" onChange={handleChange} />
@@ -33,9 +33,10 @@ export default function UploadZone({ onFile, preview }) {
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      className={`flex flex-col items-center justify-center aspect-square rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
+      className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
         dragging ? 'border-purple-500 bg-purple-50 scale-[1.02]' : 'border-gray-300 bg-gray-50 hover:border-purple-400 hover:bg-purple-50/50'
-      }`}>
+      }`}
+      style={{ aspectRatio: '4/3' }}>
       <div className="text-center p-6">
         <div className="text-5xl mb-3">🐾</div>
         <p className="font-semibold text-gray-700 mb-1">Drop your pet photo here</p>

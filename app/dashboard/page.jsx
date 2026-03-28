@@ -55,6 +55,15 @@ function IconRefundPending({ size = 14 }) {
 function IconRefund({ size = 14 }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>;
 }
+function IconTrash({ size = 14 }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>;
+}
+function IconChevronDown({ size = 14 }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>;
+}
+function IconReorder({ size = 14 }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
+}
 
 // ─── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
@@ -407,6 +416,18 @@ function RefundStatusSection({ order, onReported, onClaimed, addToast }) {
   );
 }
 
+// ─── Image placeholder ─────────────────────────────────────────────────────────
+function ImgPlaceholder({ className = '' }) {
+  return (
+    <div className={`bg-gray-100 flex items-center justify-center overflow-hidden ${className}`}>
+      <span className="text-gray-300 font-semibold tracking-widest uppercase select-none"
+        style={{ fontSize: '0.5rem', letterSpacing: '0.15em' }}>
+        Maitrepets
+      </span>
+    </div>
+  );
+}
+
 // ─── Icon button ───────────────────────────────────────────────────────────────
 function IconBtn({ onClick, disabled, title, children }) {
   return (
@@ -501,8 +522,8 @@ function PaperPrintIcon({ imageId }) {
   return <IconBtn onClick={handle} disabled={loading} title="Order paper print ($29.99)"><IconPrinter size={13} /></IconBtn>;
 }
 
-// ─── Reprint button ────────────────────────────────────────────────────────────
-function ReprintIcon({ order }) {
+// ─── Reorder button ───────────────────────────────────────────────────────────
+function ReorderBtn({ order }) {
   const [loading, setLoading] = useState(false);
   async function handle() {
     setLoading(true);
@@ -512,7 +533,7 @@ function ReprintIcon({ order }) {
       if (data.url) window.location.href = data.url;
     } catch { setLoading(false); }
   }
-  return <IconBtn onClick={handle} disabled={loading} title="Reprint this order"><IconPrinter size={13} /></IconBtn>;
+  return <IconBtn onClick={handle} disabled={loading} title="Reorder — place another print of this portrait"><IconReorder size={13} /></IconBtn>;
 }
 
 // ─── Download button + modal ───────────────────────────────────────────────────
@@ -579,7 +600,8 @@ function PreviewModal({ src, onClose }) {
 }
 
 // ─── Main ──────────────────────────────────────────────────────────────────────
-const PAGE_SIZE = 5;
+const PAGE_SIZE         = 5;
+const PORTRAIT_PAGE_SIZE = 15;
 
 export default function DashboardPage() {
   const { user } = useStore();
@@ -590,7 +612,10 @@ export default function DashboardPage() {
   const [tab, setTab]           = useState('portraits');
   const [preview, setPreview]   = useState(null);
   const [page, setPage]         = useState(1);
+  const [portraitPage, setPortraitPage] = useState(1);
   const [dismissedBanner, setDismissedBanner] = useState(false);
+  const [showPendingList, setShowPendingList] = useState(true);
+  const [resumingOrder, setResumingOrder]     = useState(null);
   const { toasts, addToast }    = useToast();
 
   useEffect(() => {
@@ -609,12 +634,48 @@ export default function DashboardPage() {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'returned' } : o));
   }
 
+  async function resumeOrder(orderId) {
+    setResumingOrder(orderId);
+    try {
+      const res  = await fetch('/api/resume-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Checkout failed');
+      window.location.href = data.url;
+    } catch (err) {
+      addToast(err.message || 'Could not resume checkout. Please try again.', 'error');
+      setResumingOrder(null);
+    }
+  }
+
+  async function handleCancelOrder(orderId) {
+    try {
+      const res  = await fetch('/api/cancel-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not remove order');
+      setOrders(prev => prev.filter(o => o.id !== orderId));
+      addToast('Incomplete order removed.', 'success');
+    } catch (err) {
+      addToast(err.message, 'error');
+    }
+  }
+
   const pendingOrders = orders.filter(o => o.status === 'pending');
   const recentUploads = [...new Map(images.filter(i => i.originalUrl).map(i => [i.originalUrl, i])).values()].slice(0, 8);
   const printCounts   = orders.reduce((acc, o) => { if (o.imageId) acc[o.imageId] = (acc[o.imageId] || 0) + 1; return acc; }, {});
 
   const totalPages  = Math.ceil(orders.length / PAGE_SIZE);
   const pagedOrders = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const portraitTotalPages = Math.ceil(images.length / PORTRAIT_PAGE_SIZE);
+  const pagedImages        = images.slice((portraitPage - 1) * PORTRAIT_PAGE_SIZE, portraitPage * PORTRAIT_PAGE_SIZE);
 
   return (
     <>
@@ -634,10 +695,13 @@ export default function DashboardPage() {
             <Link href="/create" className="btn-primary">+ New Portrait</Link>
           </div>
 
-          {/* Pending orders — per-order list */}
+          {/* Pending orders — collapsible dropdown */}
           {!loading && pendingOrders.length > 0 && !dismissedBanner && (
             <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden">
-              <div className="px-5 py-4 flex items-center justify-between gap-4">
+              {/* Header — click to toggle */}
+              <button
+                onClick={() => setShowPendingList(v => !v)}
+                className="w-full px-5 py-4 flex items-center justify-between gap-4 text-left hover:bg-amber-100/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 flex-shrink-0">
                     <IconAlertTriangle size={16} />
@@ -646,37 +710,61 @@ export default function DashboardPage() {
                     <p className="font-semibold text-amber-900 text-sm">
                       {pendingOrders.length === 1 ? '1 incomplete order' : `${pendingOrders.length} incomplete orders`}
                     </p>
-                    <p className="text-xs text-amber-700">Choose an order below to complete your payment.</p>
+                    <p className="text-xs text-amber-700">
+                      {showPendingList ? 'Click to collapse' : 'Click to view and complete or remove'}
+                    </p>
                   </div>
                 </div>
-                <button onClick={() => setDismissedBanner(true)}
-                  className="w-7 h-7 flex items-center justify-center text-amber-400 hover:text-amber-700 transition-colors flex-shrink-0">
-                  <IconX size={14} />
-                </button>
-              </div>
-              <div className="border-t border-amber-200 divide-y divide-amber-100">
-                {pendingOrders.map(order => (
-                  <div key={order.id} className="px-5 py-3 flex items-center gap-3">
-                    {order.image?.generatedUrl ? (
-                      <img src={order.image.generatedUrl} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-xl bg-amber-100 flex-shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-amber-900 truncate">
-                        {order.productType?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-                      </p>
-                      <p className="text-xs text-amber-600">
-                        ${order.price?.toFixed(2)} · Started {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </p>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`text-amber-500 transition-transform duration-200 ${showPendingList ? 'rotate-180' : ''}`}>
+                    <IconChevronDown size={16} />
+                  </span>
+                  <button
+                    onClick={e => { e.stopPropagation(); setDismissedBanner(true); }}
+                    className="w-7 h-7 flex items-center justify-center text-amber-400 hover:text-amber-700 transition-colors rounded-lg hover:bg-amber-200">
+                    <IconX size={13} />
+                  </button>
+                </div>
+              </button>
+
+              {/* Expandable list */}
+              {showPendingList && (
+                <div className="border-t border-amber-200 divide-y divide-amber-100">
+                  {pendingOrders.map(order => (
+                    <div key={order.id} className="px-5 py-3 flex items-center gap-3">
+                      {order.image?.generatedUrl ? (
+                        <img src={order.image.generatedUrl} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+                      ) : (
+                        <ImgPlaceholder className="w-10 h-10 rounded-xl flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-amber-900 truncate">
+                          {order.productType?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                        </p>
+                        <p className="text-xs text-amber-600">
+                          ${order.price?.toFixed(2)} · Started {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleCancelOrder(order.id)}
+                          title="Remove this incomplete order"
+                          className="w-7 h-7 flex items-center justify-center rounded-lg text-amber-400 hover:text-red-500 hover:bg-red-50 border border-amber-200 hover:border-red-200 transition-all">
+                          <IconTrash size={13} />
+                        </button>
+                        <button
+                          onClick={() => resumeOrder(order.id)}
+                          disabled={resumingOrder === order.id}
+                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors whitespace-nowrap disabled:opacity-60 flex items-center gap-1.5">
+                          {resumingOrder === order.id
+                            ? <><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading…</>
+                            : 'Complete →'}
+                        </button>
+                      </div>
                     </div>
-                    <Link href="/create"
-                      className="flex-shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors whitespace-nowrap">
-                      Complete →
-                    </Link>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -720,46 +808,70 @@ export default function DashboardPage() {
           ) : tab === 'portraits' ? (
             images.length === 0 ? (
               <div className="card p-16 text-center">
-                <div className="text-6xl mb-4">🐾</div>
+                <div className="text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent mb-4">Maîtrepets</div>
                 <h3 className="font-bold text-gray-900 text-xl mb-2">No portraits yet</h3>
-                <p className="text-gray-500 mb-6">Create your first AI pet portrait — free preview</p>
+                <p className="text-gray-500 mb-6">Create your first pet portrait — free preview</p>
                 <Link href="/create" className="btn-primary px-8 py-3">Create Portrait →</Link>
               </div>
             ) : (
-              <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                {images.map(img => (
-                  <div key={img.id} className="card overflow-hidden group">
-                    <div className="relative">
-                      {img.generatedUrl ? (
-                        <img src={img.generatedUrl} alt="Portrait" className="w-full aspect-square object-cover" />
-                      ) : (
-                        <div className="w-full aspect-square bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
-                          <span className="text-gray-400 text-xs">Generating…</span>
-                        </div>
-                      )}
-                      <span className="absolute bottom-2 left-2 bg-black/50 text-white text-xs font-medium px-2 py-0.5 rounded-md capitalize backdrop-blur-sm">
-                        {img.style}
-                      </span>
-                      {img.generatedUrl && (
-                        <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <PaperPrintIcon imageId={img.id} />
-                          <DownloadBtn imageId={img.id} />
-                        </div>
-                      )}
+              <>
+                <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                  {pagedImages.map(img => (
+                    <div key={img.id} className="card overflow-hidden group">
+                      <div className="relative">
+                        {img.generatedUrl ? (
+                          <img src={img.generatedUrl} alt="Portrait" className="w-full aspect-square object-cover" />
+                        ) : (
+                          <ImgPlaceholder className="w-full aspect-square" />
+                        )}
+                        <span className="absolute bottom-2 left-2 bg-black/50 text-white text-xs font-medium px-2 py-0.5 rounded-md capitalize backdrop-blur-sm">
+                          {img.style}
+                        </span>
+                        {img.generatedUrl && (
+                          <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <PaperPrintIcon imageId={img.id} />
+                            <DownloadBtn imageId={img.id} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="px-3 py-2.5 flex items-center justify-between">
+                        <p className="text-xs text-gray-400">
+                          {new Date(img.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </p>
+                        {img.generatedUrl && (
+                          <Link href={`/create?imageId=${img.id}`} className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">
+                            Order Print →
+                          </Link>
+                        )}
+                      </div>
                     </div>
-                    <div className="px-3 py-2.5 flex items-center justify-between">
-                      <p className="text-xs text-gray-400">
-                        {new Date(img.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </p>
-                      {img.generatedUrl && (
-                        <Link href={`/create?imageId=${img.id}`} className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">
-                          Order Print →
-                        </Link>
-                      )}
+                  ))}
+                </div>
+
+                {portraitTotalPages > 1 && (
+                  <div className="flex items-center justify-between pt-4">
+                    <p className="text-xs text-gray-400">
+                      {(portraitPage - 1) * PORTRAIT_PAGE_SIZE + 1}–{Math.min(portraitPage * PORTRAIT_PAGE_SIZE, images.length)} of {images.length} portraits
+                    </p>
+                    <div className="flex gap-1">
+                      <button onClick={() => setPortraitPage(p => Math.max(1, p - 1))} disabled={portraitPage === 1}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                        ← Prev
+                      </button>
+                      {Array.from({ length: portraitTotalPages }, (_, i) => i + 1).map(p => (
+                        <button key={p} onClick={() => setPortraitPage(p)}
+                          className={`w-8 h-8 text-xs font-medium rounded-lg border transition-all ${p === portraitPage ? 'bg-purple-600 border-purple-600 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600'}`}>
+                          {p}
+                        </button>
+                      ))}
+                      <button onClick={() => setPortraitPage(p => Math.min(portraitTotalPages, p + 1))} disabled={portraitPage === portraitTotalPages}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                        Next →
+                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )
 
           ) : (
@@ -787,7 +899,7 @@ export default function DashboardPage() {
                             {order.image?.generatedUrl ? (
                               <img src={order.image.generatedUrl} alt="Portrait" className="w-16 h-16 rounded-xl object-cover" />
                             ) : (
-                              <div className="w-16 h-16 rounded-xl bg-gray-100" />
+                              <ImgPlaceholder className="w-16 h-16 rounded-xl" />
                             )}
                             {isFire && <span className="absolute -top-2 -right-2 text-base leading-none" title="Popular print!">🔥</span>}
                           </div>
@@ -828,17 +940,21 @@ export default function DashboardPage() {
                         {!isPending && (
                           <div className="flex justify-end items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 flex-wrap">
                             {order.imageId && <DownloadBtn imageId={order.imageId} />}
-                            {['shipped', 'delivered'].includes(order.status) && <ReprintIcon order={order} />}
+                            <ReorderBtn order={order} />
                             <RefundStatusSection order={order} onReported={handleRefundRequested} onClaimed={handleRefundClaimed} addToast={addToast} />
                           </div>
                         )}
 
                         {isPending && (
                           <div className="flex justify-end mt-3 pt-3 border-t border-gray-100">
-                            <Link href="/create"
-                              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors">
-                              Complete Payment →
-                            </Link>
+                            <button
+                              onClick={() => resumeOrder(order.id)}
+                              disabled={resumingOrder === order.id}
+                              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-60 flex items-center gap-1.5">
+                              {resumingOrder === order.id
+                                ? <><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading…</>
+                                : 'Complete Payment →'}
+                            </button>
                           </div>
                         )}
                       </div>

@@ -12,25 +12,23 @@ export async function POST(req) {
     const { imageUrl, style, imageId } = await req.json();
     if (!imageUrl || !style) return NextResponse.json({ error: 'imageUrl and style required' }, { status: 400 });
 
-    // ── 1-free-generation limit ──────────────────────────────────────────────
-    const existingGenerations = await prisma.image.count({
-      where: { userId: session.id, generatedUrl: { not: null } },
-    });
-
-    if (existingGenerations >= 1) {
-      const paidOrders = await prisma.order.count({
-        where: {
-          userId: session.id,
-          status: { in: ['paid', 'fulfilling', 'shipped', 'delivered', 'paid_printful_failed'] },
-        },
-      });
-      if (paidOrders === 0) {
-        return NextResponse.json(
-          { error: 'FREE_LIMIT_REACHED' },
-          { status: 403 }
-        );
-      }
-    }
+    // ── Generation limits (temporarily disabled) ──────────────────────────────
+    // const FREE_LIMIT = 3;
+    // const [totalGenerations, paidOrderCount] = await Promise.all([
+    //   prisma.image.count({
+    //     where: { userId: session.id, generatedUrl: { not: null } },
+    //   }),
+    //   prisma.order.count({
+    //     where: {
+    //       userId: session.id,
+    //       status: { in: ['paid', 'fulfilling', 'shipped', 'delivered', 'paid_printful_failed'] },
+    //     },
+    //   }),
+    // ]);
+    // const maxAllowed = FREE_LIMIT + paidOrderCount;
+    // if (totalGenerations >= maxAllowed) {
+    //   return NextResponse.json({ error: 'FREE_LIMIT_REACHED' }, { status: 403 });
+    // }
     // ─────────────────────────────────────────────────────────────────────────
 
     const styleConfig = STYLE_PROMPTS[style];

@@ -46,7 +46,7 @@ export default function CreatePage() {
   const [selectedStyle, setSelectedStyle] = useState('chibi');
   const [petType, setPetType] = useState('dog');
   const [emotion, setEmotion] = useState('normal');
-  const [size, setSize] = useState('large');
+  const [size, setSize] = useState('');
   const [urgency, setUrgency] = useState('standard');
 
   // Upsell state
@@ -58,7 +58,7 @@ export default function CreatePage() {
   ];
   const extrasTotal = EXTRAS.reduce((sum, e) => sum + (extras[e.key] ? e.price : 0), 0);
 
-  // Free limit
+  // Generation limits
   const [freeLimitReached, setFreeLimitReached] = useState(false);
 
   // Loading
@@ -232,11 +232,11 @@ export default function CreatePage() {
           {freeLimitReached && (
             <div className="max-w-lg mx-auto mb-8 bg-amber-50 border border-amber-200 rounded-2xl p-5 text-center">
               <div className="text-3xl mb-2">🔒</div>
-              <h3 className="font-bold text-gray-900 mb-1">You've used your 1 free AI generation</h3>
+              <h3 className="font-bold text-gray-900 mb-1">You've used your 3 free AI generations</h3>
               <p className="text-sm text-gray-500 mb-4">
-                To generate more portraits, complete your first order. Each paid print order unlocks additional generations.
+                Complete a print order to unlock more generations. Each purchase gives you 1 additional generation in a new style.
               </p>
-              <Link href="/dashboard" className="btn-primary px-6 py-2.5 text-sm">View My Order →</Link>
+              <Link href="/dashboard" className="btn-primary px-6 py-2.5 text-sm">View My Orders →</Link>
             </div>
           )}
 
@@ -265,7 +265,7 @@ export default function CreatePage() {
 
                   {/* Style Picker */}
                   <div className="mb-1">
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-4 gap-2">
                       {Object.keys(STYLE_PROMPTS).map((k) => (
                         <StyleCard key={k} styleKey={k} selected={selectedStyle === k} onClick={setSelectedStyle} popular={popularStyles.includes(k)} />
                       ))}
@@ -375,7 +375,7 @@ export default function CreatePage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Original</p>
-                    <img src={preview} alt="Your pet" className="w-full aspect-[2/3] object-cover rounded-2xl shadow-sm" />
+                    <img src={preview} alt="Your pet" className="w-full object-contain rounded-2xl shadow-sm bg-gray-900" style={{ aspectRatio: '4/3' }} />
                   </div>
                   <div className={`transition-all duration-700 ${imageRevealed ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                     <p className="text-xs font-semibold text-purple-500 uppercase tracking-wide mb-2">
@@ -390,14 +390,14 @@ export default function CreatePage() {
                   </div>
                 </div>
 
-                {/* Regenerate CTA */}
-                <div className="flex gap-2">
-                  {Object.keys(STYLE_PROMPTS).filter((k) => k !== selectedStyle).slice(0, 3).map((k) => (
-                    <button key={k} onClick={() => { setSelectedStyle(k); startOver(); }}
-                      className="flex-1 py-2 text-xs font-medium bg-white border border-gray-200 rounded-xl hover:border-purple-300 hover:text-purple-600 transition-all">
-                      {STYLE_PROMPTS[k]?.emoji} {STYLE_PROMPTS[k]?.label}
-                    </button>
-                  ))}
+                {/* Regenerate CTA — all styles */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Try another style</p>
+                  <div className="grid grid-cols-8 gap-1">
+                    {Object.keys(STYLE_PROMPTS).map(k => (
+                      <StyleCard key={k} styleKey={k} selected={selectedStyle === k} onClick={k2 => { setSelectedStyle(k2); startOver(); }} popular={popularStyles.includes(k)} compact />
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -489,11 +489,16 @@ export default function CreatePage() {
                   <span className="text-2xl font-black text-gray-900">${totalPrice}</span>
                 </div>
 
-                <button onClick={handleCheckout} disabled={isCheckingOut}
-                  className="btn-primary w-full py-4 text-base font-bold">
+                {!size && (
+                  <p className="text-xs text-center text-amber-600 bg-amber-50 border border-amber-200 rounded-xl py-2 px-3">
+                    Please select a print size above to continue
+                  </p>
+                )}
+                <button onClick={handleCheckout} disabled={isCheckingOut || !size}
+                  className="btn-primary w-full py-4 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed">
                   {isCheckingOut
                     ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Redirecting…</span>
-                    : `🛒 Order for $${totalPrice} →`}
+                    : size ? `🛒 Order for $${totalPrice} →` : '🛒 Select a size to order'}
                 </button>
                 <p className="text-xs text-gray-400 text-center">
                   🔒 Secure checkout by Stripe · No hidden fees
