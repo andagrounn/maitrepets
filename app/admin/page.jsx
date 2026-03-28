@@ -1415,11 +1415,37 @@ function AdminLogin({ onAuth }) {
   );
 }
 
+function useAdminTheme() {
+  const [theme, setTheme] = useState('system'); // 'system' | 'light' | 'dark'
+  const [sysDark, setSysDark] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('admin_theme');
+    if (saved) setTheme(saved);
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    setSysDark(mq.matches);
+    const handler = (e) => setSysDark(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const isDark = theme === 'dark' || (theme === 'system' && sysDark);
+
+  function cycleTheme() {
+    const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
+    setTheme(next);
+    localStorage.setItem('admin_theme', next);
+  }
+
+  return { theme, isDark, cycleTheme };
+}
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [data, setData]     = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab]       = useState('overview');
+  const { theme, isDark, cycleTheme } = useAdminTheme();
 
   useEffect(() => {
     const stored = sessionStorage.getItem('admin_auth');
@@ -1455,14 +1481,41 @@ export default function AdminPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a14] text-white flex">
+
+    {!isDark && (
+      <style>{`
+        .admin-root { background:#f8fafc !important; color:#0f172a !important; }
+        .admin-root aside { background:#ffffff !important; border-color:#e2e8f0 !important; }
+        .admin-root header { background:rgba(255,255,255,0.95) !important; border-color:#e2e8f0 !important; }
+        .admin-root .border-white\\/10 { border-color:#e2e8f0 !important; }
+        .admin-root .text-white { color:#0f172a !important; }
+        .admin-root .text-gray-200,.admin-root .text-gray-300,.admin-root .text-gray-400 { color:#475569 !important; }
+        .admin-root .text-gray-500,.admin-root .text-gray-600 { color:#64748b !important; }
+        .admin-root .bg-white\\/5,.admin-root .hover\\:bg-white\\/5:hover { background:rgba(0,0,0,0.04) !important; }
+        .admin-root .bg-\\[\\#0a0a14\\] { background:#f8fafc !important; }
+        .admin-root .bg-\\[\\#0a0a14\\]\\/95 { background:rgba(248,250,252,0.95) !important; }
+        .admin-root .bg-\\[\\#0f0f1a\\] { background:#f1f5f9 !important; }
+        .admin-root .bg-\\[\\#111827\\],.admin-root .bg-gray-900 { background:#f1f5f9 !important; }
+        .admin-root .bg-\\[\\#1a1a2e\\],.admin-root .bg-\\[\\#12121f\\] { background:#e2e8f0 !important; }
+        .admin-root .bg-white\\/10 { background:rgba(0,0,0,0.06) !important; }
+        .admin-root .bg-white\\/20 { background:rgba(0,0,0,0.08) !important; }
+        .admin-root .rounded-xl.bg-white\\/5 { background:#fff !important; border:1px solid #e2e8f0; }
+        .admin-root input,.admin-root select,.admin-root textarea { background:#fff !important; color:#0f172a !important; border-color:#cbd5e1 !important; }
+        .admin-root input::placeholder { color:#94a3b8 !important; }
+        .admin-root table th { background:#f1f5f9 !important; color:#475569 !important; }
+        .admin-root table td { border-color:#f1f5f9 !important; }
+        .admin-root .divide-white\\/5 > * + * { border-color:#e2e8f0 !important; }
+      `}</style>
+    )}
+
+    <div className={`admin-root min-h-screen flex transition-colors duration-200 ${isDark ? 'bg-[#0a0a14] text-white' : 'bg-[#f8fafc] text-gray-900'}`}>
       {/* Sidebar */}
-      <aside className="w-56 flex-shrink-0 border-r border-white/10 flex flex-col sticky top-0 h-screen">
-        <div className="px-5 py-5 border-b border-white/10">
+      <aside className={`w-56 flex-shrink-0 border-r flex flex-col sticky top-0 h-screen ${isDark ? 'border-white/10' : 'border-slate-200 bg-white'}`}>
+        <div className={`px-5 py-5 border-b ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
           <div className="flex items-center gap-2 mb-0.5">
             <span className="font-black text-sm">Maîtrepets</span>
           </div>
-          <p className="text-gray-600 text-xs">Admin Dashboard</p>
+          <p className="text-gray-500 text-xs">Admin Dashboard</p>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1">
           {TABS.map(t => (
@@ -1479,13 +1532,23 @@ export default function AdminPage() {
             </button>
           ))}
         </nav>
-        <div className="px-5 py-4 border-t border-white/10 space-y-2">
-          <button onClick={fetchData} className="w-full text-xs text-gray-600 hover:text-gray-300 transition-colors flex items-center gap-2">
+        <div className={`px-5 py-4 border-t space-y-3 ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
+          {/* Theme toggle */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-500">Theme</span>
+            <button onClick={cycleTheme}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${isDark ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+              {theme === 'dark'   && <><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Dark</>}
+              {theme === 'light'  && <><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>Light</>}
+              {theme === 'system' && <><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>System</>}
+            </button>
+          </div>
+          <button onClick={fetchData} className="w-full text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-2">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-3.5"/></svg>
             Refresh data
           </button>
           <button onClick={() => { sessionStorage.removeItem('admin_auth'); setAuthed(false); }}
-            className="w-full text-xs text-rose-700 hover:text-rose-400 transition-colors flex items-center gap-2">
+            className="w-full text-xs text-rose-500 hover:text-rose-400 transition-colors flex items-center gap-2">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             Sign out
           </button>
@@ -1494,7 +1557,7 @@ export default function AdminPage() {
 
       {/* Main */}
       <div className="flex-1 min-w-0 overflow-y-auto">
-        <header className="sticky top-0 bg-[#0a0a14]/95 backdrop-blur border-b border-white/10 px-6 py-4 flex items-center justify-between z-10">
+        <header className={`sticky top-0 backdrop-blur border-b px-6 py-4 flex items-center justify-between z-10 ${isDark ? 'bg-[#0a0a14]/95 border-white/10' : 'bg-white/95 border-slate-200'}`}>
           <div>
             <h1 className="font-bold text-base capitalize">{tab}</h1>
             {!loading && data && (
