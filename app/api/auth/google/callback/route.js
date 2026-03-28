@@ -60,6 +60,7 @@ export async function GET(req) {
     const response = NextResponse.redirect(`${baseUrl}/create`);
     response.cookies.set('maitrepets_token', token, {
       httpOnly: true,
+      secure:   process.env.NODE_ENV === 'production',
       maxAge:   60 * 60 * 24 * 30,
       path:     '/',
       sameSite: 'lax',
