@@ -57,6 +57,7 @@ model Order {
   shippingMethod   String?  @default("STANDARD")
   trackingNumber   String?
   trackingUrl      String?
+  frameColor           String?  @default("black")
   digitalCopy          Boolean  @default(false)
   extraCopy            Boolean  @default(false)
   refundReason         String?

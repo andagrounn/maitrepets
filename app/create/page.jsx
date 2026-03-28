@@ -12,13 +12,14 @@ import { useStore } from '@/store/useStore';
 import { api } from '@/lib/api';
 import { calculatePrice, SIZE_MULTIPLIERS } from '@/lib/pricing';
 import { STYLE_PROMPTS } from '@/lib/replicate';
+import { FRAME_COLORS } from '@/lib/printful';
 
 const STEPS = ['Upload', 'Style', 'Generate', 'Order'];
 
 const TRUST_BADGES = [
   { icon: '⭐', text: '10,000+ happy pet owners' },
   { icon: '🔒', text: 'Secure checkout' },
-  { icon: '🐾', text: '1 free AI generation' },
+  { icon: '✨', text: '1 free AI generation' },
   { icon: '🚚', text: 'Delivered to your door' },
 ];
 
@@ -50,6 +51,7 @@ function CreatePageInner() {
   const [emotion, setEmotion] = useState('normal');
   const [size, setSize] = useState('');
   const [urgency, setUrgency] = useState('standard');
+  const [frameColor, setFrameColor] = useState('black');
 
   // Upsell state
   const [extras, setExtras] = useState({ digitalCopy: true, extraCopy: false, priorityProcessing: false });
@@ -218,7 +220,7 @@ function CreatePageInner() {
   async function handlePlaceOrder() {
     setIsCheckingOut(true);
     try {
-      const d = await api.checkout({ imageId, generatedUrl, productKey, price: totalPrice, shipping, extras });
+      const d = await api.checkout({ imageId, generatedUrl, productKey, price: totalPrice, shipping, extras, frameColor });
       window.location.href = d.url;
     } catch (err) {
       showToast(err.message || 'Checkout failed. Please try again.', 'error');
@@ -244,15 +246,8 @@ function CreatePageInner() {
       <main className="min-h-screen bg-[#F8F5F2] pt-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
-          {/* Trust badges */}
-          <div className="hidden sm:flex items-center justify-center gap-4 mb-6 flex-wrap">
-            {TRUST_BADGES.map((b) => (
-              <div key={b.text} className="flex items-center gap-1.5 text-xs text-gray-500">
-                <span>{b.icon}</span>
-                <span>{b.text}</span>
-              </div>
-            ))}
-          </div>
+          {/* Trust badges placeholder */}
+          <div className="hidden sm:block mb-6" />
 
           {/* Progress steps */}
           <div className="flex items-center justify-center gap-1 mb-8">
@@ -574,6 +569,21 @@ function CreatePageInner() {
                     </div>
                   )}
                   <p className="text-purple-200 text-xs mt-2">Limited-time offer · {URGENCY_LABELS[urgency]}</p>
+                </div>
+
+                {/* Frame Color */}
+                <div className="bg-white border border-gray-100 rounded-2xl p-4">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Frame Color</p>
+                  <div className="flex gap-3">
+                    {FRAME_COLORS.map((c) => (
+                      <button key={c.id} onClick={() => setFrameColor(c.id)}
+                        className={`flex flex-col items-center gap-1.5 group`}>
+                        <span className={`w-9 h-9 rounded-full border-2 transition-all ${frameColor === c.id ? 'scale-110 border-purple-500 shadow-md shadow-purple-200' : 'border-gray-200 hover:border-gray-400'}`}
+                          style={{ backgroundColor: c.hex, boxShadow: c.id === 'white' ? 'inset 0 0 0 1px #e5e7eb' : undefined }} />
+                        <span className={`text-[10px] font-medium ${frameColor === c.id ? 'text-purple-600' : 'text-gray-400'}`}>{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Reconfigure */}

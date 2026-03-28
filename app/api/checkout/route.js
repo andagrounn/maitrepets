@@ -9,7 +9,7 @@ export async function POST(req) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const { imageId, generatedUrl, productKey, price, shipping, extras } = await req.json();
+    const { imageId, generatedUrl, productKey, price, shipping, extras, frameColor } = await req.json();
 
     if (!imageId || !price) {
       return NextResponse.json({ error: 'imageId and price required' }, { status: 400 });
@@ -38,6 +38,7 @@ export async function POST(req) {
         shippingCountry:  shipping?.country        || 'US',
         shippingPhone:    shipping?.phone          || null,
         shippingMethod:   shipping?.shippingMethod || 'STANDARD',
+        frameColor:       frameColor || 'black',
         digitalCopy:      !!(extras?.digitalCopy),
         extraCopy:        !!(extras?.extraCopy),
       },
