@@ -1363,10 +1363,74 @@ function GenerationBankTab() {
 }
 
 // ─── Main admin page ──────────────────────────────────────────────────────────
+function AdminLogin({ onAuth }) {
+  const [key, setKey]       = useState('');
+  const [error, setError]   = useState('');
+  const [show, setShow]     = useState(false);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (key === (process.env.NEXT_PUBLIC_ADMIN_KEY || 'maitrepets-admin-2025')) {
+      sessionStorage.setItem('admin_auth', key);
+      onAuth(key);
+    } else {
+      setError('Invalid secret key.');
+      setKey('');
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0a0a14] flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <p className="text-2xl font-black text-white mb-1">Maîtrepets</p>
+          <p className="text-gray-500 text-sm">Admin access only</p>
+        </div>
+        <form onSubmit={handleSubmit} className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">Secret Key</label>
+            <div className="relative">
+              <input
+                type={show ? 'text' : 'password'}
+                value={key}
+                onChange={e => { setKey(e.target.value); setError(''); }}
+                placeholder="Enter admin secret key"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 transition-colors pr-10"
+                required
+              />
+              <button type="button" onClick={() => setShow(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors text-xs">
+                {show ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            {error && <p className="text-rose-400 text-xs mt-2">{error}</p>}
+          </div>
+          <button type="submit"
+            className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold transition-colors">
+            Enter Dashboard →
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
+  const [authed, setAuthed] = useState(false);
   const [data, setData]     = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab]       = useState('overview');
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem('admin_auth');
+    if (stored === (process.env.NEXT_PUBLIC_ADMIN_KEY || 'maitrepets-admin-2025')) {
+      setAuthed(true);
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  if (!authed) return <AdminLogin onAuth={() => setAuthed(true)} />;
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -1415,10 +1479,15 @@ export default function AdminPage() {
             </button>
           ))}
         </nav>
-        <div className="px-5 py-4 border-t border-white/10">
+        <div className="px-5 py-4 border-t border-white/10 space-y-2">
           <button onClick={fetchData} className="w-full text-xs text-gray-600 hover:text-gray-300 transition-colors flex items-center gap-2">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-3.5"/></svg>
             Refresh data
+          </button>
+          <button onClick={() => { sessionStorage.removeItem('admin_auth'); setAuthed(false); }}
+            className="w-full text-xs text-rose-700 hover:text-rose-400 transition-colors flex items-center gap-2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign out
           </button>
         </div>
       </aside>

@@ -23,7 +23,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close menu on route change
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   useEffect(() => {
@@ -76,30 +75,57 @@ export default function Navbar() {
         </div>
       )}
 
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled || menuOpen ? 'bg-white/95 backdrop-blur shadow-sm border-b border-gray-100' : 'bg-transparent'}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled || menuOpen
+          ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100'
+          : 'bg-white/80 backdrop-blur-sm border-b border-gray-100/60'
+      }`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Maîtrepets</span>
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
+            <span className="text-xl font-black bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent tracking-tight">
+              Maîtrepets
+            </span>
           </Link>
 
           {/* Desktop nav links */}
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="/#how-it-works" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">How it works</Link>
-            <Link href="/#styles"       className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Art Styles</Link>
-            <Link href="/#pricing"      className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Pricing</Link>
+          <div className="hidden md:flex items-center gap-1">
+            {[
+              { href: '/#how-it-works', label: 'How it works' },
+              { href: '/#styles',       label: 'Art Styles' },
+              { href: '/#pricing',      label: 'Pricing' },
+            ].map((l) => (
+              <Link key={l.href} href={l.href}
+                className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-150">
+                {l.label}
+              </Link>
+            ))}
           </div>
 
           {/* Desktop auth */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
             {user ? (
               <>
-                <Link href="/dashboard" className={isCreate ? 'btn-primary text-sm px-5 py-2' : 'text-sm text-gray-600 hover:text-gray-900'}>Dashboard</Link>
-                {!isCreate && !isDashboard && <Link href="/create" className="btn-primary text-sm px-5 py-2">Create Portrait</Link>}
-                <button onClick={logout} className="text-sm text-gray-400 hover:text-gray-600">Sign out</button>
-                <Link href="/dashboard" className="relative text-gray-500 hover:text-gray-900 transition-colors" title="Your portraits">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <Link href="/dashboard"
+                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-150 ${
+                    isDashboard
+                      ? 'bg-purple-50 text-purple-700'
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                  }`}>
+                  Dashboard
+                </Link>
+                {!isCreate && !isDashboard && (
+                  <Link href="/create" className="btn-primary text-sm px-5 py-2">
+                    Create Portrait →
+                  </Link>
+                )}
+                <button onClick={logout}
+                  className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-150">
+                  Sign out
+                </button>
+                <Link href="/dashboard" className="relative ml-1 w-9 h-9 flex items-center justify-center rounded-full bg-purple-50 hover:bg-purple-100 text-purple-600 transition-all" title="Your portraits">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/>
                     <circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/>
                     <circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/>
@@ -107,7 +133,7 @@ export default function Navbar() {
                     <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
                   </svg>
                   {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-[10px] font-bold min-w-[1.1rem] h-[1.1rem] px-0.5 rounded-full flex items-center justify-center leading-none">
+                    <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-[9px] font-bold min-w-[1rem] h-4 px-0.5 rounded-full flex items-center justify-center leading-none">
                       {cartCount}
                     </span>
                   )}
@@ -115,8 +141,15 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/login" className="text-sm text-gray-600 hover:text-gray-900">Sign in</Link>
-                {!isCreate && <Link href="/create" className="btn-primary text-sm px-5 py-2">Get Started →</Link>}
+                <Link href="/login"
+                  className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-150">
+                  Sign in
+                </Link>
+                {!isCreate && (
+                  <Link href="/create" className="btn-primary text-sm px-5 py-2">
+                    Get Started →
+                  </Link>
+                )}
               </>
             )}
           </div>
@@ -124,19 +157,18 @@ export default function Navbar() {
           {/* Mobile right side */}
           <div className="flex md:hidden items-center gap-3">
             {user && cartCount > 0 && (
-              <Link href="/dashboard" className="relative text-gray-500">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <Link href="/dashboard" className="relative w-9 h-9 flex items-center justify-center rounded-full bg-purple-50 text-purple-600">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
                 </svg>
-                <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-[10px] font-bold min-w-[1.1rem] h-[1.1rem] px-0.5 rounded-full flex items-center justify-center leading-none">
+                <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-[9px] font-bold min-w-[1rem] h-4 px-0.5 rounded-full flex items-center justify-center leading-none">
                   {cartCount}
                 </span>
               </Link>
             )}
-            {/* Hamburger */}
             <button
               onClick={() => setMenuOpen(v => !v)}
-              className="w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+              className="w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-full hover:bg-gray-100 transition-colors"
               aria-label="Toggle menu">
               <span className={`block h-0.5 w-5 bg-gray-700 rounded-full transition-all duration-200 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
               <span className={`block h-0.5 w-5 bg-gray-700 rounded-full transition-all duration-200 ${menuOpen ? 'opacity-0' : ''}`} />
@@ -147,20 +179,20 @@ export default function Navbar() {
 
         {/* Mobile slide-down menu */}
         {menuOpen && (
-          <div className="md:hidden border-t border-gray-100 bg-white/98 backdrop-blur px-4 py-4 flex flex-col gap-1">
-            <Link href="/#how-it-works" className="px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">How it works</Link>
-            <Link href="/#styles"       className="px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">Art Styles</Link>
-            <Link href="/#pricing"      className="px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">Pricing</Link>
+          <div className="md:hidden border-t border-gray-100 bg-white/98 backdrop-blur px-4 py-3 flex flex-col gap-1">
+            <Link href="/#how-it-works" className="px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">How it works</Link>
+            <Link href="/#styles"       className="px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">Art Styles</Link>
+            <Link href="/#pricing"      className="px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">Pricing</Link>
             <div className="h-px bg-gray-100 my-1" />
             {user ? (
               <>
-                <Link href="/dashboard" className="px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">Dashboard</Link>
-                <Link href="/create"    className="mx-0 mt-1 btn-primary text-center py-3 text-sm">+ Create Portrait</Link>
-                <button onClick={logout} className="px-3 py-3 text-sm text-gray-400 hover:bg-gray-50 rounded-xl text-left transition-colors">Sign out</button>
+                <Link href="/dashboard" className="px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">Dashboard</Link>
+                <Link href="/create" className="mt-1 btn-primary text-center py-3 text-sm">Create Portrait →</Link>
+                <button onClick={logout} className="px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-gray-50 rounded-xl text-left transition-colors">Sign out</button>
               </>
             ) : (
               <>
-                <Link href="/login"  className="px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">Sign in</Link>
+                <Link href="/login"  className="px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">Sign in</Link>
                 <Link href="/signup" className="mt-1 btn-primary text-center py-3 text-sm">Get Started Free →</Link>
               </>
             )}
