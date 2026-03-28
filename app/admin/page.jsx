@@ -1559,7 +1559,7 @@ export default function AdminPage() {
         .admin-root table td { border-color:#f1f5f9 !important; }
         .admin-root table tr:hover td { background:#f8fafc !important; }
 
-        /* ── Status badges — keep colours readable on light ── */
+        /* ── Status badges ── */
         .admin-root .bg-emerald-500\\/20 { background:#d1fae5 !important; }
         .admin-root .bg-yellow-500\\/20  { background:#fef9c3 !important; }
         .admin-root .bg-blue-500\\/20    { background:#dbeafe !important; }
@@ -1572,11 +1572,52 @@ export default function AdminPage() {
         .admin-root .text-emerald-300 { color:#059669 !important; }
         .admin-root .text-yellow-300  { color:#d97706 !important; }
         .admin-root .text-blue-300    { color:#2563eb !important; }
-        .admin-root .text-purple-300  { color:#7c3aed !important; }
+        .admin-root .text-purple-300,.admin-root .text-purple-400 { color:#7c3aed !important; }
         .admin-root .text-rose-300    { color:#e11d48 !important; }
         .admin-root .text-orange-300  { color:#ea580c !important; }
-        .admin-root .text-red-300     { color:#dc2626 !important; }
+        .admin-root .text-red-300,.admin-root .text-red-400 { color:#dc2626 !important; }
         .admin-root .text-teal-300    { color:#0d9488 !important; }
+
+        /* ── Buttons — ghost/transparent variants ── */
+        .admin-root .bg-white\\/5  { background:#f1f5f9 !important; border-color:#e2e8f0 !important; box-shadow:none !important; }
+        .admin-root .hover\\:bg-white\\/10:hover { background:#e2e8f0 !important; }
+        .admin-root .hover\\:bg-white\\/20:hover { background:#cbd5e1 !important; }
+        .admin-root .hover\\:text-white:hover  { color:#0f172a !important; }
+        .admin-root .hover\\:text-gray-200:hover { color:#334155 !important; }
+        .admin-root .hover\\:text-gray-300:hover { color:#475569 !important; }
+
+        /* ── Purple tinted buttons (active states) ── */
+        .admin-root .bg-purple-600\\/20 { background:#ede9fe !important; }
+        .admin-root .bg-purple-600\\/30 { background:#ddd6fe !important; }
+        .admin-root .hover\\:bg-purple-600\\/40:hover { background:#c4b5fd !important; }
+        .admin-root .border-purple-500\\/50 { border-color:#a78bfa !important; }
+        .admin-root .text-purple-200 { color:#6d28d9 !important; }
+
+        /* ── Red/rose action buttons ── */
+        .admin-root .bg-red-500\\/20   { background:#fee2e2 !important; }
+        .admin-root .hover\\:bg-red-500\\/40:hover { background:#fecaca !important; }
+        .admin-root .bg-rose-500       { background:#f43f5e !important; }
+
+        /* ── Filter & toggle pills ── */
+        .admin-root [class*="bg-white\\/5"][class*="text-gray-400"] {
+          background:#f1f5f9 !important;
+          color:#64748b !important;
+          border:1px solid #e2e8f0 !important;
+        }
+
+        /* ── Sort / view toggle inactive ── */
+        .admin-root .text-gray-500.hover\\:text-white { color:#64748b !important; }
+
+        /* ── Pagination ── */
+        .admin-root [class*="bg-white\\/5"][class*="rounded"] {
+          background:#f1f5f9 !important;
+          color:#475569 !important;
+          border:1px solid #e2e8f0 !important;
+        }
+
+        /* ── Card metadata area ── */
+        .admin-root .text-purple-400 { color:#7c3aed !important; }
+        .admin-root .border-purple-500\\/30 { border-color:#c4b5fd !important; }
       `}</style>
     )}
 
