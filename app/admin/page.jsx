@@ -1370,7 +1370,7 @@ function AdminLogin({ onAuth }) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (key === (process.env.NEXT_PUBLIC_ADMIN_KEY || 'maitrepets-admin-2025')) {
+    if (key === (process.env.NEXT_PUBLIC_ADMIN_KEY || '8133089')) {
       sessionStorage.setItem('admin_auth', key);
       onAuth(key);
     } else {
@@ -1423,14 +1423,12 @@ export default function AdminPage() {
 
   useEffect(() => {
     const stored = sessionStorage.getItem('admin_auth');
-    if (stored === (process.env.NEXT_PUBLIC_ADMIN_KEY || 'maitrepets-admin-2025')) {
+    if (stored === (process.env.NEXT_PUBLIC_ADMIN_KEY || '8133089')) {
       setAuthed(true);
     } else {
       setLoading(false);
     }
   }, []);
-
-  if (!authed) return <AdminLogin onAuth={() => setAuthed(true)} />;
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -1443,7 +1441,9 @@ export default function AdminPage() {
     }
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { if (authed) fetchData(); }, [fetchData, authed]);
+
+  if (!authed) return <AdminLogin onAuth={() => setAuthed(true)} />;
 
   const TABS = [
     { key: 'overview',   label: 'Overview',   Icon: Icon.Overview },
