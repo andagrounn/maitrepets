@@ -519,7 +519,45 @@ function PaperPrintIcon({ imageId }) {
       if (data.url) window.location.href = data.url;
     } catch { setLoading(false); }
   }
-  return <IconBtn onClick={handle} disabled={loading} title="Order paper print ($29.99)"><IconPrinter size={13} /></IconBtn>;
+  return <IconBtn onClick={handle} disabled={loading} title="Order thin canvas print ($29.99)"><IconPrinter size={13} /></IconBtn>;
+}
+
+// ─── Quick order button — goes straight to Stripe checkout ────────────────────
+function QuickOrderBtn({ img }) {
+  const [loading, setLoading] = useState(false);
+  async function handle() {
+    setLoading(true);
+    try {
+      const res  = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          imageId:      img.id,
+          generatedUrl: img.generatedUrl,
+          productKey:   'poster-16x20',
+          price:        79,
+          shipping:     { country: 'US' },
+          extras:       {},
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Checkout failed');
+      window.location.href = data.url;
+    } catch (err) {
+      alert(err.message);
+      setLoading(false);
+    }
+  }
+  return (
+    <button onClick={handle} disabled={loading}
+      className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors disabled:opacity-50 flex items-center gap-1">
+      {loading
+        ? <span className="w-3 h-3 border border-purple-500 border-t-transparent rounded-full animate-spin" />
+        : null}
+      {loading ? 'Loading…' : 'Order →'}
+    </button>
+  );
 }
 
 // ─── Reorder button ───────────────────────────────────────────────────────────
@@ -684,15 +722,15 @@ export default function DashboardPage() {
       <ToastContainer toasts={toasts} />
 
       <main className="min-h-screen bg-[#F8F5F2] pt-20">
-        <div className="max-w-5xl mx-auto px-6 py-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Maîtrepets</h1>
-              <p className="text-gray-500 mt-1">{user?.email}</p>
+          <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Maîtrepets</h1>
+              <p className="text-gray-500 mt-0.5 text-sm truncate">{user?.email}</p>
             </div>
-            <Link href="/create" className="btn-primary">+ New Portrait</Link>
+            <Link href="/create" className="btn-primary flex-shrink-0 text-sm px-4 py-2">+ New Portrait</Link>
           </div>
 
           {/* Pending orders — collapsible dropdown */}
@@ -769,30 +807,30 @@ export default function DashboardPage() {
           )}
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
             {[
               { label: 'Portraits',   value: images.length,  icon: '🎨' },
               { label: 'Orders',      value: orders.filter(o => o.status !== 'pending').length, icon: '📦' },
               { label: 'Total Spent', value: `$${orders.filter(o => o.status !== 'pending').reduce((s, o) => s + o.price, 0).toFixed(2)}`, icon: '💳' },
-            ].map(s => (
-              <div key={s.label} className="card p-5 flex items-center gap-4">
-                <span className="text-3xl">{s.icon}</span>
-                <div>
-                  <p className="text-gray-500 text-xs">{s.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">{s.value}</p>
+            ].map((s, i, arr) => (
+              <div key={s.label} className={`card p-3 sm:p-5 flex items-center gap-2 sm:gap-4${i === arr.length - 1 && arr.length % 2 !== 0 ? ' col-span-2 sm:col-span-1' : ''}`}>
+                <span className="text-2xl sm:text-3xl">{s.icon}</span>
+                <div className="min-w-0">
+                  <p className="text-gray-500 text-xs truncate">{s.label}</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{s.value}</p>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit">
+          <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-xl w-full sm:w-fit">
             {[
               { key: 'portraits', label: `Portraits${images.length ? ` (${images.length})` : ''}` },
               { key: 'orders',    label: `Orders${orders.length ? ` (${orders.length})` : ''}` },
             ].map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
-                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.key ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+                className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-lg text-sm font-medium transition-all text-center ${tab === t.key ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
                 {t.label}
               </button>
             ))}
@@ -834,14 +872,17 @@ export default function DashboardPage() {
                           </div>
                         )}
                       </div>
-                      <div className="px-3 py-2.5 flex items-center justify-between">
-                        <p className="text-xs text-gray-400">
-                          {new Date(img.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        </p>
+                      <div className="px-3 py-2.5 flex flex-col gap-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-400">
+                            {new Date(img.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </p>
+                          {img.generatedUrl && <QuickOrderBtn img={img} />}
+                        </div>
                         {img.generatedUrl && (
-                          <Link href={`/create?imageId=${img.id}`} className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">
-                            Order Print →
-                          </Link>
+                          <p className="text-[10px] font-mono text-purple-400/70 tracking-wider">
+                            #{img.id.replace(/-/g, '').slice(0, 8).toUpperCase()}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -906,12 +947,12 @@ export default function DashboardPage() {
 
                           {/* Info */}
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="font-semibold text-gray-900 text-sm truncate">
+                            <div className="flex flex-wrap items-start justify-between gap-1.5">
+                              <p className="font-semibold text-gray-900 text-sm truncate max-w-[55%]">
                                 {order.productType?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                               </p>
-                              <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${sc.color}`}>
-                                <StatusIcon size={11} />
+                              <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ${sc.color}`}>
+                                <StatusIcon size={10} />
                                 {sc.label}
                               </span>
                             </div>

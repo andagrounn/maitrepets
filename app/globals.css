@@ -8,6 +8,17 @@
   body {
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+    /* Prevent text size adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  /* Remove 300ms tap delay on all interactive elements */
+  a, button, [role="button"], input, select, textarea, label {
+    touch-action: manipulation;
+  }
+  /* Hide scrollbars on scroll strips while keeping functionality */
+  .overflow-x-auto::-webkit-scrollbar {
+    display: none;
   }
 }
 

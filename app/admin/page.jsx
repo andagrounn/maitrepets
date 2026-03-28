@@ -102,6 +102,7 @@ const Icon = {
   Customers: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
   Refunds:   () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>,
   Messaging: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+  GenBank:   () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>,
   Edit:      () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
   Mail:      () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
   Check:     () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
@@ -1000,6 +1001,367 @@ function MessagingTab({ userList }) {
   );
 }
 
+// ─── Generation Bank ──────────────────────────────────────────────────────────
+const PAGE_SIZE = 12;
+
+function GenerationBankTab() {
+  const [images,    setImages]    = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [userFilter, setUserFilter] = useState('all');   // all | user | guest
+  const [styleFilter, setStyleFilter] = useState('all'); // all | <style>
+  const [search,    setSearch]    = useState('');
+  const [view,      setView]      = useState('grid');    // grid | list
+  const [page,      setPage]      = useState(1);
+  const [lightbox,  setLightbox]  = useState(null);
+  const [deleting,  setDeleting]  = useState(null);
+  const [confirmId, setConfirmId] = useState(null); // id of image pending delete modal
+
+  useEffect(() => {
+    fetch('/api/admin/generations', { headers: HEADERS })
+      .then(r => r.json())
+      .then(d => { setImages(d.images || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setPage(1); }, [userFilter, styleFilter, search]);
+
+  // Keyboard nav for lightbox
+  useEffect(() => {
+    if (!lightbox) return;
+    function onKey(e) {
+      if (e.key === 'Escape') setLightbox(null);
+      if (e.key === 'ArrowRight') setLightbox(l => { const n = (l.index + 1) % filtered.length; return { img: filtered[n], index: n }; });
+      if (e.key === 'ArrowLeft')  setLightbox(l => { const n = (l.index - 1 + filtered.length) % filtered.length; return { img: filtered[n], index: n }; });
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightbox]);
+
+  // Derive unique styles from loaded images
+  const styles = ['all', ...Array.from(new Set(images.map(i => i.style).filter(Boolean))).sort()];
+
+  const filtered = images.filter(img => {
+    if (userFilter === 'guest' && img.status !== 'guest') return false;
+    if (userFilter === 'user'  && img.status === 'guest') return false;
+    if (styleFilter !== 'all'  && img.style !== styleFilter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      const hash = img.id.replace(/-/g, '').slice(0, 8).toUpperCase();
+      return (img.user?.email || '').toLowerCase().includes(q) ||
+             (img.style || '').toLowerCase().includes(q) ||
+             hash.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  async function downloadHD(url, name) {
+    try {
+      const res  = await fetch(url);
+      const blob = await res.blob();
+      const a    = document.createElement('a');
+      a.href     = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch { window.open(url, '_blank'); }
+  }
+
+  async function deleteImage(id) {
+    setDeleting(id);
+    try {
+      const res = await fetch('/api/admin/generations', { method: 'DELETE', headers: HEADERS, body: JSON.stringify({ id }) });
+      if (!res.ok) throw new Error('Delete failed');
+      setImages(prev => prev.filter(img => img.id !== id));
+      if (lightbox?.img?.id === id) setLightbox(null);
+    } catch (e) { alert('Delete failed: ' + e.message); }
+    finally { setDeleting(null); setConfirmId(null); }
+  }
+
+  const ActionButtons = ({ img, index }) => (
+    <div className="flex gap-1.5 flex-shrink-0">
+      <button onClick={() => setLightbox({ img, index })} title="Expand"
+        className="bg-white/10 hover:bg-white/20 text-white p-1.5 rounded-lg transition-colors">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+      <button onClick={() => downloadHD(img.generatedUrl, `maitrepets-${img.style}-${img.id}.png`)} title="Download HD"
+        className="bg-purple-600 hover:bg-purple-700 text-white p-1.5 rounded-lg transition-colors">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button onClick={() => setConfirmId(img.id)} title="Delete"
+        className="bg-red-500/20 hover:bg-red-500/40 text-red-400 p-1.5 rounded-lg transition-colors">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
+    </div>
+  );
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-32">
+      <div className="w-10 h-10 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  return (
+    <div>
+      {/* ── Toolbar ── */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        {/* User type filter */}
+        <div className="flex gap-1.5">
+          {[['all', `All (${images.length})`], ['user', `Users (${images.filter(i=>i.status!=='guest').length})`], ['guest', `Guests (${images.filter(i=>i.status==='guest').length})`]].map(([val, label]) => (
+            <button key={val} onClick={() => setUserFilter(val)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${userFilter === val ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Style filter */}
+        <select value={styleFilter} onChange={e => setStyleFilter(e.target.value)}
+          className="bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500 capitalize">
+          {styles.map(s => (
+            <option key={s} value={s} className="bg-[#1a1a2e] capitalize">
+              {s === 'all' ? `All Styles (${images.length})` : `${s} (${images.filter(i=>i.style===s).length})`}
+            </option>
+          ))}
+        </select>
+
+        {/* Search */}
+        <input value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Search email or style…"
+          className="flex-1 min-w-[160px] bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+
+        <span className="text-gray-600 text-xs">{filtered.length} results</span>
+
+        {/* View toggle */}
+        <div className="flex bg-white/5 rounded-lg p-0.5 gap-0.5 ml-auto">
+          <button onClick={() => setView('grid')} title="Grid view"
+            className={`p-1.5 rounded-md transition-colors ${view === 'grid' ? 'bg-purple-600 text-white' : 'text-gray-500 hover:text-white'}`}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button onClick={() => setView('list')} title="List view"
+            className={`p-1.5 rounded-md transition-colors ${view === 'list' ? 'bg-purple-600 text-white' : 'text-gray-500 hover:text-white'}`}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Content ── */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-24 flex flex-col items-center gap-3">
+          <p className="text-gray-500">No generations match the current filters.</p>
+          {(userFilter !== 'all' || styleFilter !== 'all' || search) && (
+            <button
+              onClick={() => { setUserFilter('all'); setStyleFilter('all'); setSearch(''); }}
+              className="px-4 py-1.5 rounded-lg text-xs bg-white/10 text-gray-300 hover:bg-white/20 transition-all">
+              Clear filters
+            </button>
+          )}
+        </div>
+      ) : view === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {paginated.map((img, i) => {
+            const globalIndex = (page - 1) * PAGE_SIZE + i;
+            return (
+              <div key={img.id} className="group bg-white/5 rounded-xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all">
+                <div className="grid grid-cols-2 gap-0.5 bg-white/5 cursor-zoom-in"
+                     onClick={() => setLightbox({ img, index: globalIndex })}>
+                  <div className="relative aspect-square overflow-hidden">
+                    {img.originalUrl
+                      ? <img src={img.originalUrl} alt="original" className="w-full h-full object-cover" loading="lazy" onError={e => { e.target.style.display='none'; }} />
+                      : <div className="w-full h-full bg-white/10 flex items-center justify-center text-gray-600 text-xs">No source</div>}
+                    <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded">ORIGINAL</span>
+                  </div>
+                  <div className="relative aspect-square overflow-hidden">
+                    <img src={img.generatedUrl} alt={img.style}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy" onError={e => { e.target.src='https://placedog.net/300/300?id='+i; }} />
+                    <span className="absolute bottom-1 left-1 bg-purple-600/90 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded capitalize">{img.style}</span>
+                    {img.status === 'guest' && <span className="absolute top-1 right-1 bg-amber-500/90 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">GUEST</span>}
+                  </div>
+                </div>
+                <div className="p-2.5 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-gray-300 text-[10px] truncate">{img.user?.email || 'guest'}</p>
+                    <p className="text-[10px] flex items-center gap-2">
+                      <span className="text-purple-400/70 font-mono tracking-wider">#{img.id.replace(/-/g,'').slice(0,8).toUpperCase()}</span>
+                      <span className="text-gray-600">{new Date(img.createdAt).toLocaleDateString()}</span>
+                    </p>
+                  </div>
+                  <ActionButtons img={img} index={globalIndex} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* ── List view ── */
+        <div className="space-y-1.5">
+          {paginated.map((img, i) => {
+            const globalIndex = (page - 1) * PAGE_SIZE + i;
+            return (
+              <div key={img.id} className="group flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-purple-500/40 rounded-xl px-3 py-2.5 transition-all">
+                {/* Thumbnails */}
+                <div className="flex gap-1 flex-shrink-0 cursor-zoom-in" onClick={() => setLightbox({ img, index: globalIndex })}>
+                  <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-white/5">
+                    {img.originalUrl
+                      ? <img src={img.originalUrl} alt="orig" className="w-full h-full object-cover" loading="lazy" />
+                      : <div className="w-full h-full flex items-center justify-center text-gray-700 text-[9px]">–</div>}
+                    <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[7px] font-semibold text-center py-0.5">ORIG</span>
+                  </div>
+                  <div className="relative w-12 h-12 rounded-lg overflow-hidden ring-1 ring-purple-500/40">
+                    <img src={img.generatedUrl} alt={img.style} className="w-full h-full object-cover" loading="lazy" />
+                    <span className="absolute bottom-0 left-0 right-0 bg-purple-700/80 text-white text-[7px] font-semibold text-center py-0.5 capitalize">{img.style}</span>
+                  </div>
+                </div>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white text-xs font-semibold capitalize">{img.style}</span>
+                    {img.status === 'guest' && <span className="bg-amber-500/20 text-amber-400 text-[9px] font-bold px-1.5 py-0.5 rounded-full">GUEST</span>}
+                    <span className="text-purple-400/70 text-[9px] font-mono tracking-wider">#{img.id.replace(/-/g,'').slice(0,8).toUpperCase()}</span>
+                  </div>
+                  <p className="text-gray-400 text-[11px] truncate">{img.user?.email || 'guest'}</p>
+                </div>
+                <p className="text-gray-600 text-[10px] flex-shrink-0 hidden sm:block">{new Date(img.createdAt).toLocaleDateString()}</p>
+                <ActionButtons img={img} index={globalIndex} />
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Pagination ── */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8">
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 2).reduce((acc, p, idx, arr) => {
+            if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...');
+            acc.push(p);
+            return acc;
+          }, []).map((p, idx) =>
+            p === '...' ? (
+              <span key={`ellipsis-${idx}`} className="text-gray-600 px-1 text-xs">…</span>
+            ) : (
+              <button key={p} onClick={() => setPage(p)}
+                className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${page === p ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                {p}
+              </button>
+            )
+          )}
+          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      )}
+
+      {/* ── Lightbox ── */}
+      {lightbox && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col" onClick={() => setLightbox(null)}>
+          <div className="flex items-center justify-between px-5 py-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
+            <div>
+              <p className="text-white font-semibold text-sm capitalize">{lightbox.img.style} portrait <span className="text-purple-400/80 font-mono text-xs tracking-wider">#{lightbox.img.id.replace(/-/g,'').slice(0,8).toUpperCase()}</span></p>
+              <p className="text-gray-500 text-xs">{lightbox.img.user?.email || 'guest'} · {new Date(lightbox.img.createdAt).toLocaleDateString()}</p>
+            </div>
+            <button onClick={() => setLightbox(null)} className="text-gray-400 hover:text-white p-2 rounded-xl hover:bg-white/10 transition-colors">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center gap-2 sm:gap-4 px-4 sm:px-16 min-h-0 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setLightbox(l => { const n = (l.index - 1 + filtered.length) % filtered.length; return { img: filtered[n], index: n }; })}
+              className="flex-shrink-0 text-gray-500 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-center max-h-full overflow-y-auto">
+              {lightbox.img.originalUrl && (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Original</span>
+                    <button onClick={() => downloadHD(lightbox.img.originalUrl, `maitrepets-original-${lightbox.img.id}.png`)}
+                      className="flex items-center gap-1 bg-white/10 hover:bg-white/20 text-white text-[10px] font-semibold px-2 py-1 rounded-lg transition-colors">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      Download
+                    </button>
+                  </div>
+                  <img src={lightbox.img.originalUrl} alt="original" className="max-h-[35vh] sm:max-h-[72vh] max-w-[80vw] sm:max-w-[38vw] object-contain rounded-xl shadow-2xl" />
+                </div>
+              )}
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-purple-400 text-xs font-semibold uppercase tracking-wider capitalize">{lightbox.img.style}</span>
+                  <button onClick={() => downloadHD(lightbox.img.generatedUrl, `maitrepets-${lightbox.img.style}-${lightbox.img.id}.png`)}
+                    className="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-semibold px-2 py-1 rounded-lg transition-colors">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download HD
+                  </button>
+                </div>
+                <img src={lightbox.img.generatedUrl} alt={lightbox.img.style} className="max-h-[35vh] sm:max-h-[72vh] max-w-[80vw] sm:max-w-[38vw] object-contain rounded-xl shadow-2xl ring-2 ring-purple-500/40" />
+              </div>
+            </div>
+            <button onClick={() => setLightbox(l => { const n = (l.index + 1) % filtered.length; return { img: filtered[n], index: n }; })}
+              className="flex-shrink-0 text-gray-500 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          <div className="flex items-center justify-between px-5 pb-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setConfirmId(lightbox.img.id)}
+              className="flex items-center gap-1.5 bg-red-500/20 hover:bg-red-500/40 text-red-400 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Delete
+            </button>
+            <p className="text-gray-600 text-xs">{lightbox.index + 1} / {filtered.length}<span className="hidden sm:inline"> · ← → to navigate · Esc to close</span></p>
+            <div className="w-20" />
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete confirmation modal ── */}
+      {confirmId && (() => {
+        const target = images.find(img => img.id === confirmId);
+        return (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setConfirmId(null)}>
+            <div className="bg-[#16162a] border border-red-500/30 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+              {/* Icon */}
+              <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </div>
+              <h3 className="text-white font-bold text-base text-center mb-1">Delete this portrait?</h3>
+              <p className="text-gray-500 text-xs text-center mb-4">
+                {target ? `${target.style} · ${target.user?.email || 'guest'}` : ''}<br/>
+                <span className="text-red-400">This cannot be undone.</span>
+              </p>
+              {/* Preview thumbnail */}
+              {target?.generatedUrl && (
+                <img src={target.generatedUrl} alt="preview"
+                  className="w-24 h-24 object-cover rounded-xl mx-auto mb-5 ring-2 ring-red-500/30" />
+              )}
+              <div className="flex gap-3">
+                <button onClick={() => setConfirmId(null)}
+                  className="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-semibold py-2.5 rounded-xl transition-colors">
+                  Cancel
+                </button>
+                <button onClick={() => deleteImage(confirmId)} disabled={deleting === confirmId}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                  {deleting === confirmId
+                    ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Deleting…</>
+                    : 'Yes, delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
 // ─── Main admin page ──────────────────────────────────────────────────────────
 export default function AdminPage() {
   const [data, setData]     = useState(null);
@@ -1025,6 +1387,7 @@ export default function AdminPage() {
     { key: 'customers',  label: 'Customers',   Icon: Icon.Customers },
     { key: 'refunds',    label: 'Refunds',     Icon: Icon.Refunds, badge: data?.stats?.refundRequestedOrders },
     { key: 'messaging',  label: 'Messaging',   Icon: Icon.Messaging },
+    { key: 'generations', label: 'Gen Bank',   Icon: Icon.GenBank },
   ];
 
   return (
@@ -1033,7 +1396,6 @@ export default function AdminPage() {
       <aside className="w-56 flex-shrink-0 border-r border-white/10 flex flex-col sticky top-0 h-screen">
         <div className="px-5 py-5 border-b border-white/10">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-xl">🐾</span>
             <span className="font-black text-sm">Maîtrepets</span>
           </div>
           <p className="text-gray-600 text-xs">Admin Dashboard</p>
@@ -1072,7 +1434,8 @@ export default function AdminPage() {
                 {tab === 'customers' && `${data.userList?.length || 0} registered customers`}
                 {tab === 'refunds' && `${data.refundRequests?.length || 0} pending requests`}
                 {tab === 'overview' && `$${data.stats?.totalRevenue?.toFixed(2) || '0.00'} total revenue`}
-                {tab === 'messaging' && 'Send emails to customers'}
+                {tab === 'messaging'   && 'Send emails to customers'}
+                {tab === 'generations' && 'All AI-generated portraits'}
               </p>
             )}
           </div>
@@ -1080,7 +1443,9 @@ export default function AdminPage() {
         </header>
 
         <main className="p-6">
-          {loading || !data ? (
+          {tab === 'generations' ? (
+            <GenerationBankTab />
+          ) : loading || !data ? (
             <div className="flex items-center justify-center py-32">
               <div className="w-10 h-10 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
             </div>

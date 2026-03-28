@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { fulfillOrder } from '@/lib/fulfillment';
 
-const PAPER_PRICE = 29.99; // unframed paper poster
+const PAPER_PRICE = 29.99; // thin canvas print
 
 export async function POST(req) {
   const session = await getSession();
@@ -21,7 +21,7 @@ export async function POST(req) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const isDemo  = !process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_demo';
 
-    // Create pending order — 'paper-16x20' routes to unframed variant in fulfillment
+    // Create pending order — 'paper-16x20' routes to thin canvas variant in fulfillment
     const order = await prisma.order.create({
       data: {
         userId:      session.id,
@@ -45,8 +45,8 @@ export async function POST(req) {
         price_data: {
           currency:     'usd',
           product_data: {
-            name:        'Maîtrepets Paper Print — 16×20"',
-            description: 'Enhanced Matte Paper Poster, unframed — your custom AI pet art',
+            name:        'Maîtrepets Thin Canvas — 16×20"',
+            description: 'Thin Canvas (in), unframed — your custom AI pet art',
             images:      image.generatedUrl ? [image.generatedUrl] : [],
           },
           unit_amount: Math.round(PAPER_PRICE * 100),

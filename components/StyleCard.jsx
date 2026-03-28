@@ -10,7 +10,7 @@ const themeImages = {
   doodleart:   'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80',
   folkart:     'https://images.unsplash.com/photo-1551913902-c92207136625?w=400&q=80',
   lofiart:     'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=80',
-  comicbook:   'https://images.unsplash.com/photo-1608889175123-8ee362201f81?w=400&q=80',
+  rembrandt:   'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=400&q=80',
   dadaism:     'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&q=80',
   renaissance:   'https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=400&q=80',
   neoclassicism: 'https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?w=400&q=80',
@@ -20,8 +20,9 @@ const themeImages = {
   rococo:        'https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=400&q=80',
 };
 
-export default function StyleCard({ styleKey, selected, onClick, popular = false, compact = false }) {
+export default function StyleCard({ styleKey, selected, onClick, popular = false, compact = false, previewUrl }) {
   const theme = STYLE_PROMPTS[styleKey];
+  const imgSrc = previewUrl || themeImages[styleKey];
   return (
     <button
       onClick={() => onClick(styleKey)}
@@ -32,7 +33,7 @@ export default function StyleCard({ styleKey, selected, onClick, popular = false
       }`}
     >
       <img
-        src={themeImages[styleKey]}
+        src={imgSrc}
         alt={theme.label}
         className="w-full h-full object-cover"
       />
@@ -41,7 +42,7 @@ export default function StyleCard({ styleKey, selected, onClick, popular = false
       }`} />
       <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent ${compact ? 'p-1' : 'p-2.5'}`}>
         <p className={`text-white font-bold leading-tight ${compact ? 'text-[8px]' : 'text-xs'}`}>
-          {compact ? theme.label : `${theme.emoji} ${theme.label}`}
+          {theme.label}
         </p>
       </div>
       {/* Fire badge — top left */}

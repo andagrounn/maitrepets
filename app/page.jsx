@@ -39,7 +39,7 @@ const MARQUEE = [
 const STYLES_GRID = [
   ...GENERATED,
   { url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&q=80', pet: 'Buddy', style: 'Chibi',      emoji: '🌸' },
-  { url: 'https://images.unsplash.com/photo-1608889175123-8ee362201f81?w=400&q=80', pet: 'Max',   style: 'Comic Book', emoji: '💥' },
+  { url: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=400&q=80', pet: 'Max',   style: 'Rembrandt',  emoji: '🕯️' },
   { url: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=80', pet: 'Mochi', style: 'Lofi Art',   emoji: '🎧' },
 ];
 
@@ -145,11 +145,11 @@ export default function Home() {
               ✦ AI Fine Art Pet Portraits
             </div>
 
-            {/* animated brand */}
+            {/* brand */}
             <h1 className="mb-6 leading-[0.9]" aria-label={BRAND}>
               <span
                 className="font-black text-white tracking-tight"
-                style={{ fontSize: 'clamp(2.8rem, 9vw, 8rem)', display: 'block', whiteSpace: 'nowrap' }}
+                style={{ fontSize: 'clamp(2.2rem, 9vw, 8rem)', display: 'block', whiteSpace: 'nowrap' }}
               >
                 {BRAND.split('').map((char, i) => (
                   <span key={i} className="letter-clip">
@@ -164,19 +164,19 @@ export default function Home() {
               </span>
             </h1>
 
-            <p className="fade-up text-lg md:text-2xl text-gray-400 mb-10 max-w-lg mx-auto" style={{ animationDelay: '1.05s' }}>
+            <p className="fade-up text-base md:text-2xl text-gray-400 mb-8 max-w-lg mx-auto px-2" style={{ animationDelay: '1.05s' }}>
               Turn your pet into a{' '}
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold">masterpiece</span>
               . Printed &amp; delivered to your door.
             </p>
 
-            <div className="fade-up flex flex-col sm:flex-row gap-4 justify-center" style={{ animationDelay: '1.25s' }}>
+            <div className="fade-up flex flex-col sm:flex-row gap-3 justify-center px-4" style={{ animationDelay: '1.25s' }}>
               <Link href="/create"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base md:text-lg px-10 py-4 rounded-2xl hover:opacity-90 transition-all shadow-2xl shadow-purple-900/60">
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base md:text-lg px-8 py-4 rounded-2xl hover:opacity-90 transition-all shadow-2xl shadow-purple-900/60">
                 Create Your Portrait →
               </Link>
               <a href="#gallery"
-                className="border border-white/20 text-white font-semibold text-base md:text-lg px-10 py-4 rounded-2xl hover:bg-white/10 transition-all backdrop-blur-sm">
+                className="border border-white/20 text-white font-semibold text-base md:text-lg px-8 py-4 rounded-2xl hover:bg-white/10 transition-all backdrop-blur-sm">
                 See Examples ↓
               </a>
             </div>
@@ -209,19 +209,19 @@ export default function Home() {
 
             <div className="text-center mb-16">
               <span className="inline-block text-amber-500/70 text-xs font-bold tracking-widest uppercase mb-4">✦ The Studio</span>
-              <h2 className="text-4xl md:text-5xl font-black text-white mb-3">Every pet is a work of art.</h2>
+              <h2 className="text-3xl md:text-5xl font-black text-white mb-3">Every pet is a work of art.</h2>
               <p className="text-gray-600 text-base">Hover to lift a canvas</p>
             </div>
 
             {/* Canvas row — 4 pieces */}
-            <div className="flex justify-center gap-10 flex-wrap md:flex-nowrap items-end">
+            <div className="flex justify-start md:justify-center gap-8 md:gap-10 items-end overflow-x-auto pb-4 md:pb-0 px-4 md:px-0 snap-x snap-mandatory md:overflow-x-visible md:flex-nowrap">
               {[
                 { url: `${S3}/generated/1774673789483-zzvbnopfst.png`,  style: 'Mosaic',     pet: 'Rio',  rot: -6, w: 170, h: 230 },
                 { url: `${S3}/generated/1774666190093-ikgwrj850nf.png`, style: 'Steampunk',  pet: '',     rot:  4, w: 155, h: 205 },
                 { url: `${S3}/generated/1774637301839-ij88yovb95n.png`, style: 'Renaissance', pet: '',     rot: -3, w: 180, h: 245 },
                 { url: `${S3}/generated/1774660430180-8754kz2iw4t.png`, style: 'Rococo',     pet: 'Luna', rot:  5, w: 160, h: 215 },
               ].map((p, i) => (
-                <div key={i} className="polaroid flex-shrink-0 flex flex-col items-center" style={{ transform: `rotate(${p.rot}deg)`, zIndex: 3 + i }}>
+                <div key={i} className="polaroid flex-shrink-0 flex flex-col items-center snap-center" style={{ transform: `rotate(${p.rot}deg)`, zIndex: 3 + i }}>
                   {/* Hanging nail */}
                   <div style={{ width: '6px', height: '10px', background: 'linear-gradient(180deg, #a0a0a0, #606060)', borderRadius: '1px 1px 2px 2px', marginBottom: '2px', boxShadow: '0 1px 4px rgba(0,0,0,0.8)' }} />
                   {/* Wire */}
@@ -292,7 +292,7 @@ export default function Home() {
         <section id="styles" className="py-24 px-4 md:px-6 max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">✦ Art Styles</span>
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">16 Unique Styles</h2>
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-4">16 Unique Styles</h2>
             <p className="text-gray-400 text-lg">Your pet, reimagined in any artistic universe</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -319,7 +319,7 @@ export default function Home() {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-14">
               <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">✦ How It Works</span>
-              <h2 className="text-4xl md:text-5xl font-black text-white leading-tight">From photo to wall art<br />in minutes.</h2>
+              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">From photo to wall art<br className="hidden sm:block" /> in minutes.</h2>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {[
@@ -343,7 +343,7 @@ export default function Home() {
         <section className="py-24 px-4 md:px-6 max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">✦ Real Results</span>
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Meet Our Stars</h2>
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-4">Meet Our Stars</h2>
             <p className="text-gray-400 text-lg">Real pets transformed by Maîtrepets AI</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -367,7 +367,7 @@ export default function Home() {
         <section id="pricing" className="py-24 px-4 md:px-6 max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">✦ Pricing</span>
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Simple Pricing</h2>
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-4">Simple Pricing</h2>
             <p className="text-gray-400 text-lg">Free to generate. Pay only if you love it.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -377,7 +377,7 @@ export default function Home() {
               { name: '16×20 Framed', price: '$79+',  desc: 'Most popular',    features: ['Premium framed', 'Ready to hang', '7–10 day ship'],  popular: true  },
               { name: '24×36 Framed', price: '$139+', desc: 'Statement piece', features: ['Premium framed', 'Ready to hang', '7–10 day ship'],  popular: false },
             ].map((p) => (
-              <div key={p.name} className={`rounded-2xl p-6 relative border ${p.popular ? 'border-purple-500 bg-purple-900/30 shadow-2xl shadow-purple-900/40' : 'border-white/10 bg-white/5'}`}>
+              <div key={p.name} className={`rounded-2xl p-4 sm:p-6 relative border ${p.popular ? 'border-purple-500 bg-purple-900/30 shadow-2xl shadow-purple-900/40' : 'border-white/10 bg-white/5'}`}>
                 {p.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] font-black px-3 py-1 rounded-full tracking-wide whitespace-nowrap">
                     MOST POPULAR
@@ -406,7 +406,7 @@ export default function Home() {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-14">
               <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">✦ Reviews</span>
-              <h2 className="text-4xl md:text-5xl font-black text-white mb-3">Loved by Pet Parents</h2>
+              <h2 className="text-3xl md:text-5xl font-black text-white mb-3">Loved by Pet Parents</h2>
               <div className="text-yellow-400 text-xl mb-2">★★★★★</div>
               <p className="text-gray-400">4.9/5 from 2,000+ happy customers</p>
             </div>
@@ -434,7 +434,7 @@ export default function Home() {
         <section className="py-24 px-4 md:px-6 max-w-3xl mx-auto">
           <div className="text-center mb-14">
             <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">✦ FAQ</span>
-            <h2 className="text-4xl md:text-5xl font-black text-white">Got Questions?</h2>
+            <h2 className="text-3xl md:text-5xl font-black text-white">Got Questions?</h2>
           </div>
           <div className="space-y-3">
             {faqs.map((faq) => (
@@ -454,9 +454,9 @@ export default function Home() {
             style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
           <div className="relative z-10 max-w-2xl mx-auto">
             <div className="text-6xl mb-6">🐾</div>
-            <h2 className="text-4xl md:text-6xl font-black text-white mb-5 leading-tight">Ready to Create<br />Your Masterpiece?</h2>
-            <p className="text-purple-200 text-lg mb-10 max-w-md mx-auto">Join thousands of pet parents who turned their photos into stunning art.</p>
-            <Link href="/create" className="inline-flex items-center gap-2 bg-white text-purple-700 font-black px-12 py-5 rounded-2xl text-lg hover:bg-purple-50 transition-colors shadow-2xl">
+            <h2 className="text-3xl md:text-6xl font-black text-white mb-5 leading-tight">Ready to Create<br />Your Masterpiece?</h2>
+            <p className="text-purple-200 text-base md:text-lg mb-8 max-w-md mx-auto px-4">Join thousands of pet parents who turned their photos into stunning art.</p>
+            <Link href="/create" className="inline-flex items-center gap-2 bg-white text-purple-700 font-black px-8 md:px-12 py-4 md:py-5 rounded-2xl text-base md:text-lg hover:bg-purple-50 transition-colors shadow-2xl">
               Create Your Portrait →
             </Link>
             <p className="text-purple-400 text-sm mt-5">Free preview · No credit card required</p>

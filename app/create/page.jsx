@@ -1,7 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import UploadZone from '@/components/UploadZone';
 import StyleCard from '@/components/StyleCard';
@@ -28,8 +28,9 @@ const URGENCY_LABELS = {
   express: '1–2 business days',
 };
 
-export default function CreatePage() {
+function CreatePageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, setUser } = useStore();
   const { toast, showToast, dismiss } = useToast();
 
@@ -40,6 +41,7 @@ export default function CreatePage() {
   const [uploadedUrl, setUploadedUrl] = useState(null);
   const [imageId, setImageId] = useState(null);
   const [generatedUrl, setGeneratedUrl] = useState(null);
+  const [genHash, setGenHash] = useState(null);
   const [imageRevealed, setImageRevealed] = useState(false);
 
   // Customization state
@@ -60,6 +62,8 @@ export default function CreatePage() {
 
   // Generation limits
   const [freeLimitReached, setFreeLimitReached] = useState(false);
+  const [guestLimitReached, setGuestLimitReached] = useState(false);
+  const [humanDetected, setHumanDetected] = useState(false);
 
   // Loading
   const [isUploading, setIsUploading] = useState(false);
@@ -71,9 +75,24 @@ export default function CreatePage() {
 
   // Popular styles
   const [popularStyles, setPopularStyles] = useState([]);
+  const [stylePreviews, setStylePreviews] = useState({});
 
   useEffect(() => {
     fetch('/api/popular-styles').then((r) => r.json()).then((d) => setPopularStyles(d.popular || [])).catch(() => {});
+    fetch('/api/style-previews').then((r) => r.json()).then((d) => setStylePreviews(d.previews || {})).catch(() => {});
+  }, []);
+
+  // Jump straight to order step when coming from dashboard "Order" button
+  useEffect(() => {
+    const qImageId  = searchParams.get('imageId');
+    const qUrl      = searchParams.get('url');
+    const qStyle    = searchParams.get('style');
+    if (qImageId && qUrl) {
+      setImageId(qImageId);
+      setGeneratedUrl(decodeURIComponent(qUrl));
+      if (qStyle && STYLE_PROMPTS[qStyle]) setSelectedStyle(qStyle);
+      setStep(3);
+    }
   }, []);
 
   // Modals
@@ -87,6 +106,19 @@ export default function CreatePage() {
   useEffect(() => {
     api.me().then((d) => setUser(d.user)).catch(() => {});
   }, []);
+
+  // Animate progress bar during upload (ethics check adds ~3-5s)
+  useEffect(() => {
+    if (!isUploading) return;
+    setGenProgress(5);
+    const intervals = [
+      setTimeout(() => setGenProgress(20), 800),
+      setTimeout(() => setGenProgress(45), 2000),
+      setTimeout(() => setGenProgress(70), 3500),
+      setTimeout(() => setGenProgress(88), 5000),
+    ];
+    return () => intervals.forEach(clearTimeout);
+  }, [isUploading]);
 
   // Animate progress bar during generation
   useEffect(() => {
@@ -112,11 +144,11 @@ export default function CreatePage() {
   function handleFile(f) {
     setFile(f);
     setPreview(URL.createObjectURL(f));
+    setHumanDetected(false);
   }
 
   async function handleGenerate() {
     if (!file) { showToast('Please select a pet photo first', 'warning'); return; }
-    if (!user) { setShowAuthModal(true); return; }
 
     setIsUploading(true);
     setStep(1);
@@ -128,6 +160,11 @@ export default function CreatePage() {
 
       const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData, credentials: 'include' });
       const uploadData = await uploadRes.json();
+      if (uploadRes.status === 422 && uploadData.error === 'HUMAN_DETECTED') {
+        setHumanDetected(true);
+        setStep(0);
+        return;
+      }
       if (!uploadRes.ok) throw new Error(uploadData.error || 'Upload failed');
 
       setUploadedUrl(uploadData.url);
@@ -143,12 +180,20 @@ export default function CreatePage() {
         setStep(0);
         return;
       }
+      if (genData?.error === 'GUEST_LIMIT_REACHED') {
+        setGuestLimitReached(true);
+        setStep(0);
+        return;
+      }
 
       setGenProgress(100);
       await new Promise((r) => setTimeout(r, 400));
       setGeneratedUrl(genData.output);
+      setGenHash(genData.hash || null);
       setStep(3);
     } catch (err) {
+      if (err.message === 'FREE_LIMIT_REACHED') { setFreeLimitReached(true); setStep(0); return; }
+      if (err.message === 'GUEST_LIMIT_REACHED') { setGuestLimitReached(true); setStep(0); return; }
       showToast(err.message || 'Something went wrong. Please try again.', 'error');
       setStep(0);
     } finally {
@@ -200,7 +245,7 @@ export default function CreatePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
           {/* Trust badges */}
-          <div className="flex items-center justify-center gap-6 mb-8 flex-wrap">
+          <div className="hidden sm:flex items-center justify-center gap-4 mb-6 flex-wrap">
             {TRUST_BADGES.map((b) => (
               <div key={b.text} className="flex items-center gap-1.5 text-xs text-gray-500">
                 <span>{b.icon}</span>
@@ -210,44 +255,95 @@ export default function CreatePage() {
           </div>
 
           {/* Progress steps */}
-          <div className="flex items-center justify-center gap-1 mb-10">
+          <div className="flex items-center justify-center gap-1 mb-8">
             {STEPS.map((s, i) => (
               <div key={s} className="flex items-center gap-1">
-                <div className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                <div className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${
                   i === step ? 'bg-purple-600 text-white shadow-md shadow-purple-200'
                   : i < step  ? 'bg-purple-100 text-purple-600'
                   :              'bg-gray-100 text-gray-400'
                 }`}>
-                  {i < step ? <span className="text-xs">✓</span> : <span className="text-xs opacity-60">{i + 1}</span>}
-                  {s}
+                  {i < step
+                    ? <span className="text-xs">✓</span>
+                    : <span className="text-xs opacity-60">{i + 1}</span>
+                  }
+                  {/* Show label always on sm+, show only active label on mobile */}
+                  <span className="hidden sm:inline">{s}</span>
+                  {i === step && <span className="sm:hidden">{s}</span>}
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div className={`h-px w-6 transition-colors duration-500 ${i < step ? 'bg-purple-300' : 'bg-gray-200'}`} />
+                  <div className={`h-px w-3 sm:w-6 transition-colors duration-500 ${i < step ? 'bg-purple-300' : 'bg-gray-200'}`} />
                 )}
               </div>
             ))}
           </div>
 
+          {/* ── Ethics guard: human detected ── */}
+          {humanDetected && (
+            <div className="max-w-lg mx-auto mb-8 rounded-2xl overflow-hidden border border-red-300 shadow-lg">
+              {/* Red header bar */}
+              <div className="bg-red-600 px-5 py-3 flex items-center gap-3">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span className="text-white font-bold text-sm tracking-wide uppercase">Ethics Guard — Human Image Detected</span>
+              </div>
+              {/* Body */}
+              <div className="bg-red-50 px-5 py-5">
+                <p className="text-red-900 font-semibold mb-2 text-sm">
+                  🚫 This platform is for <strong>animal portraits only.</strong>
+                </p>
+                <p className="text-red-700 text-sm mb-4">
+                  Our AI detected a human in your photo. To protect privacy and ensure ethical use, we only process images of animals — pets, wildlife, and other non-human subjects.
+                </p>
+                <ul className="text-red-600 text-xs space-y-1 mb-5 list-none">
+                  <li>✅ Dogs, cats, birds, rabbits, reptiles — all welcome</li>
+                  <li>❌ Human faces or bodies — not permitted</li>
+                  <li>❌ Human + pet photos — crop to pet only</li>
+                </ul>
+                <button
+                  onClick={() => setHumanDetected(false)}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors">
+                  Try a Different Photo
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* ── Free limit reached banner ── */}
+          {/* Guest limit */}
+          {guestLimitReached && (
+            <div className="max-w-lg mx-auto mb-8 bg-purple-50 border border-purple-200 rounded-2xl p-6 text-center">
+              <div className="text-3xl mb-2">🎨</div>
+              <h3 className="font-bold text-gray-900 mb-1">You've used your free preview</h3>
+              <p className="text-sm text-gray-500 mb-5">
+                Create a free account to get <strong>3 full AI generations</strong> and unlock all art styles.
+              </p>
+              <div className="flex flex-col gap-3 max-w-xs mx-auto">
+                <Link href="/signup" className="btn-primary text-center py-3">Create Free Account →</Link>
+                <Link href="/login" className="btn-secondary text-center py-3">Sign In</Link>
+              </div>
+            </div>
+          )}
+
+          {/* Logged-in free limit reached */}
           {freeLimitReached && (
             <div className="max-w-lg mx-auto mb-8 bg-amber-50 border border-amber-200 rounded-2xl p-5 text-center">
               <div className="text-3xl mb-2">🔒</div>
-              <h3 className="font-bold text-gray-900 mb-1">You've used your 3 free AI generations</h3>
+              <h3 className="font-bold text-gray-900 mb-1">You've used all 3 free generations</h3>
               <p className="text-sm text-gray-500 mb-4">
-                Complete a print order to unlock more generations. Each purchase gives you 1 additional generation in a new style.
+                Purchase a portrait print to unlock 3 more generations. Every order restarts your generation count.
               </p>
-              <Link href="/dashboard" className="btn-primary px-6 py-2.5 text-sm">View My Orders →</Link>
+              <Link href="/dashboard" className="btn-primary px-6 py-2.5 text-sm">Order a Portrait →</Link>
             </div>
           )}
 
           {/* ── STEP 0 & 1: Upload + Customize ── */}
-          {!isLoading && !generatedUrl && !freeLimitReached && (
+          {!isLoading && !generatedUrl && !freeLimitReached && !guestLimitReached && !humanDetected && (
             <div className="grid md:grid-cols-2 gap-8">
 
               {/* Left — Upload */}
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">Upload Your Pet Photo</h2>
-                <p className="text-gray-500 text-sm mb-5">Clear, front-facing, good lighting = best results</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Upload Your Pet Photo</h2>
+                <p className="text-gray-500 text-sm mb-4">Clear, front-facing, good lighting = best results</p>
                 <UploadZone onFile={handleFile} preview={preview} />
 
                 {file && (
@@ -261,13 +357,13 @@ export default function CreatePage() {
               {/* Right — Theme + Customize + Price */}
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Choose Your Art Style</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">Choose Your Art Style</h2>
 
                   {/* Style Picker */}
                   <div className="mb-1">
                     <div className="grid grid-cols-4 gap-2">
                       {Object.keys(STYLE_PROMPTS).map((k) => (
-                        <StyleCard key={k} styleKey={k} selected={selectedStyle === k} onClick={setSelectedStyle} popular={popularStyles.includes(k)} />
+                        <StyleCard key={k} styleKey={k} selected={selectedStyle === k} onClick={setSelectedStyle} popular={popularStyles.includes(k)} previewUrl={stylePreviews[k]} />
                       ))}
                     </div>
                   </div>
@@ -304,10 +400,12 @@ export default function CreatePage() {
                 )}
 
                 <button onClick={handleGenerate} disabled={!file}
-                  className="btn-primary w-full py-4 text-base font-bold disabled:opacity-40 disabled:cursor-not-allowed">
-                  {file ? `🐾 Generate My ${STYLE_PROMPTS[selectedStyle]?.label} Portrait →` : '← Upload a photo first'}
+                  className="btn-primary w-full py-4 text-sm sm:text-base font-bold disabled:opacity-40 disabled:cursor-not-allowed">
+                  {file
+                    ? <><span className="hidden sm:inline">🐾 Generate My {STYLE_PROMPTS[selectedStyle]?.label} Portrait →</span><span className="sm:hidden">🐾 Generate Portrait →</span></>
+                    : '← Upload a photo first'}
                 </button>
-                <p className="text-xs text-gray-400 text-center">1 free AI generation • Paper print included • No charge until you order • ~60 seconds</p>
+                <p className="text-xs text-gray-400 text-center">1 free AI generation • Print not included • No charge until you order • ~60 seconds</p>
               </div>
             </div>
           )}
@@ -325,7 +423,7 @@ export default function CreatePage() {
                     className="transition-all duration-700" />
                 </svg>
                 <span className="absolute inset-0 flex items-center justify-center text-4xl">
-                  {isUploading ? '📸' : '🎬'}
+                  {isUploading ? '📸' : '🎨'}
                 </span>
               </div>
 
@@ -367,9 +465,9 @@ export default function CreatePage() {
 
               {/* Image reveal — 3 cols */}
               <div className="md:col-span-3 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-900">Your Portrait is Ready! 🐾</h2>
-                  <button onClick={startOver} className="text-sm text-gray-400 hover:text-gray-600 underline">Start over</button>
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Your Portrait is Ready! 🐾</h2>
+                  <button onClick={startOver} className="text-sm text-gray-400 hover:text-gray-600 underline flex-shrink-0">Start over</button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -381,21 +479,79 @@ export default function CreatePage() {
                     <p className="text-xs font-semibold text-purple-500 uppercase tracking-wide mb-2">
                       🐾 {STYLE_PROMPTS[selectedStyle]?.label} Portrait
                     </p>
-                    <img
-                      src={generatedUrl}
-                      alt="Movie Poster"
-                      className="w-full aspect-[2/3] object-cover rounded-2xl shadow-xl ring-2 ring-purple-200 cursor-zoom-in"
-                      onClick={() => window.open(generatedUrl, '_blank')}
-                    />
+                    <div className="relative group">
+                      <img
+                        src={generatedUrl}
+                        alt="Generated Portrait"
+                        className={`w-full aspect-[2/3] object-cover rounded-2xl shadow-xl ring-2 ring-purple-200 ${freeLimitReached || guestLimitReached ? 'brightness-75' : ''}`}
+                      />
+                      {/* Brand tag — bottom right */}
+                      <div className="absolute bottom-3 right-3 pointer-events-none select-none">
+                        <span
+                          className="font-bold uppercase whitespace-nowrap"
+                          style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'rgba(255,255,255,0.48)', textShadow: '0 1px 3px rgba(0,0,0,0.5)', userSelect: 'none' }}>
+                          maitrepets.com
+                        </span>
+                      </div>
+                      {/* Watermark overlay — full L×W coverage (commented out) */}
+                      {/* <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none select-none">
+                        <div
+                          className="absolute flex flex-col"
+                          style={{ transform: 'rotate(-30deg)', top: '-60%', left: '-60%', width: '220%', height: '220%', gap: '18px' }}>
+                          {Array.from({ length: 22 }).map((_, row) => (
+                            <div key={row} className="flex items-center flex-shrink-0" style={{ gap: '20px', marginLeft: row % 2 === 0 ? '0px' : '52px' }}>
+                              {Array.from({ length: 16 }).map((_, col) => {
+                                const opacities = [0.48, 0.24, 0.40, 0.30, 0.52, 0.20];
+                                const op = opacities[(row * 2 + col) % opacities.length];
+                                return (
+                                  <span key={col}
+                                    className="font-bold uppercase whitespace-nowrap flex-shrink-0"
+                                    style={{
+                                      fontSize: '9px',
+                                      letterSpacing: '0.3em',
+                                      color: `rgba(255,255,255,${op})`,
+                                      textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                                      userSelect: 'none',
+                                    }}>
+                                    MAÎTREPETS
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </div>
+                      </div> */}
+                      {(freeLimitReached || guestLimitReached) && (
+                        <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none select-none">
+                          <span
+                            className="absolute inset-0 flex items-center justify-center text-white/20 font-black text-2xl tracking-widest uppercase"
+                            style={{ transform: 'rotate(-35deg)', letterSpacing: '0.3em', userSelect: 'none' }}
+                          >
+                            MAÎTREPETS
+                          </span>
+                          <div className="relative z-10 flex flex-col items-center gap-2">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-lg">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <p className="text-white text-xs font-semibold text-center drop-shadow px-3">
+                              {guestLimitReached ? 'Sign in to generate more' : 'Purchase to unlock more'}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {/* Regenerate CTA — all styles */}
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Try another style</p>
-                  <div className="grid grid-cols-8 gap-1">
+                  <div className="flex gap-1 overflow-x-auto pb-1 snap-x" style={{ scrollbarWidth: 'none' }}>
                     {Object.keys(STYLE_PROMPTS).map(k => (
-                      <StyleCard key={k} styleKey={k} selected={selectedStyle === k} onClick={k2 => { setSelectedStyle(k2); startOver(); }} popular={popularStyles.includes(k)} compact />
+                      <div key={k} className="flex-shrink-0 w-12 snap-start">
+                        <StyleCard styleKey={k} selected={selectedStyle === k} onClick={k2 => { setSelectedStyle(k2); startOver(); }} popular={popularStyles.includes(k)} compact previewUrl={stylePreviews[k]} />
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -546,16 +702,24 @@ export default function CreatePage() {
             <div className="text-center mb-6">
               <div className="text-4xl mb-3">🐶</div>
               <h3 className="text-xl font-bold text-gray-900">Sign in to continue</h3>
-              <p className="text-gray-500 text-sm mt-1">Free account · No credit card required</p>
+              <p className="text-gray-500 text-sm mt-1">Free account · 3 generations · No credit card required</p>
             </div>
             <div className="flex flex-col gap-3">
               <Link href="/signup" className="btn-primary text-center py-3">Create Free Account →</Link>
               <Link href="/login" className="btn-secondary text-center py-3">Sign In</Link>
-              <button onClick={() => setShowAuthModal(false)} className="text-sm text-gray-400 hover:text-gray-600 transition-colors py-1">Cancel</button>
+              <button onClick={() => setShowAuthModal(false)} className="text-sm text-gray-400 hover:text-gray-600 transition-colors py-1">Continue as guest (1 preview)</button>
             </div>
           </div>
         </div>
       )}
     </>
+  );
+}
+
+export default function CreatePage() {
+  return (
+    <Suspense>
+      <CreatePageInner />
+    </Suspense>
   );
 }
