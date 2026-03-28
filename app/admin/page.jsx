@@ -1484,27 +1484,99 @@ export default function AdminPage() {
     <>
     {!isDark && (
       <style>{`
-        .admin-root { background:#f8fafc !important; color:#0f172a !important; }
-        .admin-root aside { background:#ffffff !important; border-color:#e2e8f0 !important; }
-        .admin-root header { background:rgba(255,255,255,0.95) !important; border-color:#e2e8f0 !important; }
+        /* ── Base ── */
+        .admin-root { background:#f1f5f9 !important; color:#0f172a !important; }
+
+        /* ── Sidebar ── */
+        .admin-root aside {
+          background:#ffffff !important;
+          border-color:#e2e8f0 !important;
+          box-shadow: 1px 0 0 #e2e8f0;
+        }
+        .admin-root aside .border-white\\/10 { border-color:#e2e8f0 !important; }
+        .admin-root aside .text-gray-500,
+        .admin-root aside .text-gray-600 { color:#94a3b8 !important; }
+        .admin-root aside .text-white { color:#1e293b !important; }
+        .admin-root aside .hover\\:text-gray-200:hover { color:#7c3aed !important; }
+        .admin-root aside .hover\\:bg-white\\/5:hover { background:#f1f5f9 !important; }
+        .admin-root aside .bg-purple-600\\/30 { background:#ede9fe !important; }
+        .admin-root aside .text-purple-200 { color:#7c3aed !important; }
+        .admin-root aside .border-purple-500\\/30 { border-color:#c4b5fd !important; }
+
+        /* ── Header ── */
+        .admin-root header {
+          background:rgba(255,255,255,0.97) !important;
+          border-color:#e2e8f0 !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .admin-root header .text-gray-600 { color:#64748b !important; }
+        .admin-root header .text-white { color:#0f172a !important; }
+
+        /* ── Cards & panels ── */
+        .admin-root .bg-white\\/5 { background:#ffffff !important; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+        .admin-root .hover\\:bg-white\\/5:hover { background:#f8fafc !important; }
+        .admin-root .bg-white\\/10 { background:#f1f5f9 !important; border:1px solid #e2e8f0; }
+        .admin-root .bg-white\\/20 { background:#e2e8f0 !important; }
+        .admin-root .rounded-xl { box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+
+        /* ── Dark bg overrides ── */
+        .admin-root .bg-\\[\\#0a0a14\\],
+        .admin-root .bg-\\[\\#0f0f1a\\],
+        .admin-root .bg-\\[\\#111827\\],
+        .admin-root .bg-\\[\\#1a1a2e\\],
+        .admin-root .bg-\\[\\#12121f\\],
+        .admin-root .bg-gray-900 { background:#ffffff !important; }
+        .admin-root .bg-\\[\\#0a0a14\\]\\/95 { background:rgba(255,255,255,0.97) !important; }
+
+        /* ── Borders ── */
         .admin-root .border-white\\/10 { border-color:#e2e8f0 !important; }
+        .admin-root .divide-white\\/5 > * + * { border-color:#f1f5f9 !important; }
+
+        /* ── Text ── */
         .admin-root .text-white { color:#0f172a !important; }
-        .admin-root .text-gray-200,.admin-root .text-gray-300,.admin-root .text-gray-400 { color:#475569 !important; }
-        .admin-root .text-gray-500,.admin-root .text-gray-600 { color:#64748b !important; }
-        .admin-root .bg-white\\/5,.admin-root .hover\\:bg-white\\/5:hover { background:rgba(0,0,0,0.04) !important; }
-        .admin-root .bg-\\[\\#0a0a14\\] { background:#f8fafc !important; }
-        .admin-root .bg-\\[\\#0a0a14\\]\\/95 { background:rgba(248,250,252,0.95) !important; }
-        .admin-root .bg-\\[\\#0f0f1a\\] { background:#f1f5f9 !important; }
-        .admin-root .bg-\\[\\#111827\\],.admin-root .bg-gray-900 { background:#f1f5f9 !important; }
-        .admin-root .bg-\\[\\#1a1a2e\\],.admin-root .bg-\\[\\#12121f\\] { background:#e2e8f0 !important; }
-        .admin-root .bg-white\\/10 { background:rgba(0,0,0,0.06) !important; }
-        .admin-root .bg-white\\/20 { background:rgba(0,0,0,0.08) !important; }
-        .admin-root .rounded-xl.bg-white\\/5 { background:#fff !important; border:1px solid #e2e8f0; }
-        .admin-root input,.admin-root select,.admin-root textarea { background:#fff !important; color:#0f172a !important; border-color:#cbd5e1 !important; }
+        .admin-root .text-gray-200 { color:#334155 !important; }
+        .admin-root .text-gray-300 { color:#475569 !important; }
+        .admin-root .text-gray-400 { color:#64748b !important; }
+        .admin-root .text-gray-500 { color:#94a3b8 !important; }
+        .admin-root .text-gray-600 { color:#94a3b8 !important; }
+
+        /* ── Inputs ── */
+        .admin-root input,
+        .admin-root select,
+        .admin-root textarea {
+          background:#ffffff !important;
+          color:#0f172a !important;
+          border-color:#cbd5e1 !important;
+        }
         .admin-root input::placeholder { color:#94a3b8 !important; }
-        .admin-root table th { background:#f1f5f9 !important; color:#475569 !important; }
+        .admin-root input:focus,
+        .admin-root select:focus,
+        .admin-root textarea:focus { border-color:#7c3aed !important; box-shadow:0 0 0 3px rgba(124,58,237,0.08) !important; }
+
+        /* ── Table ── */
+        .admin-root table { border-color:#e2e8f0 !important; }
+        .admin-root table th { background:#f8fafc !important; color:#64748b !important; border-color:#e2e8f0 !important; font-weight:600; }
         .admin-root table td { border-color:#f1f5f9 !important; }
-        .admin-root .divide-white\\/5 > * + * { border-color:#e2e8f0 !important; }
+        .admin-root table tr:hover td { background:#f8fafc !important; }
+
+        /* ── Status badges — keep colours readable on light ── */
+        .admin-root .bg-emerald-500\\/20 { background:#d1fae5 !important; }
+        .admin-root .bg-yellow-500\\/20  { background:#fef9c3 !important; }
+        .admin-root .bg-blue-500\\/20    { background:#dbeafe !important; }
+        .admin-root .bg-purple-500\\/20  { background:#ede9fe !important; }
+        .admin-root .bg-rose-500\\/20    { background:#ffe4e6 !important; }
+        .admin-root .bg-orange-500\\/20  { background:#ffedd5 !important; }
+        .admin-root .bg-red-500\\/20     { background:#fee2e2 !important; }
+        .admin-root .bg-teal-500\\/20    { background:#ccfbf1 !important; }
+        .admin-root .bg-gray-500\\/20    { background:#f1f5f9 !important; }
+        .admin-root .text-emerald-300 { color:#059669 !important; }
+        .admin-root .text-yellow-300  { color:#d97706 !important; }
+        .admin-root .text-blue-300    { color:#2563eb !important; }
+        .admin-root .text-purple-300  { color:#7c3aed !important; }
+        .admin-root .text-rose-300    { color:#e11d48 !important; }
+        .admin-root .text-orange-300  { color:#ea580c !important; }
+        .admin-root .text-red-300     { color:#dc2626 !important; }
+        .admin-root .text-teal-300    { color:#0d9488 !important; }
       `}</style>
     )}
 
