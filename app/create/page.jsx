@@ -12,6 +12,7 @@ import { useStore } from '@/store/useStore';
 import { api } from '@/lib/api';
 import { calculatePrice, SIZE_MULTIPLIERS } from '@/lib/pricing';
 import { STYLE_PROMPTS } from '@/lib/replicate';
+import { FRAME_COLORS } from '@/lib/printful';
 
 const STEPS = ['Upload', 'Style', 'Generate', 'Order'];
 
@@ -51,16 +52,13 @@ function CreatePageInner() {
   const [size, setSize] = useState('');
   const [urgency, setUrgency] = useState('standard');
   const [frameColor, setFrameColor] = useState('black');
-  const [printType, setPrintType] = useState('framed'); // 'framed' | 'canvas'
 
   // Upsell state
   const [extras, setExtras] = useState({ digitalCopy: true, extraCopy: false, priorityProcessing: false });
-  const extraCopyLabel = printType === 'framed' ? 'Extra Canvas Copy' : 'Extra Framed Copy';
-  const extraCopySub   = printType === 'framed' ? 'Add an unframed canvas copy of your portrait' : 'Add a framed copy of your portrait';
   const EXTRAS = [
-    { key: 'digitalCopy',        label: 'HD Digital Copy',     sub: 'Download instantly + print anywhere',         price: 12, emoji: '💾', default: true },
-    { key: 'extraCopy',          label: extraCopyLabel,        sub: extraCopySub,                                  price: 19, emoji: '🖼️' },
-    { key: 'priorityProcessing', label: 'Priority Processing', sub: 'Moved to front of queue — ships in 1–2 days', price: 9,  emoji: '⚡' },
+    { key: 'digitalCopy',        label: 'HD Digital Copy',      sub: 'Download instantly + print anywhere',    price: 12, emoji: '💾', default: true },
+    { key: 'extraCopy',          label: 'Extra Print Copy',     sub: 'Same design shipped to a second address', price: 19, emoji: '🖼️' },
+    { key: 'priorityProcessing', label: 'Priority Processing',  sub: 'Moved to front of queue — ships in 1–2 days', price: 9, emoji: '⚡' },
   ];
   const extrasTotal = EXTRAS.reduce((sum, e) => sum + (extras[e.key] ? e.price : 0), 0);
 
@@ -106,8 +104,6 @@ function CreatePageInner() {
   // Live price
   const price = calculatePrice({ product: 'poster', size, style: selectedStyle, petType, urgency, emotion });
   const pricingParams = { product: 'poster', size, style: selectedStyle, petType, urgency, emotion };
-  // Compare-at price: full retail (no rush, no occasion discount) + 20% markup, rounded to nearest $5
-  const compareAtPrice = Math.ceil(calculatePrice({ product: 'poster', size, style: selectedStyle, petType, urgency: 'standard', emotion: 'normal' }) * 1.2 / 5) * 5;
 
   useEffect(() => {
     api.me().then((d) => setUser(d.user)).catch(() => {});
@@ -214,8 +210,7 @@ function CreatePageInner() {
   }
 
   const sizeConfig = SIZE_MULTIPLIERS[size] || SIZE_MULTIPLIERS.large;
-  const posterKey  = sizeConfig.productKey || 'poster-16x20';
-  const productKey = printType === 'canvas' ? posterKey.replace('poster-', 'canvas-') : posterKey;
+  const productKey = sizeConfig.productKey || 'poster-16x20';
   const totalPrice = (
     parseFloat(price) +
     (shipping.shippingRate ? parseFloat(shipping.shippingRate) : 0) +
@@ -225,7 +220,7 @@ function CreatePageInner() {
   async function handlePlaceOrder() {
     setIsCheckingOut(true);
     try {
-      const d = await api.checkout({ imageId, generatedUrl, productKey, price: totalPrice, shipping, extras, frameColor, printType });
+      const d = await api.checkout({ imageId, generatedUrl, productKey, price: totalPrice, shipping, extras, frameColor });
       window.location.href = d.url;
     } catch (err) {
       showToast(err.message || 'Checkout failed. Please try again.', 'error');
@@ -565,15 +560,30 @@ function CreatePageInner() {
                 <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-5 text-white text-center shadow-lg shadow-purple-200">
                   <p className="text-purple-200 text-sm mb-1">Your custom portrait</p>
                   <div className="flex items-center justify-center gap-3 mb-1">
-                    <span className="line-through text-purple-300 text-lg">${compareAtPrice}</span>
+                    <span className="line-through text-purple-300 text-lg">$120</span>
                     <span className="text-5xl font-black">${price}</span>
                   </div>
-                  {price < compareAtPrice && (
+                  {price < 120 && (
                     <div className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-0.5 rounded-full">
-                      Save ${compareAtPrice - price} today
+                      Save ${120 - price} today
                     </div>
                   )}
                   <p className="text-purple-200 text-xs mt-2">Limited-time offer · {URGENCY_LABELS[urgency]}</p>
+                </div>
+
+                {/* Frame Color */}
+                <div className="bg-white border border-gray-100 rounded-2xl p-4">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Frame Color</p>
+                  <div className="flex gap-3">
+                    {FRAME_COLORS.map((c) => (
+                      <button key={c.id} onClick={() => setFrameColor(c.id)}
+                        className={`flex flex-col items-center gap-1.5 group`}>
+                        <span className={`w-9 h-9 rounded-full border-2 transition-all ${frameColor === c.id ? 'scale-110 border-purple-500 shadow-md shadow-purple-200' : 'border-gray-200 hover:border-gray-400'}`}
+                          style={{ backgroundColor: c.hex, boxShadow: c.id === 'white' ? 'inset 0 0 0 1px #e5e7eb' : undefined }} />
+                        <span className={`text-[10px] font-medium ${frameColor === c.id ? 'text-purple-600' : 'text-gray-400'}`}>{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Reconfigure */}
@@ -589,8 +599,6 @@ function CreatePageInner() {
                       size={size}        setSize={setSize}
                       urgency={urgency}  setUrgency={setUrgency}
                       price={price}      params={pricingParams}
-                      frameColor={frameColor} setFrameColor={setFrameColor}
-                      printType={printType}   setPrintType={setPrintType}
                     />
                   </div>
                 </details>

@@ -5,7 +5,6 @@ import {
   URGENCY_FEES,
   calculatePrice,
 } from '@/lib/pricing';
-import { FRAME_COLORS } from '@/lib/printful';
 
 const Select = ({ label, value, onChange, options, placeholder }) => (
   <div>
@@ -20,26 +19,13 @@ const Select = ({ label, value, onChange, options, placeholder }) => (
   </div>
 );
 
-export default function PriceSelector({ emotion, setEmotion, size, setSize, urgency, setUrgency, price, frameColor, setFrameColor, printType, setPrintType }) {
+export default function PriceSelector({ emotion, setEmotion, size, setSize, urgency, setUrgency, price }) {
+  // Show strikethrough only when urgency or emotion bumps the price above base
+  const basePrice = calculatePrice({ product: 'poster', size, style: 'chibi', petType: 'dog', urgency: 'standard', emotion: 'normal' });
+  const saving = basePrice - price > 0 ? basePrice - price : null;
+
   return (
     <div className="space-y-4">
-
-      {/* Print Type toggle */}
-      <div>
-        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Print Type</label>
-        <div className="flex gap-2">
-          {[
-            { id: 'framed', label: 'Framed Poster', icon: '🖼️' },
-            { id: 'canvas', label: 'Canvas Print',  icon: '🎨' },
-          ].map((t) => (
-            <button key={t.id} onClick={() => setPrintType(t.id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl border-2 text-sm font-medium transition-all ${printType === t.id ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`}>
-              <span>{t.icon}</span>{t.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div className="grid grid-cols-2 gap-3">
         <Select label="Occasion" value={emotion} onChange={setEmotion}
           options={Object.entries(EMOTION_MULTIPLIERS).map(([v, d]) => ({ value: v, label: d.label }))} />
@@ -49,23 +35,22 @@ export default function PriceSelector({ emotion, setEmotion, size, setSize, urge
 
         <Select label="Delivery Speed" value={urgency} onChange={setUrgency}
           options={Object.entries(URGENCY_FEES).map(([v, d]) => ({ value: v, label: d.label }))} />
+      </div>
 
-        {/* Frame Color — only for framed posters */}
-        {printType === 'framed' && (
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Frame Color</label>
-            <div className="flex gap-3 mt-0.5">
-              {FRAME_COLORS.map((c) => (
-                <button key={c.id} onClick={() => setFrameColor(c.id)} className="flex flex-col items-center gap-1">
-                  <span className={`w-8 h-8 rounded-full border-2 transition-all ${frameColor === c.id ? 'scale-110 border-purple-500 shadow-md shadow-purple-200' : 'border-gray-200 hover:border-gray-400'}`}
-                    style={{ backgroundColor: c.hex, boxShadow: c.id === 'white' ? 'inset 0 0 0 1px #e5e7eb' : undefined }} />
-                  <span className={`text-[10px] font-medium ${frameColor === c.id ? 'text-purple-600' : 'text-gray-400'}`}>{c.label}</span>
-                </button>
-              ))}
-            </div>
+      {/* Live Price Display */}
+      {!size ? null : <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-2xl p-5 text-center">
+        <p className="text-sm text-gray-500 mb-0.5">Your price</p>
+        <div className="flex items-center justify-center gap-3">
+          {saving && <span className="text-gray-400 line-through text-lg">${basePrice}</span>}
+          <span className="text-4xl font-black text-purple-600">${price}</span>
+        </div>
+        {saving && (
+          <div className="inline-block mt-1.5 bg-green-100 text-green-700 text-xs font-semibold px-3 py-0.5 rounded-full">
+            You save ${saving} 🎉
           </div>
         )}
-      </div>
+        <p className="text-xs text-gray-400 mt-2">Limited-time offer</p>
+      </div>}
     </div>
   );
 }

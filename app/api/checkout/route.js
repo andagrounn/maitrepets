@@ -9,7 +9,7 @@ export async function POST(req) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const { imageId, generatedUrl, productKey, price, shipping, extras, frameColor, printType } = await req.json();
+    const { imageId, generatedUrl, productKey, price, shipping, extras, frameColor } = await req.json();
 
     if (!imageId || !price) {
       return NextResponse.json({ error: 'imageId and price required' }, { status: 400 });
@@ -17,8 +17,8 @@ export async function POST(req) {
 
     const sizeMatch = (productKey || '').match(/(\d+x\d+)/);
     const size = sizeMatch ? sizeMatch[1] : '16x20';
-    // Keep canvas-* as-is; normalize any legacy 'poster-' keys
-    const normalizedProductKey = productKey || 'poster-16x20';
+    // Normalize legacy canvas keys to poster keys
+    const normalizedProductKey = (productKey || 'poster-16x20').replace('canvas-', 'poster-');
 
     // Create pending order in DB
     const order = await prisma.order.create({
@@ -67,8 +67,8 @@ export async function POST(req) {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: printType === 'canvas' ? `Maîtrepets Canvas Print — ${size}` : `Maîtrepets Framed Poster — ${size}`,
-            description: printType === 'canvas' ? 'Custom AI-generated pet art, thin canvas print' : 'Custom AI-generated pet art, professionally printed & framed',
+            name: `Maîtrepets Framed Poster — ${size}`,
+            description: 'Custom AI-generated pet art, professionally printed & framed',
             images: generatedUrl ? [generatedUrl] : [],
           },
           unit_amount: Math.round(basePrice * 100),
