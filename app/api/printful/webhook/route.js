@@ -96,6 +96,26 @@ export async function POST(req) {
         break;
       }
 
+      // ── Order updated (catches printing / in-process state) ─────────────
+      case 'order_updated': {
+        const printfulOrderId = String(data?.order?.id ?? '');
+        const externalOrderId = data?.order?.external_id ?? null;
+        const printfulStatus  = data?.order?.status ?? '';
+
+        if (!printfulOrderId && !externalOrderId) break;
+
+        // Map Printful's "inprocess" → our "fulfilling"
+        if (printfulStatus === 'inprocess') {
+          const where = printfulOrderId ? { printfulId: printfulOrderId } : { id: externalOrderId };
+          await prisma.order.updateMany({
+            where,
+            data: { status: 'fulfilling', updatedAt: new Date() },
+          });
+          console.log(`[Printful webhook] Now printing — Printful #${printfulOrderId}`);
+        }
+        break;
+      }
+
       default:
         console.log(`[Printful webhook] Unhandled event: ${type}`);
     }

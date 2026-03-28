@@ -17,6 +17,7 @@ const STATUS_META = {
   paid_printful_failed:    { label: 'Printful Error',    color: 'bg-orange-500/20 text-orange-300 border border-orange-500/30' },
   refund_requested:        { label: 'Refund Requested',  color: 'bg-rose-500/20 text-rose-300 border border-rose-500/30' },
   refund_denied:           { label: 'Refund Denied',     color: 'bg-gray-500/20 text-gray-400 border border-gray-500/30' },
+  refund_approved:         { label: 'Refund Approved',   color: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' },
 };
 const ALL_STATUSES = Object.keys(STATUS_META);
 
@@ -42,7 +43,7 @@ function buildTemplate(type, ctx = {}) {
     case 'shipping_update':
       return {
         subject: `Your Maîtrepets order has shipped! 📦`,
-        body: base(`<h2 style="color:#111;margin:0 0 12px">Your Pawtrait is on its way!</h2>
+        body: base(`<h2 style="color:#111;margin:0 0 12px">Your Portrait is on its way!</h2>
           <p style="color:#4b5563">Great news — your order has been shipped and is heading to you now.</p>
           ${ctx.trackingNumber ? `<div style="background:#f3f4f6;border-radius:8px;padding:16px;margin:20px 0">
             <p style="color:#6b7280;font-size:12px;margin:0 0 4px;text-transform:uppercase;letter-spacing:.05em">Tracking Number</p>
@@ -57,7 +58,7 @@ function buildTemplate(type, ctx = {}) {
         subject: `Your Maîtrepets order is confirmed ✅`,
         body: base(`<h2 style="color:#111;margin:0 0 12px">Order Confirmed!</h2>
           <p style="color:#4b5563">We've received your order and it's now in our production queue.</p>
-          <p style="color:#4b5563">Your Pawtrait will be printed on premium enhanced matte paper and shipped within 3–5 business days.</p>
+          <p style="color:#4b5563">Your Portrait will be printed on premium enhanced matte paper and shipped within 3–5 business days.</p>
           <p style="color:#4b5563;margin-top:24px">Questions? Reply to this email or contact <a href="mailto:hello@maitrepets.com" style="color:#7c3aed">hello@maitrepets.com</a>.</p>`),
       };
     case 'refund_approved':
@@ -80,9 +81,9 @@ function buildTemplate(type, ctx = {}) {
       };
     case 'reprint_sent':
       return {
-        subject: `Your replacement Pawtrait is on its way! 🖼️`,
+        subject: `Your replacement Portrait is on its way! 🖼️`,
         body: base(`<h2 style="color:#111;margin:0 0 12px">Replacement Order Shipped</h2>
-          <p style="color:#4b5563">We've processed and shipped your replacement Pawtrait print.</p>
+          <p style="color:#4b5563">We've processed and shipped your replacement Portrait print.</p>
           ${ctx.trackingNumber ? `<div style="background:#f3f4f6;border-radius:8px;padding:16px;margin:20px 0">
             <p style="color:#6b7280;font-size:12px;margin:0 0 4px">Tracking Number</p>
             <p style="color:#111;font-weight:700;font-family:monospace;margin:0">${ctx.trackingNumber}</p>
@@ -737,7 +738,7 @@ function RefundsTab({ refundRequests, onRefresh }) {
 
   async function approve(order) {
     setProcessing(p => ({ ...p, [order.id]: 'approving' }));
-    await fetch('/api/admin/order', { method: 'PATCH', headers: HEADERS, body: JSON.stringify({ orderId: order.id, status: 'returned' }) });
+    await fetch('/api/admin/order', { method: 'PATCH', headers: HEADERS, body: JSON.stringify({ orderId: order.id, status: 'refund_approved' }) });
     setProcessing(p => ({ ...p, [order.id]: null }));
     setEmailing({ email: order.user?.email, template: 'refund_approved', order });
     onRefresh();
@@ -796,6 +797,14 @@ function RefundsTab({ refundRequests, onRefresh }) {
                       <p className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Reason</p>
                       <p className="text-gray-200 text-sm">{order.refundReason || 'No reason provided'}</p>
                     </div>
+                    {order.refundEvidenceUrl && (
+                      <div className="mb-3">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Damage Evidence</p>
+                        <a href={order.refundEvidenceUrl} target="_blank" rel="noopener noreferrer">
+                          <img src={order.refundEvidenceUrl} alt="Damage evidence" className="w-full max-h-40 object-cover rounded-xl border border-white/10 hover:opacity-90 transition-opacity" />
+                        </a>
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mb-3">
                       <span>Ordered: {new Date(order.createdAt).toLocaleDateString()}</span>
                       <span>Requested: {order.refundRequestedAt ? new Date(order.refundRequestedAt).toLocaleDateString() : '—'}</span>

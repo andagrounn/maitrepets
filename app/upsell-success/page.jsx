@@ -137,7 +137,7 @@ function UpsellSuccessInner() {
             <div className={`transition-all duration-700 mb-5 ${revealed ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
               <img
                 src={generatedUrl}
-                alt="Surprise Pawtrait"
+                alt="Surprise Portrait"
                 className="w-full aspect-[2/3] object-cover rounded-2xl shadow-2xl ring-4 ring-purple-300"
               />
             </div>
@@ -209,7 +209,7 @@ function UpsellSuccessInner() {
             <div className="text-6xl mb-4">⚠️</div>
             <h1 className="text-2xl font-black text-gray-900 mb-3">Something went wrong</h1>
             <p className="text-gray-500 mb-6">
-              Your payment went through. Our team will manually generate your surprise pawtrait within 24 hours.
+              Your payment went through. Our team will manually generate your surprise portrait within 24 hours.
             </p>
             <Link href="/dashboard" className="btn-primary px-6 py-3">View Orders</Link>
           </div>

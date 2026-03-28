@@ -18,7 +18,7 @@ const STEPS = ['Upload', 'Style', 'Generate', 'Order'];
 const TRUST_BADGES = [
   { icon: '⭐', text: '10,000+ happy pet owners' },
   { icon: '🔒', text: 'Secure checkout' },
-  { icon: '🐾', text: 'Free pawtrait preview' },
+  { icon: '🐾', text: '1 free AI generation' },
   { icon: '🚚', text: 'Delivered to your door' },
 ];
 
@@ -57,6 +57,9 @@ export default function CreatePage() {
     { key: 'priorityProcessing', label: 'Priority Processing',  sub: 'Moved to front of queue — ships in 1–2 days', price: 9, emoji: '⚡' },
   ];
   const extrasTotal = EXTRAS.reduce((sum, e) => sum + (extras[e.key] ? e.price : 0), 0);
+
+  // Free limit
+  const [freeLimitReached, setFreeLimitReached] = useState(false);
 
   // Loading
   const [isUploading, setIsUploading] = useState(false);
@@ -134,6 +137,13 @@ export default function CreatePage() {
       setIsGenerating(true);
 
       const genData = await api.generate({ imageUrl: uploadData.url, style: selectedStyle, imageId: uploadData.imageId });
+
+      if (genData?.error === 'FREE_LIMIT_REACHED') {
+        setFreeLimitReached(true);
+        setStep(0);
+        return;
+      }
+
       setGenProgress(100);
       await new Promise((r) => setTimeout(r, 400));
       setGeneratedUrl(genData.output);
@@ -218,8 +228,20 @@ export default function CreatePage() {
             ))}
           </div>
 
+          {/* ── Free limit reached banner ── */}
+          {freeLimitReached && (
+            <div className="max-w-lg mx-auto mb-8 bg-amber-50 border border-amber-200 rounded-2xl p-5 text-center">
+              <div className="text-3xl mb-2">🔒</div>
+              <h3 className="font-bold text-gray-900 mb-1">You've used your 1 free AI generation</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                To generate more portraits, complete your first order. Each paid print order unlocks additional generations.
+              </p>
+              <Link href="/dashboard" className="btn-primary px-6 py-2.5 text-sm">View My Order →</Link>
+            </div>
+          )}
+
           {/* ── STEP 0 & 1: Upload + Customize ── */}
-          {!isLoading && !generatedUrl && (
+          {!isLoading && !generatedUrl && !freeLimitReached && (
             <div className="grid md:grid-cols-2 gap-8">
 
               {/* Left — Upload */}
@@ -283,9 +305,9 @@ export default function CreatePage() {
 
                 <button onClick={handleGenerate} disabled={!file}
                   className="btn-primary w-full py-4 text-base font-bold disabled:opacity-40 disabled:cursor-not-allowed">
-                  {file ? `🐾 Generate My ${STYLE_PROMPTS[selectedStyle]?.label} Pawtrait →` : '← Upload a photo first'}
+                  {file ? `🐾 Generate My ${STYLE_PROMPTS[selectedStyle]?.label} Portrait →` : '← Upload a photo first'}
                 </button>
-                <p className="text-xs text-gray-400 text-center">Free AI preview • No charge until you order • ~60 seconds</p>
+                <p className="text-xs text-gray-400 text-center">1 free AI generation • Paper print included • No charge until you order • ~60 seconds</p>
               </div>
             </div>
           )}
@@ -308,7 +330,7 @@ export default function CreatePage() {
               </div>
 
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {isUploading ? 'Uploading your photo…' : genProgress < 40 ? 'Casting your pet…' : genProgress < 75 ? 'Designing your pawtrait…' : 'Adding finishing touches…'}
+                {isUploading ? 'Uploading your photo…' : genProgress < 40 ? 'Casting your pet…' : genProgress < 75 ? 'Designing your portrait…' : 'Adding finishing touches…'}
               </h2>
               <p className="text-gray-500 mb-2">
                 {isUploading
@@ -346,7 +368,7 @@ export default function CreatePage() {
               {/* Image reveal — 3 cols */}
               <div className="md:col-span-3 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-900">Your Pawtrait is Ready! 🐾</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Your Portrait is Ready! 🐾</h2>
                   <button onClick={startOver} className="text-sm text-gray-400 hover:text-gray-600 underline">Start over</button>
                 </div>
 
@@ -357,7 +379,7 @@ export default function CreatePage() {
                   </div>
                   <div className={`transition-all duration-700 ${imageRevealed ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                     <p className="text-xs font-semibold text-purple-500 uppercase tracking-wide mb-2">
-                      🐾 {STYLE_PROMPTS[selectedStyle]?.label} Pawtrait
+                      🐾 {STYLE_PROMPTS[selectedStyle]?.label} Portrait
                     </p>
                     <img
                       src={generatedUrl}
@@ -381,7 +403,7 @@ export default function CreatePage() {
 
               {/* Order panel — 2 cols */}
               <div className="md:col-span-2 space-y-4">
-                <h2 className="text-xl font-bold text-gray-900">Order Your Pawtrait Print</h2>
+                <h2 className="text-xl font-bold text-gray-900">Order Your Portrait Print</h2>
 
                 {/* Live Price — prominent */}
                 <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-5 text-white text-center shadow-lg shadow-purple-200">
@@ -418,7 +440,7 @@ export default function CreatePage() {
                 {/* Trust signals */}
                 <div className="space-y-2">
                   {[
-                    { icon: '✅', title: 'Satisfaction guaranteed', sub: 'Free reprint if you\'re not happy' },
+                    { icon: '✅', title: 'Replacement for damaged prints', sub: 'Full reprint if your order arrives damaged' },
                     { icon: '🖼️', title: 'Premium canvas material', sub: 'Ready-to-hang, gallery-wrapped' },
                     { icon: '🚚', title: `Ships in ${urgency === 'express' ? '1–2' : urgency === 'fast' ? '3–5' : '7–10'} days`, sub: 'Tracked & insured delivery' },
                   ].map((t) => (

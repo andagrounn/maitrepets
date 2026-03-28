@@ -55,8 +55,11 @@ model Order {
   shippingMethod   String?  @default("STANDARD")
   trackingNumber   String?
   trackingUrl      String?
-  digitalCopy      Boolean  @default(false)
-  extraCopy        Boolean  @default(false)
+  digitalCopy          Boolean  @default(false)
+  extraCopy            Boolean  @default(false)
+  refundReason         String?
+  refundRequestedAt    DateTime?
+  refundEvidenceUrl    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

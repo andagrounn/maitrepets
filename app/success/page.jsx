@@ -71,9 +71,14 @@ function SuccessInner() {
   useEffect(() => {
     resetCreate?.();
 
-    // Demo mode (no session_id) — skip confirmation
-    if (!sessionId || sessionId.startsWith('DEMO')) {
+    // Demo mode (DEMO prefix from demo checkout) — skip confirmation
+    if (sessionId?.startsWith('DEMO')) {
       setStatus('confirmed');
+      return;
+    }
+    // No session_id = direct navigation without payment — show error
+    if (!sessionId) {
+      setStatus('error');
       return;
     }
 
@@ -125,7 +130,7 @@ function SuccessInner() {
             <div className="text-8xl mb-4">🎉</div>
             <h1 className="text-4xl font-black text-gray-900 mb-2">Your pet is now a star ⭐</h1>
             <p className="text-gray-600 text-lg mb-4">
-              Your Pawtrait is being sent to print!
+              Your Portrait is being sent to print!
             </p>
             {(txId || sessionId) && (
               <div className="bg-green-50 border border-green-200 rounded-xl px-5 py-3 mb-6 text-xs text-green-700 font-mono break-all">
@@ -136,7 +141,7 @@ function SuccessInner() {
             {/* Order status */}
             <div className="card p-6 mb-6 text-left">
               {[
-                { icon: '🖨️', title: 'Printing in Progress',  sub: 'Your pawtrait is being prepared' },
+                { icon: '🖨️', title: 'Printing in Progress',  sub: 'Your portrait is being prepared' },
                 { icon: '📦', title: 'Ships in 3–5 Days',     sub: 'Carefully packaged for safe delivery' },
                 { icon: '🏠', title: 'Delivered in 7–10 Days', sub: 'Right to your front door' },
               ].map((t) => (

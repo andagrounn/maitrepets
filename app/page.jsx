@@ -19,7 +19,7 @@ const testimonials = [
 const faqs = [
   { q: 'What kind of photo should I upload?', a: 'A clear, front-facing photo with good lighting works best. Make sure your pet\'s face is visible and in focus.' },
   { q: 'How long does shipping take?', a: 'Standard framed prints ship within 3–5 business days and arrive in 7–10 days. Express options available at checkout.' },
-  { q: 'Can I get a refund?', a: 'We offer free re-generation if you\'re not happy with the AI result. Physical products can be returned if damaged.' },
+  { q: 'Can I get a refund?', a: 'Physical prints that arrive damaged or defective are eligible for a full replacement or refund. Digital downloads and AI generations are non-refundable once delivered. See our Refund Policy for full details.' },
   { q: 'What sizes are available?', a: 'We offer framed poster prints in 8×10, 11×14, 16×20, 18×24, and 24×36 inches.' },
   { q: 'How does the AI work?', a: 'We use GPT-4o to understand your pet\'s unique features, then DALL-E 3 HD to reimagine them in the chosen art style at full resolution.' },
 ];
@@ -31,42 +31,42 @@ export default function Home() {
       <main className="bg-[#0a0a0f]">
 
         {/* Hero */}
-        <section className="pt-32 pb-20 px-6 text-center relative overflow-hidden">
+        <section className="pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-purple-900/40 via-black/60 to-[#0a0a0f] pointer-events-none" />
           <div className="absolute inset-0 opacity-30" style={{
             backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)',
             backgroundSize: '50px 50px',
           }} />
           <div className="relative max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-purple-900/60 border border-purple-500/30 text-purple-300 text-sm font-medium px-4 py-2 rounded-full mb-6 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 bg-purple-900/60 border border-purple-500/30 text-purple-300 text-xs md:text-sm font-medium px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-5 md:mb-6 backdrop-blur-sm">
               <span>🐾</span> AI-Powered Pet Art Generator
             </div>
-            <h1 className="text-6xl md:text-7xl font-black mb-6 leading-tight text-white">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 md:mb-6 leading-tight text-white">
               Turn Your Pet Into<br />
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">a Work of Art</span>
             </h1>
-            <p className="text-xl text-gray-400 mb-10 max-w-xl mx-auto">
+            <p className="text-base md:text-xl text-gray-400 mb-8 md:mb-10 max-w-xl mx-auto px-2">
               Upload your pet photo and transform them into stunning artwork — Chibi, Renaissance, Comic Book, Steampunk, and more. Print it. Frame it. Show it off.
             </p>
-            <div className="flex gap-4 justify-center flex-wrap">
-              <Link href="/create" className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-lg px-10 py-4 rounded-xl hover:opacity-90 transition-all shadow-2xl shadow-purple-900/50">
-                Create Your Pawtrait →
+            <div className="flex flex-col sm:flex-row gap-3 justify-center px-4 sm:px-0">
+              <Link href="/create" className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base md:text-lg px-8 md:px-10 py-3.5 md:py-4 rounded-xl hover:opacity-90 transition-all shadow-2xl shadow-purple-900/50">
+                Create Your Portrait →
               </Link>
-              <a href="#styles" className="border border-white/20 text-white font-semibold text-lg px-10 py-4 rounded-xl hover:bg-white/10 transition-all backdrop-blur-sm">
+              <a href="#styles" className="border border-white/20 text-white font-semibold text-base md:text-lg px-8 md:px-10 py-3.5 md:py-4 rounded-xl hover:bg-white/10 transition-all backdrop-blur-sm">
                 See Art Styles
               </a>
             </div>
-            <p className="text-gray-500 text-sm mt-4">No credit card required to generate • Free preview</p>
+            <p className="text-gray-500 text-xs md:text-sm mt-4">No credit card required to generate • Free preview</p>
           </div>
         </section>
 
         {/* Style Previews */}
-        <section id="styles" className="py-16 px-6 max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-white mb-3">11 Unique Art Styles</h2>
-            <p className="text-gray-400 text-lg">Your pet, reimagined in any artistic universe</p>
+        <section id="styles" className="py-12 md:py-16 px-4 md:px-6 max-w-6xl mx-auto">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">11 Unique Art Styles</h2>
+            <p className="text-gray-400 text-base md:text-lg">Your pet, reimagined in any artistic universe</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {styles.map((t) => (
               <div key={t.label} className="group relative rounded-2xl overflow-hidden aspect-square shadow-xl hover:shadow-purple-900/50 transition-all duration-300 hover:-translate-y-1 cursor-pointer">
                 <img src={t.img} alt={t.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -85,13 +85,13 @@ export default function Home() {
         </section>
 
         {/* How It Works */}
-        <section id="how-it-works" className="py-16 px-6 bg-white/5 backdrop-blur-sm border-y border-white/10">
+        <section id="how-it-works" className="py-12 md:py-16 px-4 md:px-6 bg-white/5 backdrop-blur-sm border-y border-white/10">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-white mb-3">How It Works</h2>
-              <p className="text-gray-400 text-lg">From upload to your wall in 3 easy steps</p>
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">How It Works</h2>
+              <p className="text-gray-400 text-base md:text-lg">From upload to your wall in 3 easy steps</p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-4 md:gap-8">
               {[
                 { step: '01', icon: '📸', title: 'Upload Your Pet Photo', desc: 'Select any clear photo of your pet. Our AI works best with front-facing shots in good lighting.' },
                 { step: '02', icon: '🎨', title: 'Choose Your Art Style', desc: 'Pick from 11 unique styles — Chibi, Renaissance, Steampunk, Comic Book, and more. AI transforms your pet in seconds.' },
@@ -109,12 +109,12 @@ export default function Home() {
         </section>
 
         {/* Pricing */}
-        <section id="pricing" className="py-16 px-6 max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-white mb-3">Simple Pricing</h2>
-            <p className="text-gray-400 text-lg">Free to generate. Pay only if you love it.</p>
+        <section id="pricing" className="py-12 md:py-16 px-4 md:px-6 max-w-5xl mx-auto">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Simple Pricing</h2>
+            <p className="text-gray-400 text-base md:text-lg">Free to generate. Pay only if you love it.</p>
           </div>
-          <div className="grid md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {[
               { name: 'Digital Preview', price: 'Free', desc: 'AI-generated art', features: ['HD resolution', 'All 11 styles', 'Instant preview'], popular: false },
               { name: '8×10 Framed', price: '$60+', desc: 'Starter print', features: ['Premium framed print', 'Ready to hang', '7–10 day shipping'], popular: false },
@@ -142,14 +142,14 @@ export default function Home() {
         </section>
 
         {/* Testimonials */}
-        <section className="py-16 px-6 bg-white/5 border-y border-white/10">
+        <section className="py-12 md:py-16 px-4 md:px-6 bg-white/5 border-y border-white/10">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-white mb-3">Loved by Pet Parents</h2>
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Loved by Pet Parents</h2>
               <div className="flex items-center justify-center gap-1 text-yellow-400 text-xl mb-2">★★★★★</div>
               <p className="text-gray-400">4.9/5 from 2,000+ happy customers</p>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-4 md:gap-6">
               {testimonials.map((t) => (
                 <div key={t.name} className="rounded-2xl p-6 bg-white/5 border border-white/10">
                   <div className="flex text-yellow-400 mb-3">{Array(t.stars).fill('★').join('')}</div>
@@ -165,8 +165,8 @@ export default function Home() {
         </section>
 
         {/* FAQ */}
-        <section className="py-16 px-6 max-w-3xl mx-auto">
-          <h2 className="text-4xl font-bold text-white text-center mb-12">Frequently Asked Questions</h2>
+        <section className="py-12 md:py-16 px-4 md:px-6 max-w-3xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-8 md:mb-12">Frequently Asked Questions</h2>
           <div className="space-y-4">
             {faqs.map((faq) => (
               <div key={faq.q} className="rounded-2xl p-6 bg-white/5 border border-white/10">
@@ -181,27 +181,28 @@ export default function Home() {
         <section className="py-20 px-6 text-center bg-gradient-to-br from-purple-900/60 to-pink-900/60 border-t border-white/10">
           <div className="max-w-2xl mx-auto">
             <div className="text-5xl mb-4">🐾</div>
-            <h2 className="text-4xl font-bold text-white mb-4">Ready to Create Your Pawtrait?</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">Ready to Create Your Portrait?</h2>
             <p className="text-purple-200 text-lg mb-8">Join thousands of pet parents who have transformed their photos into stunning artwork.</p>
             <Link href="/create" className="bg-white text-purple-700 font-bold px-10 py-4 rounded-xl text-lg hover:bg-purple-50 transition-colors shadow-2xl inline-block">
-              Create Your Pawtrait →
+              Create Your Portrait →
             </Link>
             <p className="text-purple-300 text-sm mt-4">Free preview • No credit card required</p>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="bg-black/60 border-t border-white/10 text-gray-500 py-10 px-6">
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <footer className="bg-black/60 border-t border-white/10 text-gray-500 py-8 px-4 md:px-6">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
             <div className="flex items-center gap-2">
               <span className="text-2xl">🐾</span>
               <span className="text-white font-bold">Maîtrepets</span>
             </div>
-            <p className="text-sm">© 2025 Maîtrepets. All rights reserved. AI-generated artwork — for personal use.</p>
-            <div className="flex gap-6 text-sm">
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Contact</a>
+            <p className="text-xs md:text-sm">© {new Date().getFullYear()} Maîtrepets. All rights reserved.</p>
+            <div className="flex gap-4 md:gap-6 text-sm">
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+              <Link href="/refund" className="hover:text-white transition-colors">Refunds</Link>
+              <a href="mailto:hello@maitrepets.com" className="hover:text-white transition-colors">Contact</a>
             </div>
           </div>
         </footer>

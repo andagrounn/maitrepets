@@ -1,4 +1,5 @@
 import './globals.css';
+import Footer from '@/components/Footer';
 
 export const metadata = {
   title: 'Maîtrepets — Turn Your Pet Into a Work of Art',
@@ -12,7 +13,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="bg-cream min-h-screen antialiased">{children}</body>
+      <body className="bg-cream min-h-screen antialiased flex flex-col">
+        <div className="flex-1">{children}</div>
+        <Footer />
+      </body>
     </html>
   );
 }

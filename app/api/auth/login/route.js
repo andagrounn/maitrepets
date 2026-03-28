@@ -13,7 +13,7 @@ export async function POST(req) {
     }
     const token = signToken({ id: user.id, email: user.email, name: user.name });
     const res = NextResponse.json({ user: { id: user.id, email: user.email, name: user.name } });
-    res.cookies.set('artify_token', token, { httpOnly: true, path: '/', maxAge: 60 * 60 * 24 * 30 });
+    res.cookies.set('maitrepets_token', token, { httpOnly: true, path: '/', maxAge: 60 * 60 * 24 * 30 });
     return res;
   } catch (err) {
     console.error(err);
