@@ -1481,7 +1481,7 @@ export default function AdminPage() {
   ];
 
   return (
-
+    <>
     {!isDark && (
       <style>{`
         .admin-root { background:#f8fafc !important; color:#0f172a !important; }
@@ -1593,5 +1593,6 @@ export default function AdminPage() {
         </main>
       </div>
     </div>
+    </>
   );
 }
