@@ -398,7 +398,7 @@ function CreatePageInner() {
                 <button onClick={handleGenerate} disabled={!file}
                   className="btn-primary w-full py-4 text-sm sm:text-base font-bold disabled:opacity-40 disabled:cursor-not-allowed">
                   {file
-                    ? <><span className="hidden sm:inline">🐾 Generate My {STYLE_PROMPTS[selectedStyle]?.label} Portrait →</span><span className="sm:hidden">🐾 Generate Portrait →</span></>
+                    ? <><span className="hidden sm:inline">Generate My {STYLE_PROMPTS[selectedStyle]?.label} Portrait →</span><span className="sm:hidden">Generate Portrait →</span></>
                     : '← Upload a photo first'}
                 </button>
                 <p className="text-xs text-gray-400 text-center">1 free AI generation • Print not included • No charge until you order • ~60 seconds</p>

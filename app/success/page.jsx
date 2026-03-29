@@ -183,7 +183,7 @@ function SuccessInner() {
             </div>
 
             {/* Social proof */}
-            <p className="text-gray-400 text-sm mt-6">🐾 Loved by 10,000+ pet owners</p>
+            <p className="text-gray-400 text-sm mt-6">Loved by 10,000+ pet owners</p>
             <p className="text-gray-400 text-xs mt-1">Printed on Enhanced Matte Paper · Ships from USA</p>
           </>
         )}

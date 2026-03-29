@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import FaqAccordion from '@/components/FaqAccordion';
 
 const S3 = 'https://artifyai-images-951411651703-us-east-2-an.s3.us-east-2.amazonaws.com';
 
@@ -49,13 +50,6 @@ const testimonials = [
   { name: 'Maria L.', pet: 'Pug',              quote: "Ordered the Mosaic style as a memorial for my bird. I'll treasure this forever. The quality of the print is incredible.",                    stars: 5 },
 ];
 
-const faqs = [
-  { q: 'What kind of photo should I upload?',  a: "A clear, front-facing photo with good lighting works best. Make sure your pet's face is visible and in focus." },
-  { q: 'How long does shipping take?',          a: 'Standard framed prints ship within 3–5 business days and arrive in 7–10 days. Express options available at checkout.' },
-  { q: 'Can I get a refund?',                  a: 'Physical prints that arrive damaged or defective are eligible for a full replacement or refund. Digital downloads are non-refundable once delivered.' },
-  { q: 'What sizes are available?',             a: 'We offer framed poster prints in 8×10, 11×14, 16×20, 18×24, and 24×36 inches.' },
-  { q: 'How does the AI work?',                a: "We use GPT-4o to understand your pet's unique features, then generate stunning artwork in the chosen style at full HD resolution." },
-];
 
 const BRAND = 'Maîtrepets';
 
@@ -316,24 +310,89 @@ export default function Home() {
         </section>
 
         {/* ── HOW IT WORKS ── */}
-        <section id="how-it-works" className="py-24 px-4 md:px-6 bg-white/[0.03] border-y border-white/10">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-14">
-              <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">✦ How It Works</span>
-              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">From photo to wall art<br className="hidden sm:block" /> in minutes.</h2>
+        <section id="how-it-works" className="relative py-28 px-4 md:px-6 overflow-hidden">
+          {/* Background */}
+          <div className="absolute inset-0" style={{background:'linear-gradient(180deg,#0a0a0f 0%,#0d0a1a 50%,#0a0a0f 100%)'}} />
+          <div className="absolute inset-0 pointer-events-none" style={{background:'radial-gradient(ellipse 70% 50% at 50% 50%, rgba(124,58,237,0.08) 0%, transparent 70%)'}} />
+          <div className="absolute left-1/4 top-1/3 w-64 h-64 bg-purple-700/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute right-1/4 bottom-1/3 w-48 h-48 bg-pink-700/10 rounded-full blur-[60px] pointer-events-none" />
+
+          <div className="relative z-10 max-w-5xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4 bg-purple-500/10 border border-purple-500/20 px-4 py-1.5 rounded-full">✦ How It Works</span>
+              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mt-4">From photo to wall art<br className="hidden sm:block" /> in minutes.</h2>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
+
+            {/* Connector line — desktop only */}
+            <div className="hidden md:block absolute left-1/2 -translate-x-1/2" style={{top:'calc(50% + 20px)', width:'66%', height:'1px', background:'linear-gradient(90deg, transparent, rgba(124,58,237,0.4) 20%, rgba(236,72,153,0.4) 80%, transparent)', zIndex:0}} />
+
+            <div className="grid md:grid-cols-3 gap-6 relative z-10">
               {[
-                { step: '01', icon: '📸', title: 'Upload Your Photo',  desc: "Select a clear, front-facing shot of your pet. The better the photo, the more stunning the result." },
-                { step: '02', icon: '🎨', title: 'Pick an Art Style',  desc: 'Choose from 16 unique styles — Renaissance, Mosaic, Rococo, Chibi, Comic Book, and more.' },
-                { step: '03', icon: '📦', title: 'Print & Receive',    desc: 'Order a premium framed print. Professionally crafted and shipped worldwide to your door.' },
+                {
+                  step: '01',
+                  title: 'Upload Your Photo',
+                  desc: 'A clear, front-facing shot works best. The better the photo, the more stunning the result.',
+                  accent: 'from-purple-600 to-violet-600',
+                  glow: 'rgba(124,58,237,0.25)',
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                  ),
+                },
+                {
+                  step: '02',
+                  title: 'Pick an Art Style',
+                  desc: '16 unique styles — Renaissance, Mosaic, Rococo, Leonardo da Vinci, and more.',
+                  accent: 'from-pink-600 to-rose-500',
+                  glow: 'rgba(236,72,153,0.25)',
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+                      <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+                    </svg>
+                  ),
+                },
+                {
+                  step: '03',
+                  title: 'Print & Receive',
+                  desc: 'Order a premium framed print. Professionally crafted and shipped worldwide to your door.',
+                  accent: 'from-amber-500 to-orange-500',
+                  glow: 'rgba(245,158,11,0.2)',
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                  ),
+                },
               ].map((item) => (
-                <div key={item.step} className="relative p-8 rounded-3xl bg-white/5 hover:bg-purple-900/20 transition-colors border border-white/10 group overflow-hidden">
-                  <div className="absolute top-5 right-5 text-7xl font-black text-white/[0.04] group-hover:text-white/[0.08] transition-colors select-none leading-none">{item.step}</div>
-                  <div className="text-5xl mb-5">{item.icon}</div>
-                  <div className="text-xs font-black text-purple-500 mb-3 tracking-widest">STEP {item.step}</div>
-                  <h3 className="text-xl font-black text-white mb-3">{item.title}</h3>
-                  <p className="text-gray-400 leading-relaxed text-sm">{item.desc}</p>
+                <div key={item.step} className="relative group" style={{zIndex:1}}>
+                  {/* Card glow on hover */}
+                  <div className="absolute -inset-px rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{background:`radial-gradient(ellipse at 50% 0%, ${item.glow}, transparent 70%)`, filter:'blur(1px)'}} />
+
+                  <div className="relative p-8 rounded-3xl border border-white/10 group-hover:border-white/20 transition-all duration-300 overflow-hidden"
+                    style={{background:'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)'}}>
+
+                    {/* Step number watermark */}
+                    <div className="absolute top-4 right-5 text-8xl font-black select-none leading-none"
+                      style={{background:`linear-gradient(135deg, ${item.glow.replace('0.2','0.15').replace('0.25','0.15')}, transparent)`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent'}}>
+                      {item.step}
+                    </div>
+
+                    {/* Icon */}
+                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.accent} flex items-center justify-center text-white mb-6 shadow-lg`}
+                      style={{boxShadow:`0 8px 24px ${item.glow}`}}>
+                      {item.icon}
+                    </div>
+
+                    <div className={`text-xs font-black bg-gradient-to-r ${item.accent} bg-clip-text text-transparent mb-3 tracking-widest`}>STEP {item.step}</div>
+                    <h3 className="text-xl font-black text-white mb-3">{item.title}</h3>
+                    <p className="text-gray-400 leading-relaxed text-sm">{item.desc}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -365,66 +424,174 @@ export default function Home() {
         </section>
 
         {/* ── PRICING ── */}
-        <section id="pricing" className="py-24 px-4 md:px-6 max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">✦ Pricing</span>
-            <h2 className="text-3xl md:text-5xl font-black text-white mb-4">Simple Pricing</h2>
-            <p className="text-gray-400 text-lg">Free to generate. Pay only if you love it.</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { name: 'Preview',      price: 'Free',  desc: 'AI digital art',  features: ['HD resolution', 'All 16 styles', 'Instant preview'],  popular: false },
-              { name: '8×10 Framed',  price: '$60+',  desc: 'Starter print',   features: ['Premium framed', 'Ready to hang', '7–10 day ship'],  popular: false },
-              { name: '16×20 Framed', price: '$79+',  desc: 'Most popular',    features: ['Premium framed', 'Ready to hang', '7–10 day ship'],  popular: true  },
-              { name: '24×36 Framed', price: '$139+', desc: 'Statement piece', features: ['Premium framed', 'Ready to hang', '7–10 day ship'],  popular: false },
-            ].map((p) => (
-              <div key={p.name} className={`rounded-2xl p-4 sm:p-6 relative border ${p.popular ? 'border-purple-500 bg-purple-900/30 shadow-2xl shadow-purple-900/40' : 'border-white/10 bg-white/5'}`}>
-                {p.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] font-black px-3 py-1 rounded-full tracking-wide whitespace-nowrap">
-                    MOST POPULAR
+        <section id="pricing" className="relative py-28 px-4 md:px-6 overflow-hidden">
+          <div className="absolute inset-0" style={{background:'linear-gradient(180deg,#0a0a0f 0%,#0c0a18 50%,#0a0a0f 100%)'}} />
+          <div className="absolute inset-0 pointer-events-none" style={{background:'radial-gradient(ellipse 60% 40% at 50% 50%, rgba(124,58,237,0.07) 0%, transparent 70%)'}} />
+
+          <div className="relative z-10 max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4 bg-purple-500/10 border border-purple-500/20 px-4 py-1.5 rounded-full">✦ Pricing</span>
+              <h2 className="text-3xl md:text-5xl font-black text-white mb-4 mt-4">Free to preview.<br className="hidden sm:block"/> Pay only when you love it.</h2>
+              <p className="text-gray-400 text-base max-w-xl mx-auto">Generate your AI portrait for free. Order a premium framed print only if it takes your breath away.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-4">
+              {[
+                {
+                  name: 'Preview',
+                  price: 'Free',
+                  sub: 'Always free',
+                  desc: 'See your pet transformed into any of our 16 art styles instantly.',
+                  features: ['HD AI portrait', 'All 16 styles', 'Instant preview', 'No credit card'],
+                  cta: 'Generate Free',
+                  popular: false,
+                  accent: 'border-white/10',
+                },
+                {
+                  name: '8×10" Framed',
+                  price: 'from $60',
+                  sub: 'Great for gifts',
+                  desc: 'Perfect bedside or desk size. Arrives ready to display.',
+                  features: ['Premium frame', 'Ready to hang', '7–10 day ship', 'Gift-ready packaging'],
+                  cta: 'Order Print',
+                  popular: false,
+                  accent: 'border-white/10',
+                },
+                {
+                  name: '16×20" Framed',
+                  price: 'from $79',
+                  sub: 'Most popular',
+                  desc: 'The crowd favourite. Makes a stunning statement in any room.',
+                  features: ['Premium frame', 'Ready to hang', '7–10 day ship', 'Certificate of art'],
+                  cta: 'Order Print',
+                  popular: true,
+                  accent: 'border-purple-500',
+                },
+                {
+                  name: '24×36" Framed',
+                  price: 'from $120',
+                  sub: 'Statement piece',
+                  desc: 'Gallery-worthy. Dominates a wall and starts conversations.',
+                  features: ['Premium frame', 'Ready to hang', '7–10 day ship', 'Certificate of art'],
+                  cta: 'Order Print',
+                  popular: false,
+                  accent: 'border-white/10',
+                },
+              ].map((p) => (
+                <div key={p.name} className={`relative rounded-3xl border ${p.accent} flex flex-col transition-all duration-300 hover:-translate-y-1 ${p.popular ? 'shadow-2xl shadow-purple-900/50' : ''}`}
+                  style={{background: p.popular ? 'linear-gradient(145deg,rgba(124,58,237,0.18),rgba(168,85,247,0.08))' : 'linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))'}}>
+
+                  {p.popular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] font-black px-4 py-1.5 rounded-full tracking-widest whitespace-nowrap shadow-lg">
+                      MOST POPULAR
+                    </div>
+                  )}
+
+                  <div className={`p-6 flex-1 ${p.popular ? 'pt-8' : ''}`}>
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">{p.sub}</p>
+                        <p className="font-black text-white text-base">{p.name}</p>
+                      </div>
+                    </div>
+
+                    <div className="mb-5">
+                      <span className={`text-4xl font-black ${p.popular ? 'text-white' : 'text-white'}`}>{p.price}</span>
+                      {p.price !== 'Free' && <span className="text-gray-500 text-sm ml-1">/ print</span>}
+                    </div>
+
+                    <p className="text-gray-400 text-sm leading-relaxed mb-6">{p.desc}</p>
+
+                    <ul className="space-y-2.5">
+                      {p.features.map((f) => (
+                        <li key={f} className="flex items-center gap-2.5 text-sm text-gray-300">
+                          <span className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${p.popular ? 'bg-purple-500/30 text-purple-300' : 'bg-white/10 text-gray-400'}`}
+                            style={{fontSize:'9px', fontWeight:900}}>✓</span>
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                )}
-                <p className="font-bold text-white text-sm">{p.name}</p>
-                <p className="text-3xl font-black text-white mt-2 mb-1">{p.price}</p>
-                <p className="text-gray-500 text-xs mb-4">{p.desc}</p>
-                <ul className="space-y-2 mb-6">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-xs text-gray-300">
-                      <span className="text-purple-400 font-bold">✓</span> {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/create" className={`block text-center py-2.5 rounded-xl text-xs font-bold transition-all ${p.popular ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90' : 'bg-white/10 text-white hover:bg-white/20'}`}>
-                  Get Started
-                </Link>
-              </div>
-            ))}
+
+                  <div className="p-6 pt-0">
+                    <Link href="/create"
+                      className={`block text-center py-3 rounded-2xl text-sm font-bold transition-all ${p.popular ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90 shadow-lg shadow-purple-900/40' : 'bg-white/8 border border-white/15 text-white hover:bg-white/15'}`}>
+                      {p.cta} →
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom note */}
+            <p className="text-center text-gray-600 text-sm mt-10">
+              Prices vary by art style, pet type & delivery speed. &nbsp;·&nbsp; Express shipping available at checkout. &nbsp;·&nbsp; Choose framed prints or canvas-only at checkout.
+            </p>
           </div>
         </section>
 
         {/* ── TESTIMONIALS ── */}
-        <section className="py-24 px-4 md:px-6 bg-white/[0.03] border-y border-white/10">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-14">
-              <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">✦ Reviews</span>
-              <h2 className="text-3xl md:text-5xl font-black text-white mb-3">Loved by Pet Parents</h2>
-              <div className="text-yellow-400 text-xl mb-2">★★★★★</div>
-              <p className="text-gray-400">4.9/5 from 2,000+ happy customers</p>
+        <section className="relative py-28 px-4 md:px-6 overflow-hidden">
+          <div className="absolute inset-0" style={{background:'linear-gradient(180deg,#0a0a0f 0%,#0e0b1a 50%,#0a0a0f 100%)'}} />
+          <div className="absolute inset-0 pointer-events-none" style={{background:'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(124,58,237,0.06) 0%, transparent 70%)'}} />
+
+          <div className="relative z-10 max-w-5xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-16">
+              <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4 bg-purple-500/10 border border-purple-500/20 px-4 py-1.5 rounded-full">✦ Reviews</span>
+              <h2 className="text-3xl md:text-5xl font-black text-white mb-4 mt-4">Loved by Pet Parents</h2>
+              <div className="flex items-center justify-center gap-1 mb-2">
+                {[...Array(5)].map((_,i) => (
+                  <svg key={i} width="20" height="20" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                ))}
+              </div>
+              <p className="text-gray-500 text-sm font-medium">4.9 / 5 &nbsp;·&nbsp; 2,000+ happy customers</p>
             </div>
+
             <div className="grid md:grid-cols-3 gap-6">
-              {testimonials.map((t) => (
-                <div key={t.name} className="rounded-3xl p-7 bg-white/5 border border-white/10 hover:border-purple-500/30 transition-colors">
-                  <div className="text-yellow-400 text-lg mb-4">{'★'.repeat(t.stars)}</div>
-                  <p className="text-gray-300 leading-relaxed mb-5 text-sm">"{t.quote}"</p>
+              {testimonials.map((t, i) => (
+                <div key={t.name} className="group relative rounded-3xl p-7 border border-white/8 hover:border-purple-500/30 transition-all duration-300 hover:-translate-y-1"
+                  style={{background:'linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))'}}>
+
+                  {/* Quote mark */}
+                  <div className="absolute top-5 right-6 text-6xl font-black leading-none select-none pointer-events-none"
+                    style={{color:'rgba(124,58,237,0.12)', fontFamily:'Georgia,serif'}}>"</div>
+
+                  {/* Stars */}
+                  <div className="flex gap-0.5 mb-5">
+                    {[...Array(t.stars)].map((_,j) => (
+                      <svg key={j} width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    ))}
+                  </div>
+
+                  <p className="text-gray-300 leading-relaxed mb-6 text-sm relative z-10">"{t.quote}"</p>
+
+                  {/* Divider */}
+                  <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-5" />
+
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white text-sm font-black flex-shrink-0">
+                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white text-sm font-black flex-shrink-0 shadow-lg"
+                      style={{background: i === 0 ? 'linear-gradient(135deg,#7c3aed,#9333ea)' : i === 1 ? 'linear-gradient(135deg,#db2777,#e11d48)' : 'linear-gradient(135deg,#0ea5e9,#6366f1)'}}>
                       {t.name[0]}
                     </div>
                     <div>
-                      <p className="font-semibold text-white text-sm">{t.name}</p>
+                      <p className="font-bold text-white text-sm">{t.name}</p>
                       <p className="text-gray-500 text-xs">{t.pet} owner</p>
                     </div>
+                    <div className="ml-auto">
+                      <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">Verified</span>
+                    </div>
                   </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Trust bar */}
+            <div className="mt-14 flex flex-wrap items-center justify-center gap-8 text-gray-500 text-xs font-medium">
+              {['Secure Checkout', 'Premium Print Quality', 'Worldwide Shipping', 'Satisfaction Guarantee'].map(text => (
+                <div key={text} className="flex items-center gap-2">
+                  <span className="w-1 h-1 rounded-full bg-purple-500/60" />
+                  <span>{text}</span>
                 </div>
               ))}
             </div>
@@ -434,17 +601,11 @@ export default function Home() {
         {/* ── FAQ ── */}
         <section className="py-24 px-4 md:px-6 max-w-3xl mx-auto">
           <div className="text-center mb-14">
-            <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">✦ FAQ</span>
-            <h2 className="text-3xl md:text-5xl font-black text-white">Got Questions?</h2>
+            <span className="inline-block text-purple-400 text-xs font-bold tracking-widest uppercase mb-4 bg-purple-500/10 border border-purple-500/20 px-4 py-1.5 rounded-full">✦ FAQ</span>
+            <h2 className="text-3xl md:text-5xl font-black text-white mt-4">Got Questions?</h2>
+            <p className="text-gray-500 text-sm mt-3">Everything you need to know about Maîtrepets.</p>
           </div>
-          <div className="space-y-3">
-            {faqs.map((faq) => (
-              <div key={faq.q} className="rounded-2xl p-6 bg-white/5 border border-white/10 hover:border-purple-500/30 transition-colors">
-                <h3 className="font-bold text-white mb-2 text-sm">{faq.q}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{faq.a}</p>
-              </div>
-            ))}
-          </div>
+          <FaqAccordion />
         </section>
 
         {/* ── CTA ── */}
@@ -454,7 +615,13 @@ export default function Home() {
           <div className="absolute inset-0 opacity-[0.05]"
             style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
           <div className="relative z-10 max-w-2xl mx-auto">
-            <div className="text-6xl mb-6">🐾</div>
+            <div className="mb-6 flex justify-center text-purple-300/60">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+              </svg>
+            </div>
             <h2 className="text-3xl md:text-6xl font-black text-white mb-5 leading-tight">Ready to Create<br />Your Masterpiece?</h2>
             <p className="text-purple-200 text-base md:text-lg mb-8 max-w-md mx-auto px-4">Join thousands of pet parents who turned their photos into stunning art.</p>
             <Link href="/create" className="inline-flex items-center gap-2 bg-white text-purple-700 font-black px-8 md:px-12 py-4 md:py-5 rounded-2xl text-base md:text-lg hover:bg-purple-50 transition-colors shadow-2xl">
@@ -468,7 +635,11 @@ export default function Home() {
         <footer className="bg-black/60 border-t border-white/10 text-gray-500 py-8 px-4 md:px-6">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">🐾</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+              </svg>
               <span className="text-white font-bold">Maîtrepets</span>
             </div>
             <p className="text-xs md:text-sm">© 2025 Maîtrepets. All rights reserved.</p>

@@ -31,7 +31,7 @@ function buildTemplate(type, ctx = {}) {
   const base = (content) => `
     <div style="font-family:sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
       <div style="background:linear-gradient(135deg,#7c3aed,#db2777);padding:28px 32px">
-        <p style="color:#fff;font-size:22px;font-weight:900;margin:0">🐾 Maîtrepets</p>
+        <p style="color:#fff;font-size:22px;font-weight:900;margin:0">Maîtrepets</p>
       </div>
       <div style="padding:32px">${content}</div>
       <div style="background:#f9fafb;padding:20px 32px;text-align:center">
@@ -51,7 +51,7 @@ function buildTemplate(type, ctx = {}) {
             ${ctx.trackingUrl ? `<a href="${ctx.trackingUrl}" style="color:#7c3aed;font-size:13px">Track your package →</a>` : ''}
           </div>` : ''}
           <p style="color:#4b5563">Expected delivery: 7–10 business days from ship date.</p>
-          <p style="color:#4b5563;margin-top:24px">Thank you for choosing Maîtrepets! 🐾</p>`),
+          <p style="color:#4b5563;margin-top:24px">Thank you for choosing Maîtrepets!</p>`),
       };
     case 'order_confirmed':
       return {
