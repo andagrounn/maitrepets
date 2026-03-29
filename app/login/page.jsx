@@ -4,62 +4,16 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useStore } from '@/store/useStore';
+import FlipCard from '@/components/FlipCard';
+
+const S3 = 'https://artifyai-images-951411651703-us-east-2-an.s3.us-east-2.amazonaws.com';
 
 const PORTRAITS = [
-  {
-    ai:    'https://artifyai-images-951411651703-us-east-2-an.s3.us-east-2.amazonaws.com/generated/1774673789483-zzvbnopfst.png',
-    pet:   'Rio',
-    style: 'Mosaic',
-  },
-  {
-    ai:       'https://artifyai-images-951411651703-us-east-2-an.s3.us-east-2.amazonaws.com/generated/1774629784284-j1rt4wukw6.png',
-    original: 'https://artifyai-images-951411651703-us-east-2-an.s3.us-east-2.amazonaws.com/uploads/028f47db-0c96-42d8-a8d4-da132822e06d/1774629725494-Dogs_love.jpg',
-    pet:   'Rocky',
-    style: 'Renaissance',
-    flip:  true,
-  },
-  {
-    ai:    'https://artifyai-images-951411651703-us-east-2-an.s3.us-east-2.amazonaws.com/generated/1774660430180-8754kz2iw4t.png',
-    pet:   'Luna',
-    style: 'Rococo',
-  },
+  { ai: `${S3}/generated/1774673789483-zzvbnopfst.png`, pet: 'Rio',   style: 'Mosaic',      emoji: '🎨' },
+  { ai: `${S3}/generated/1774629784284-j1rt4wukw6.png`, original: `${S3}/uploads/028f47db-0c96-42d8-a8d4-da132822e06d/1774629725494-Dogs_love.jpg`, pet: 'Rocky', style: 'Renaissance', emoji: '🖼️' },
+  { ai: `${S3}/generated/1774660430180-8754kz2iw4t.png`, pet: 'Luna',  style: 'Rococo',      emoji: '🎀' },
 ];
 
-function FlipCard({ ai, original, pet, style }) {
-  const [showOriginal, setShowOriginal] = useState(false);
-  useEffect(() => {
-    const t = setInterval(() => setShowOriginal(v => !v), 3000);
-    return () => clearInterval(t);
-  }, []);
-  return (
-    <div style={{ perspective: '1000px', aspectRatio: '3/4' }} className="flex-1 mt-[-24px]">
-      <div className="relative w-full h-full transition-transform duration-700 ease-in-out"
-        style={{ transformStyle: 'preserve-3d', transform: showOriginal ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
-        {/* Front — AI */}
-        <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl" style={{ backfaceVisibility: 'hidden' }}>
-          <img src={ai} alt="AI portrait" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-          <span className="absolute top-2 right-2 bg-purple-600/80 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">AI</span>
-          <div className="absolute bottom-0 left-0 right-0 p-3">
-            <p className="text-white font-bold text-sm leading-tight">{pet}</p>
-            <p className="text-white/60 text-xs">{style}</p>
-          </div>
-        </div>
-        {/* Back — Original */}
-        <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
-          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-          <img src={original} alt="Original photo" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-          <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Original</span>
-          <div className="absolute bottom-0 left-0 right-0 p-3">
-            <p className="text-white font-bold text-sm leading-tight">{pet}</p>
-            <p className="text-white/60 text-xs">Original photo</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function GoogleIcon() {
   return (
@@ -109,12 +63,12 @@ export default function LoginPage() {
     <div className="min-h-screen flex">
       <Suspense><OAuthError setError={setError} /></Suspense>
       {/* ── Left brand panel ── */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-purple-950 via-purple-900 to-pink-900 relative overflow-hidden flex-col justify-between p-12">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(168,85,247,0.15),transparent_60%)]" />
+      <div className="hidden lg:flex lg:w-1/2 bg-ink relative overflow-hidden flex-col justify-between p-12">
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at top right, rgba(139,98,18,0.12), transparent 60%)' }} />
 
         {/* Logo */}
         <div className="relative z-10">
-          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-white">
+          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-gold">
             <span>🐶</span>
             <span>Maîtrepets</span>
           </Link>
@@ -123,59 +77,50 @@ export default function LoginPage() {
         {/* Portrait showcase */}
         <div className="relative z-10 space-y-8">
           <div>
-            <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 text-white/80 text-xs font-semibold px-3 py-1 rounded-full mb-4 tracking-wide uppercase">
+            <span className="inline-flex items-center gap-1.5 bg-ivory/10 border border-ivory/20 text-ivory/80 text-xs font-semibold px-3 py-1 rounded-full mb-4 tracking-wide uppercase">
               ✦ AI Fine Art Portraits
             </span>
-            <h2 className="text-4xl font-black text-white leading-tight">
+            <h2 className="text-4xl font-black text-ivory leading-tight">
               Turn your pet into a masterpiece.
             </h2>
-            <p className="text-purple-300 mt-3" style={{ paddingBottom: '5%' }}>
+            <p className="text-sage mt-3" style={{ paddingBottom: '5%' }}>
               Professionally printed and delivered to your door.
             </p>
           </div>
 
           <div className="flex gap-4 items-start">
-            {PORTRAITS.map((p, i) =>
-              p.flip ? (
-                <FlipCard key={i} ai={p.ai} original={p.original} pet={p.pet} style={p.style} />
-              ) : (
-                <div key={i} className="flex-1 relative rounded-2xl overflow-hidden shadow-2xl" style={{ aspectRatio: '3/4' }}>
-                  <img src={p.ai} alt="Portrait" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-white font-bold text-sm leading-tight">{p.pet}</p>
-                    <p className="text-white/60 text-xs">{p.style}</p>
-                  </div>
-                </div>
-              )
-            )}
+            {PORTRAITS.map((p, i) => (
+              <div key={i} className="flex-1 mt-[-24px]">
+                <FlipCard ai={p.ai} original={p.original} pet={p.pet} style={p.style} emoji={p.emoji} delay={i * 1100} />
+              </div>
+            ))}
           </div>
 
-          <div className="flex items-center gap-6 text-sm text-purple-300">
+          <div className="flex items-center gap-6 text-sm text-sage">
             <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-green-400" />Free preview</span>
             <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-green-400" />16 art styles</span>
             <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-green-400" />Ships worldwide</span>
           </div>
         </div>
 
-        <p className="relative z-10 text-purple-400 text-xs">© 2025 Maîtrepets. All rights reserved.</p>
+        <p className="relative z-10 text-sage/60 text-xs">© 2025 Maîtrepets. All rights reserved.</p>
       </div>
 
       {/* ── Right form panel ── */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-[#F8F5F2]">
+      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-ivory">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold">
               <span>🐶</span>
-              <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Maîtrepets</span>
+              <span className="text-gold">Maîtrepets</span>
             </Link>
           </div>
 
-          <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/60 p-8">
+          <div className="bg-ivory rounded-3xl shadow-xl shadow-sage/30 border border-sage/30 p-8">
             <div className="mb-7">
-              <h1 className="text-2xl font-black text-gray-900">Welcome back</h1>
-              <p className="text-gray-400 text-sm mt-1">Sign in to your account to continue</p>
+              <h1 className="text-2xl font-black text-ink">Welcome back</h1>
+              <p className="text-sage text-sm mt-1">Sign in to your account to continue</p>
             </div>
 
             {error && (
@@ -187,56 +132,56 @@ export default function LoginPage() {
 
             {/* Google button */}
             <a href="/api/auth/google"
-              className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-2xl border-2 border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all font-semibold text-gray-700 text-sm shadow-sm mb-5">
+              className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-2xl border-2 border-sage bg-ivory hover:bg-[#E8E7E2] transition-all font-semibold text-ink text-sm shadow-sm mb-5">
               <GoogleIcon />
               Continue with Google
             </a>
 
             {/* Divider */}
             <div className="flex items-center gap-3 mb-5">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs text-gray-400 font-medium">or sign in with email</span>
-              <div className="flex-1 h-px bg-gray-200" />
+              <div className="flex-1 h-px bg-sage/40" />
+              <span className="text-xs text-sage font-medium">or sign in with email</span>
+              <div className="flex-1 h-px bg-sage/40" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Email</label>
+                <label className="block text-xs font-semibold text-ink/70 mb-1.5 uppercase tracking-wide">Email</label>
                 <input
-                  className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-400 transition-colors bg-gray-50 focus:bg-white"
+                  className="w-full border-2 border-sage rounded-2xl px-4 py-3 text-sm text-ink placeholder-sage focus:outline-none focus:border-gold transition-colors bg-[#ECEBE6] focus:bg-ivory"
                   type="email" placeholder="you@example.com" value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })} required />
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">Password</label>
+                  <label className="block text-xs font-semibold text-ink/70 uppercase tracking-wide">Password</label>
                   <button type="button" onClick={() => setShowPass(v => !v)}
-                    className="text-xs text-purple-500 hover:text-purple-700 transition-colors">
+                    className="text-xs text-gold hover:text-[#7a560f] transition-colors">
                     {showPass ? 'Hide' : 'Show'}
                   </button>
                 </div>
                 <input
-                  className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-400 transition-colors bg-gray-50 focus:bg-white"
+                  className="w-full border-2 border-sage rounded-2xl px-4 py-3 text-sm text-ink placeholder-sage focus:outline-none focus:border-gold transition-colors bg-[#ECEBE6] focus:bg-ivory"
                   type={showPass ? 'text' : 'password'} placeholder="••••••••" value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })} required />
               </div>
 
               <button type="submit" disabled={loading}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white font-bold text-sm transition-all shadow-lg shadow-purple-200 disabled:opacity-50 flex items-center justify-center gap-2">
+                className="w-full py-3.5 rounded-2xl bg-gold hover:bg-[#7a560f] text-ivory font-bold text-sm transition-all shadow-lg shadow-[#8B6212]/20 disabled:opacity-50 flex items-center justify-center gap-2">
                 {loading
-                  ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Signing in…</>
+                  ? <><span className="w-4 h-4 border-2 border-ivory border-t-transparent rounded-full animate-spin" /> Signing in…</>
                   : 'Sign In →'}
               </button>
             </form>
 
-            <p className="text-center text-sm text-gray-500 mt-5">
+            <p className="text-center text-sm text-sage mt-5">
               No account?{' '}
-              <Link href="/signup" className="text-purple-600 hover:text-purple-800 font-semibold transition-colors">
+              <Link href="/signup" className="text-gold hover:text-[#7a560f] font-semibold transition-colors">
                 Sign up free
               </Link>
             </p>
 
-            <div className="mt-5 pt-5 border-t border-gray-100 text-xs text-gray-400 text-center">
+            <div className="mt-5 pt-5 border-t border-sage/30 text-xs text-sage text-center">
               Free preview — no credit card required
             </div>
           </div>

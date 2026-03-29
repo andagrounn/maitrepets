@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 const CONFIG = {
   error: {
-    bg:   'bg-gray-900',
+    bg:   'bg-ink',
     bar:  'bg-red-500',
     text: 'text-white',
     icon: (
@@ -15,7 +15,7 @@ const CONFIG = {
     ),
   },
   success: {
-    bg:   'bg-gray-900',
+    bg:   'bg-ink',
     bar:  'bg-green-500',
     text: 'text-white',
     icon: (
@@ -27,7 +27,7 @@ const CONFIG = {
     ),
   },
   warning: {
-    bg:   'bg-gray-900',
+    bg:   'bg-ink',
     bar:  'bg-yellow-400',
     text: 'text-white',
     icon: (
@@ -39,7 +39,7 @@ const CONFIG = {
     ),
   },
   info: {
-    bg:   'bg-gray-900',
+    bg:   'bg-ink',
     bar:  'bg-blue-400',
     text: 'text-white',
     icon: (

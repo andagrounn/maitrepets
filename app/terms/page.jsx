@@ -14,7 +14,7 @@ export default function TermsPage() {
         <div className="max-w-3xl mx-auto">
 
           <div className="mb-8">
-            <Link href="/" className="text-sm text-purple-600 hover:text-purple-800 transition-colors">← Back to home</Link>
+            <Link href="/" className="text-sm text-gold hover:text-[#7a560f] transition-colors">← Back to home</Link>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
@@ -77,12 +77,12 @@ export default function TermsPage() {
 
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">7. Payments</h2>
-                <p>All payments are processed securely through Stripe Inc. We do not store your credit card information. Prices are listed in USD. By completing a purchase, you authorize us to charge the stated amount to your selected payment method. All sales are final except as described in our <Link href="/refund" className="text-purple-600 hover:underline">Refund Policy</Link>.</p>
+                <p>All payments are processed securely through Stripe Inc. We do not store your credit card information. Prices are listed in USD. By completing a purchase, you authorize us to charge the stated amount to your selected payment method. All sales are final except as described in our <Link href="/refund" className="text-gold hover:underline">Refund Policy</Link>.</p>
               </section>
 
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">8. Refunds & Returns</h2>
-                <p>Please review our <Link href="/refund" className="text-purple-600 hover:underline">Refund Policy</Link> for full details. In summary: digital purchases (HD downloads) and AI generations are non-refundable once delivered. Physical products that arrive damaged or defective are eligible for a replacement or refund. Regeneration is only offered as part of a damaged-print replacement process.</p>
+                <p>Please review our <Link href="/refund" className="text-gold hover:underline">Refund Policy</Link> for full details. In summary: digital purchases (HD downloads) and AI generations are non-refundable once delivered. Physical products that arrive damaged or defective are eligible for a replacement or refund. Regeneration is only offered as part of a damaged-print replacement process.</p>
               </section>
 
               <section>
@@ -107,7 +107,7 @@ export default function TermsPage() {
 
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">13. Contact Us</h2>
-                <p>For questions about these Terms, contact us at: <a href="mailto:hello@maitrepets.com" className="text-purple-600 hover:underline">hello@maitrepets.com</a></p>
+                <p>For questions about these Terms, contact us at: <a href="mailto:hello@maitrepets.com" className="text-gold hover:underline">hello@maitrepets.com</a></p>
               </section>
 
             </div>

@@ -128,14 +128,14 @@ export default function ShippingForm({ data, onChange, onSubmit, onBack, loading
         <label className="label">Shipping Method *</label>
 
         {!canFetchRates && (
-          <p className="text-xs text-gray-400 bg-gray-50 rounded-xl px-4 py-3">
+          <p className="text-xs text-sage bg-ivory rounded-xl px-4 py-3">
             Enter your city, ZIP, and country to see shipping options.
           </p>
         )}
 
         {canFetchRates && ratesLoading && (
-          <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 rounded-xl px-4 py-3">
-            <span className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          <div className="flex items-center gap-2 text-sm text-sage bg-ivory rounded-xl px-4 py-3">
+            <span className="w-4 h-4 border-2 border-gold/60 border-t-transparent rounded-full animate-spin" />
             Calculating shipping rates…
           </div>
         )}
@@ -155,12 +155,12 @@ export default function ShippingForm({ data, onChange, onSubmit, onBack, loading
                   onClick={() => pickRate(rate)}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 text-sm text-left transition-all ${
                     isSelected
-                      ? 'border-purple-500 bg-purple-50 text-purple-900'
-                      : 'border-gray-200 bg-white hover:border-purple-300'
+                      ? 'border-gold bg-gold/8 text-ink'
+                      : 'border-gray-200 bg-white hover:border-gold/40'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${isSelected ? 'border-purple-500 bg-purple-500' : 'border-gray-300'}`}>
+                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${isSelected ? 'border-gold bg-gold' : 'border-gray-300'}`}>
                       {isSelected && <div className="w-2 h-2 bg-white rounded-full m-auto mt-0.5" />}
                     </div>
                     <div>
@@ -182,16 +182,16 @@ export default function ShippingForm({ data, onChange, onSubmit, onBack, loading
 
       {/* Order total */}
       {selectedRate && total && (
-        <div className="bg-gray-50 rounded-xl px-4 py-3 space-y-1 text-sm">
-          <div className="flex justify-between text-gray-600">
+        <div className="bg-ivory border border-sage/20 rounded-xl px-4 py-3 space-y-1 text-sm">
+          <div className="flex justify-between text-sage">
             <span>Portrait</span>
             <span>${parseFloat(price).toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-gray-600">
+          <div className="flex justify-between text-sage">
             <span>Shipping ({selectedRate.id})</span>
             <span>${shippingCost.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between font-bold text-gray-900 pt-1 border-t border-gray-200">
+          <div className="flex justify-between font-bold text-ink pt-1 border-t border-sage/30">
             <span>Total</span>
             <span>${total}</span>
           </div>
@@ -199,7 +199,7 @@ export default function ShippingForm({ data, onChange, onSubmit, onBack, loading
       )}
 
       {/* Trust */}
-      <div className="flex items-center gap-2 text-xs text-gray-400 bg-gray-50 rounded-xl px-4 py-3">
+      <div className="flex items-center gap-2 text-xs text-sage bg-ivory rounded-xl px-4 py-3">
         <span>🔒</span>
         <span>Your address is only used for shipping. Never shared or sold.</span>
       </div>

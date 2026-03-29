@@ -20,18 +20,20 @@ export default function FaqAccordion() {
           <div
             key={i}
             className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
-              isOpen ? 'border-purple-500/40 bg-purple-900/10' : 'border-white/10 bg-white/[0.03] hover:border-white/20'
+              isOpen
+                ? 'border-gold/40 bg-[#8B6212]/[0.06]'
+                : 'border-sage/30 bg-ink/[0.03] hover:border-sage/60'
             }`}
           >
             <button
               onClick={() => setOpen(isOpen ? null : i)}
               className="w-full flex items-center justify-between px-6 py-5 text-left gap-4"
             >
-              <span className={`font-bold text-sm md:text-base transition-colors ${isOpen ? 'text-white' : 'text-gray-200'}`}>
+              <span className={`font-bold text-sm md:text-base transition-colors ${isOpen ? 'text-ink' : 'text-ink/80'}`}>
                 {faq.q}
               </span>
               <span className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${
-                isOpen ? 'bg-purple-600 rotate-45' : 'bg-white/10'
+                isOpen ? 'bg-gold rotate-45 text-ivory' : 'bg-ink/10 text-ink'
               }`}>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <line x1="6" y1="1" x2="6" y2="11"/>
@@ -43,8 +45,8 @@ export default function FaqAccordion() {
             <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
               <div className="overflow-hidden">
                 <div className="px-6 pb-5">
-                  <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
-                  <p className="text-gray-400 text-sm leading-relaxed">{faq.a}</p>
+                  <div className="h-px bg-gradient-to-r from-transparent via-sage/20 to-transparent mb-4" />
+                  <p className="text-sage text-sm leading-relaxed">{faq.a}</p>
                 </div>
               </div>
             </div>

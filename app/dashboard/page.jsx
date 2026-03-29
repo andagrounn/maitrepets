@@ -70,12 +70,12 @@ const STATUS_CONFIG = {
   pending:                 { color: 'bg-amber-50 text-amber-600 border border-amber-200',   label: 'Awaiting Payment',  Icon: IconClock,         step: 0 },
   paid:                    { color: 'bg-blue-50 text-blue-600 border border-blue-200',       label: 'Paid',              Icon: IconCheckCircle,   step: 1 },
   fulfilling:              { color: 'bg-violet-50 text-violet-600 border border-violet-200', label: 'Printing',          Icon: IconLayers,        step: 2 },
-  shipped:                 { color: 'bg-purple-50 text-purple-700 border border-purple-200', label: 'Shipped',           Icon: IconTruck,         step: 3 },
+  shipped:                 { color: 'bg-gold/8 text-[#7a560f] border border-gold/30', label: 'Shipped',           Icon: IconTruck,         step: 3 },
   delivered:               { color: 'bg-green-50 text-green-700 border border-green-200',    label: 'Delivered',         Icon: IconHome,          step: 4 },
   refund_requested:        { color: 'bg-amber-50 text-amber-700 border border-amber-200',    label: 'Report Under Review', Icon: IconRefundPending, step: -1 },
   refund_approved:         { color: 'bg-green-50 text-green-700 border border-green-200',    label: 'Refund Approved',   Icon: IconCheckCircle,   step: -1 },
-  refund_denied:           { color: 'bg-gray-100 text-gray-500 border border-gray-200',      label: 'Refund Denied',     Icon: IconX,             step: -1 },
-  returned:                { color: 'bg-gray-100 text-gray-500 border border-gray-200',      label: 'Returned',          Icon: IconCornerUpLeft,  step: -1 },
+  refund_denied:           { color: 'bg-sage/20 text-sage border border-sage/30',            label: 'Refund Denied',     Icon: IconX,             step: -1 },
+  returned:                { color: 'bg-sage/20 text-sage border border-sage/30',            label: 'Returned',          Icon: IconCornerUpLeft,  step: -1 },
   failed:                  { color: 'bg-red-50 text-red-600 border border-red-200',          label: 'Cancelled',         Icon: IconX,             step: -1 },
   paid_fulfillment_failed: { color: 'bg-orange-50 text-orange-600 border border-orange-200', label: 'Needs Attention',   Icon: IconAlertTriangle, step: -1 },
   paid_printful_failed:    { color: 'bg-orange-50 text-orange-600 border border-orange-200', label: 'Needs Attention',   Icon: IconAlertTriangle, step: -1 },
@@ -163,53 +163,53 @@ function DamageReportModal({ order, onClose, onSuccess, addToast }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500">
             <IconCamera size={18} />
           </div>
           <div>
-            <h3 className="font-bold text-gray-900">Report Damage</h3>
-            <p className="text-xs text-gray-400">For damaged or defective items only</p>
+            <h3 className="font-bold text-ink">Report Damage</h3>
+            <p className="text-xs text-sage">For damaged or defective items only</p>
           </div>
         </div>
 
-        <div className="bg-gray-50 rounded-xl px-3 py-2 mb-4 flex items-center gap-3">
+        <div className="bg-ivory rounded-xl px-3 py-2 mb-4 flex items-center gap-3">
           {order.image?.generatedUrl && (
             <img src={order.image.generatedUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
           )}
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-gray-700 truncate">
+            <p className="text-xs font-semibold text-ink truncate">
               {order.productType?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
             </p>
-            <p className="text-xs text-gray-400">Order · ${order.price?.toFixed(2)}</p>
+            <p className="text-xs text-sage">Order · ${order.price?.toFixed(2)}</p>
           </div>
         </div>
 
-        <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5">Describe the damage</p>
+        <p className="text-xs font-semibold text-ink uppercase tracking-wide mb-1.5">Describe the damage</p>
         <textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
           rows={3}
           placeholder="Describe what happened — e.g. print arrived creased, ink smeared, wrong item received…"
-          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-amber-300 resize-none mb-4"
+          className="w-full border border-sage/30 rounded-xl px-3 py-2.5 text-sm text-ink placeholder-sage focus:outline-none focus:border-amber-300 resize-none mb-4"
         />
 
-        <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5">Photo of damage <span className="text-gray-400 normal-case font-normal">(optional but recommended)</span></p>
+        <p className="text-xs font-semibold text-ink uppercase tracking-wide mb-1.5">Photo of damage <span className="text-sage normal-case font-normal">(optional but recommended)</span></p>
         {imagePreview ? (
           <div className="relative mb-4">
             <img src={imagePreview} alt="Damage" className="w-full h-32 object-cover rounded-xl" />
             <button onClick={() => { setImageFile(null); setImagePreview(null); }}
-              className="absolute top-2 right-2 w-6 h-6 bg-white/90 rounded-full flex items-center justify-center text-gray-600 hover:text-red-500 shadow-sm">
+              className="absolute top-2 right-2 w-6 h-6 bg-ivory/90 rounded-full flex items-center justify-center text-ink hover:text-red-500 shadow-sm">
               <IconX size={11} />
             </button>
           </div>
         ) : (
           <label className="block mb-4 cursor-pointer">
-            <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-amber-300 transition-colors">
-              <div className="flex justify-center mb-1 text-gray-300"><IconCamera size={22} /></div>
-              <p className="text-xs text-gray-400">Click to upload damage photo</p>
-              <p className="text-xs text-gray-300 mt-0.5">JPEG, PNG or WebP · max 10MB</p>
+            <div className="border-2 border-dashed border-sage/30 rounded-xl p-4 text-center hover:border-amber-300 transition-colors">
+              <div className="flex justify-center mb-1 text-sage"><IconCamera size={22} /></div>
+              <p className="text-xs text-sage">Click to upload damage photo</p>
+              <p className="text-xs text-sage/60 mt-0.5">JPEG, PNG or WebP · max 10MB</p>
             </div>
             <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFile} className="hidden" />
           </label>
@@ -222,7 +222,7 @@ function DamageReportModal({ order, onClose, onSuccess, addToast }) {
         </div>
 
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-sage border border-sage/30 hover:bg-sage/20 transition-colors">
             Cancel
           </button>
           <button onClick={handleSubmit} disabled={!description.trim() || loading}
@@ -262,26 +262,26 @@ function ClaimRefundModal({ order, onClose, onClaimed, addToast }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
             <IconCheckCircle size={18} />
           </div>
           <div>
-            <h3 className="font-bold text-gray-900">Refund Approved</h3>
-            <p className="text-xs text-gray-400">Your refund has been approved by our team</p>
+            <h3 className="font-bold text-ink">Refund Approved</h3>
+            <p className="text-xs text-sage">Your refund has been approved by our team</p>
           </div>
         </div>
 
-        <div className="bg-gray-50 rounded-xl px-3 py-2 mb-4 flex items-center gap-3">
+        <div className="bg-ivory rounded-xl px-3 py-2 mb-4 flex items-center gap-3">
           {order.image?.generatedUrl && (
             <img src={order.image.generatedUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
           )}
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-gray-700 truncate">
+            <p className="text-xs font-semibold text-ink truncate">
               {order.productType?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
             </p>
-            <p className="text-xs text-gray-400">Refund · ${order.price?.toFixed(2)}</p>
+            <p className="text-xs text-sage">Refund · ${order.price?.toFixed(2)}</p>
           </div>
         </div>
 
@@ -291,7 +291,7 @@ function ClaimRefundModal({ order, onClose, onClaimed, addToast }) {
         </div>
 
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-sage border border-sage/30 hover:bg-sage/20 transition-colors">
             Not now
           </button>
           <button onClick={claim} disabled={loading}
@@ -309,14 +309,14 @@ function ClaimRefundModal({ order, onClose, onClaimed, addToast }) {
 function RefundUnderReviewModal({ order, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500">
             <IconClock size={18} />
           </div>
           <div>
-            <h3 className="font-bold text-gray-900">Report Under Review</h3>
-            <p className="text-xs text-gray-400">Our team is reviewing your submission</p>
+            <h3 className="font-bold text-ink">Report Under Review</h3>
+            <p className="text-xs text-sage">Our team is reviewing your submission</p>
           </div>
         </div>
         <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-5">
@@ -328,7 +328,7 @@ function RefundUnderReviewModal({ order, onClose }) {
             </div>
           )}
         </div>
-        <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors">
+        <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-medium text-sage border border-sage/30 hover:bg-sage/20 transition-colors">
           Close
         </button>
       </div>
@@ -339,22 +339,22 @@ function RefundUnderReviewModal({ order, onClose }) {
 function RefundDeniedModal({ onClose }) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500">
+          <div className="w-10 h-10 bg-sage/20 rounded-xl flex items-center justify-center text-sage">
             <IconX size={18} />
           </div>
           <div>
-            <h3 className="font-bold text-gray-900">Refund Not Approved</h3>
-            <p className="text-xs text-gray-400">We were unable to approve this request</p>
+            <h3 className="font-bold text-ink">Refund Not Approved</h3>
+            <p className="text-xs text-sage">We were unable to approve this request</p>
           </div>
         </div>
-        <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-5">
-          <p className="text-sm text-gray-700">Your request did not meet our damaged/defective return criteria. If you have additional evidence, please email us at{' '}
-            <a href="mailto:hello@maitrepets.com" className="text-purple-600 underline">hello@maitrepets.com</a>.
+        <div className="bg-ivory border border-sage/30 rounded-xl px-4 py-3 mb-5">
+          <p className="text-sm text-ink">Your request did not meet our damaged/defective return criteria. If you have additional evidence, please email us at{' '}
+            <a href="mailto:hello@maitrepets.com" className="text-gold underline">hello@maitrepets.com</a>.
           </p>
         </div>
-        <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors">
+        <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-medium text-sage border border-sage/30 hover:bg-sage/20 transition-colors">
           Close
         </button>
       </div>
@@ -390,8 +390,8 @@ function RefundStatusSection({ order, onReported, onClaimed, addToast }) {
             : isReview
             ? 'bg-amber-50 border-amber-300 text-amber-500 hover:bg-amber-100'
             : isDenied
-            ? 'bg-gray-100 border-gray-200 text-gray-400 hover:bg-gray-200'
-            : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-purple-600 hover:border-purple-300'
+            ? 'bg-sage/20 border-sage/30 text-sage hover:bg-sage/30'
+            : 'bg-ivory border-sage/30 text-sage hover:bg-sage/20 hover:text-gold hover:border-gold/40'
           }`}>
         <IconRefund size={13} />
       </button>
@@ -419,8 +419,8 @@ function RefundStatusSection({ order, onReported, onClaimed, addToast }) {
 // ─── Image placeholder ─────────────────────────────────────────────────────────
 function ImgPlaceholder({ className = '' }) {
   return (
-    <div className={`bg-gray-100 flex items-center justify-center overflow-hidden ${className}`}>
-      <span className="text-gray-300 font-semibold tracking-widest uppercase select-none"
+    <div className={`bg-sage/20 flex items-center justify-center overflow-hidden ${className}`}>
+      <span className="text-sage/50 font-semibold tracking-widest uppercase select-none"
         style={{ fontSize: '0.5rem', letterSpacing: '0.15em' }}>
         Maitrepets
       </span>
@@ -433,9 +433,9 @@ function IconBtn({ onClick, disabled, title, children }) {
   return (
     <div className="relative group/tip">
       <button onClick={onClick} disabled={disabled}
-        className="w-7 h-7 flex items-center justify-center rounded-lg bg-white hover:bg-gray-50 text-gray-400 hover:text-purple-600 border border-gray-200 hover:border-purple-300 transition-all disabled:opacity-40 shadow-sm">
+        className="w-7 h-7 flex items-center justify-center rounded-lg bg-ivory hover:bg-sage/20 text-sage hover:text-gold border border-sage/30 hover:border-gold/40 transition-all disabled:opacity-40 shadow-sm">
         {disabled
-          ? <span className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+          ? <span className="w-3 h-3 border border-sage border-t-transparent rounded-full animate-spin" />
           : children}
       </button>
       {title && (
@@ -463,19 +463,19 @@ function ProgressStepper({ status }) {
           <div key={label} className="flex items-center flex-1 last:flex-none">
             <div className="flex flex-col items-center gap-1">
               <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all
-                ${done   ? 'bg-purple-600 text-white' :
-                  active ? 'bg-purple-100 text-purple-600 ring-2 ring-purple-400 ring-offset-1' :
-                           'bg-gray-100 text-gray-300'}`}>
+                ${done   ? 'bg-gold text-white' :
+                  active ? 'bg-gold/10 text-gold ring-2 ring-gold ring-offset-1' :
+                           'bg-sage/20 text-sage/50'}`}>
                 <StepIcon size={11} />
               </div>
               <span className={`text-[9px] font-medium whitespace-nowrap
-                ${done ? 'text-purple-600' : active ? 'text-purple-500' : 'text-gray-300'}`}>
+                ${done ? 'text-gold' : active ? 'text-gold' : 'text-sage/50'}`}>
                 {label}
               </span>
             </div>
             {i < STEPS.length - 1 && (
               <div className={`flex-1 h-0.5 mx-1 mb-4 rounded-full transition-all
-                ${i < currentStep ? 'bg-purple-500' : 'bg-gray-200'}`} />
+                ${i < currentStep ? 'bg-gold' : 'bg-sage/30'}`} />
             )}
           </div>
         );
@@ -493,20 +493,20 @@ function TrackingSection({ order, addToast }) {
   }
 
   return (
-    <div className="mt-3 bg-purple-50 border border-purple-100 rounded-xl px-3 py-2.5 flex items-center gap-3">
-      <div className="text-purple-400 flex-shrink-0"><IconTruck size={16} /></div>
+    <div className="mt-3 bg-gold/8 border border-gold/30 rounded-xl px-3 py-2.5 flex items-center gap-3">
+      <div className="text-gold flex-shrink-0"><IconTruck size={16} /></div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] text-purple-400 font-medium uppercase tracking-wide mb-0.5">Tracking Number</p>
-        <p className="text-xs font-mono font-semibold text-purple-800 truncate">{order.trackingNumber}</p>
+        <p className="text-[10px] text-gold font-medium uppercase tracking-wide mb-0.5">Tracking Number</p>
+        <p className="text-xs font-mono font-semibold text-[#7a560f] truncate">{order.trackingNumber}</p>
       </div>
       <div className="flex gap-1.5 flex-shrink-0">
         <button onClick={copyTracking} title="Copy tracking number"
-          className="w-7 h-7 flex items-center justify-center rounded-lg bg-white text-purple-400 hover:text-purple-600 border border-purple-200 hover:border-purple-400 transition-all shadow-sm">
+          className="w-7 h-7 flex items-center justify-center rounded-lg bg-ivory text-gold hover:text-[#7a560f] border border-gold/30 hover:border-gold/40 transition-all shadow-sm">
           <IconCopy size={13} />
         </button>
         {order.trackingUrl && (
           <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" title="Track package"
-            className="w-7 h-7 flex items-center justify-center rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all shadow-sm">
+            className="w-7 h-7 flex items-center justify-center rounded-lg bg-gold hover:bg-[#7a560f] text-white transition-all shadow-sm">
             <IconExternalLink size={13} />
           </a>
         )}
@@ -558,9 +558,9 @@ function QuickOrderBtn({ img }) {
   }
   return (
     <button onClick={handle} disabled={loading}
-      className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors disabled:opacity-50 flex items-center gap-1">
+      className="text-xs font-semibold text-gold hover:text-[#7a560f] transition-colors disabled:opacity-50 flex items-center gap-1">
       {loading
-        ? <span className="w-3 h-3 border border-purple-500 border-t-transparent rounded-full animate-spin" />
+        ? <span className="w-3 h-3 border border-gold border-t-transparent rounded-full animate-spin" />
         : null}
       {loading ? 'Loading…' : 'Order →'}
     </button>
@@ -603,21 +603,21 @@ function DownloadBtn({ imageId }) {
       <IconBtn onClick={() => setShow(true)} title="Download HD image"><IconDownload size={13} /></IconBtn>
       {show && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShow(false)}>
-          <div className="bg-white rounded-2xl p-6 max-w-xs w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-ivory rounded-2xl p-6 max-w-xs w-full shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="text-center mb-4">
               <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-blue-500"><IconDownload size={22} /></div>
-              <h3 className="text-lg font-bold text-gray-900">HD Digital Copy</h3>
-              <p className="text-gray-500 text-sm mt-1">Full-resolution portrait — print anywhere, keep forever.</p>
+              <h3 className="text-lg font-bold text-ink">HD Digital Copy</h3>
+              <p className="text-sage text-sm mt-1">Full-resolution portrait — print anywhere, keep forever.</p>
             </div>
-            <div className="bg-purple-50 rounded-xl px-4 py-3 text-center mb-4">
-              <span className="text-2xl font-black text-purple-600">$12</span>
-              <p className="text-xs text-gray-400 mt-0.5">One-time · Instant download</p>
+            <div className="bg-gold/8 rounded-xl px-4 py-3 text-center mb-4">
+              <span className="text-2xl font-black text-gold">$12</span>
+              <p className="text-xs text-sage mt-0.5">One-time · Instant download</p>
             </div>
             <button onClick={handlePurchase} disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              className="w-full bg-gold hover:bg-[#7a560f] text-white font-bold py-3 rounded-xl text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2">
               {loading ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Redirecting…</> : 'Purchase & Download →'}
             </button>
-            <button onClick={() => setShow(false)} className="w-full text-xs text-gray-400 hover:text-gray-600 mt-2 py-1">Cancel</button>
+            <button onClick={() => setShow(false)} className="w-full text-xs text-sage hover:text-ink mt-2 py-1">Cancel</button>
           </div>
         </div>
       )}
@@ -728,14 +728,14 @@ export default function DashboardPage() {
       {preview && <PreviewModal src={preview} onClose={() => setPreview(null)} />}
       <ToastContainer toasts={toasts} />
 
-      <main className="min-h-screen bg-[#F8F5F2] pt-20">
+      <main className="min-h-screen bg-ivory pt-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 
           {/* Header */}
           <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3">
             <div className="min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Maîtrepets</h1>
-              <p className="text-gray-500 mt-0.5 text-sm truncate">{user?.email}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-ink">My Maîtrepets</h1>
+              <p className="text-sage mt-0.5 text-sm truncate">{user?.email}</p>
             </div>
             <Link href="/create" className="btn-primary flex-shrink-0 text-sm px-4 py-2">+ New Portrait</Link>
           </div>
@@ -823,21 +823,21 @@ export default function DashboardPage() {
               <div key={s.label} className={`card p-3 sm:p-5 flex items-center gap-2 sm:gap-4${i === arr.length - 1 && arr.length % 2 !== 0 ? ' col-span-2 sm:col-span-1' : ''}`}>
                 <span className="text-2xl sm:text-3xl">{s.icon}</span>
                 <div className="min-w-0">
-                  <p className="text-gray-500 text-xs truncate">{s.label}</p>
-                  <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{s.value}</p>
+                  <p className="text-sage text-xs truncate">{s.label}</p>
+                  <p className="text-lg sm:text-2xl font-bold text-ink truncate">{s.value}</p>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-xl w-full sm:w-fit">
+          <div className="flex gap-1 mb-6 bg-sage/20 p-1 rounded-xl w-full sm:w-fit">
             {[
               { key: 'portraits', label: `Portraits${images.length ? ` (${images.length})` : ''}` },
               { key: 'orders',    label: `Orders${orders.length ? ` (${orders.length})` : ''}` },
             ].map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
-                className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-lg text-sm font-medium transition-all text-center ${tab === t.key ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+                className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-lg text-sm font-medium transition-all text-center ${tab === t.key ? 'bg-ivory shadow-sm text-ink' : 'text-sage hover:text-ink'}`}>
                 {t.label}
               </button>
             ))}
@@ -845,17 +845,17 @@ export default function DashboardPage() {
 
           {/* ── Content ── */}
           {loading ? (
-            <div className="text-center py-16 text-gray-400">
-              <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <div className="text-center py-16 text-sage">
+              <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-3" />
               Loading…
             </div>
 
           ) : tab === 'portraits' ? (
             images.length === 0 ? (
               <div className="card p-16 text-center">
-                <div className="text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent mb-4">Maîtrepets</div>
-                <h3 className="font-bold text-gray-900 text-xl mb-2">No portraits yet</h3>
-                <p className="text-gray-500 mb-6">Create your first pet portrait — free preview</p>
+                <div className="text-2xl font-black text-gold mb-4">Maîtrepets</div>
+                <h3 className="font-bold text-ink text-xl mb-2">No portraits yet</h3>
+                <p className="text-sage mb-6">Create your first pet portrait — free preview</p>
                 <Link href="/create" className="btn-primary px-8 py-3">Create Portrait →</Link>
               </div>
             ) : (
@@ -881,13 +881,13 @@ export default function DashboardPage() {
                       </div>
                       <div className="px-3 py-2.5 flex flex-col gap-1">
                         <div className="flex items-center justify-between">
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-sage">
                             {new Date(img.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </p>
                           {img.generatedUrl && <QuickOrderBtn img={img} />}
                         </div>
                         {img.generatedUrl && (
-                          <p className="text-[10px] font-mono text-purple-400/70 tracking-wider">
+                          <p className="text-[10px] font-mono text-gold/70 tracking-wider">
                             #{img.id.replace(/-/g, '').slice(0, 8).toUpperCase()}
                           </p>
                         )}
@@ -898,22 +898,22 @@ export default function DashboardPage() {
 
                 {portraitTotalPages > 1 && (
                   <div className="flex items-center justify-between pt-4">
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-sage">
                       {(portraitPage - 1) * PORTRAIT_PAGE_SIZE + 1}–{Math.min(portraitPage * PORTRAIT_PAGE_SIZE, images.length)} of {images.length} portraits
                     </p>
                     <div className="flex gap-1">
                       <button onClick={() => setPortraitPage(p => Math.max(1, p - 1))} disabled={portraitPage === 1}
-                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-sage/30 bg-ivory text-ink hover:border-gold/40 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                         ← Prev
                       </button>
                       {Array.from({ length: portraitTotalPages }, (_, i) => i + 1).map(p => (
                         <button key={p} onClick={() => setPortraitPage(p)}
-                          className={`w-8 h-8 text-xs font-medium rounded-lg border transition-all ${p === portraitPage ? 'bg-purple-600 border-purple-600 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600'}`}>
+                          className={`w-8 h-8 text-xs font-medium rounded-lg border transition-all ${p === portraitPage ? 'bg-gold border-gold text-white' : 'border-sage/30 bg-ivory text-ink hover:border-gold/40 hover:text-gold'}`}>
                           {p}
                         </button>
                       ))}
                       <button onClick={() => setPortraitPage(p => Math.min(portraitTotalPages, p + 1))} disabled={portraitPage === portraitTotalPages}
-                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-sage/30 bg-ivory text-ink hover:border-gold/40 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                         Next →
                       </button>
                     </div>
@@ -926,15 +926,15 @@ export default function DashboardPage() {
             orders.length === 0 ? (
               <div className="card p-16 text-center">
                 <div className="text-6xl mb-4">📦</div>
-                <h3 className="font-bold text-gray-900 text-xl mb-2">No orders yet</h3>
-                <p className="text-gray-500 mb-6">Order a framed print of your portrait</p>
+                <h3 className="font-bold text-ink text-xl mb-2">No orders yet</h3>
+                <p className="text-sage mb-6">Order a framed print of your portrait</p>
                 <Link href="/create" className="btn-primary px-8 py-3">Create & Order →</Link>
               </div>
             ) : (
               <>
                 <div className="space-y-3">
                   {pagedOrders.map(order => {
-                    const sc       = STATUS_CONFIG[order.status] || { color: 'bg-gray-100 text-gray-500 border border-gray-200', label: order.status, Icon: IconClock, step: 0 };
+                    const sc       = STATUS_CONFIG[order.status] || { color: 'bg-sage/20 text-sage border border-sage/30', label: order.status, Icon: IconClock, step: 0 };
                     const isFire   = (printCounts[order.imageId] || 0) > 3;
                     const StatusIcon = sc.Icon;
                     const isPending  = order.status === 'pending';
@@ -955,7 +955,7 @@ export default function DashboardPage() {
                           {/* Info */}
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap items-start justify-between gap-1.5">
-                              <p className="font-semibold text-gray-900 text-sm truncate max-w-[55%]">
+                              <p className="font-semibold text-ink text-sm truncate max-w-[55%]">
                                 {order.productType?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                               </p>
                               <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ${sc.color}`}>
@@ -964,9 +964,9 @@ export default function DashboardPage() {
                               </span>
                             </div>
 
-                            <p className="text-xs text-gray-400 mt-0.5">
+                            <p className="text-xs text-sage mt-0.5">
                               {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                              {' · '}<span className="font-medium text-gray-600">${order.price.toFixed(2)}</span>
+                              {' · '}<span className="font-medium text-ink">${order.price.toFixed(2)}</span>
                             </p>
 
                             {/* Progress stepper — only for paid+ orders */}
@@ -986,7 +986,7 @@ export default function DashboardPage() {
 
                         {/* Actions row */}
                         {!isPending && (
-                          <div className="flex justify-end items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 flex-wrap">
+                          <div className="flex justify-end items-center gap-1.5 mt-3 pt-3 border-t border-sage/20 flex-wrap">
                             {order.imageId && <DownloadBtn imageId={order.imageId} />}
                             <ReorderBtn order={order} />
                             <RefundStatusSection order={order} onReported={handleRefundRequested} onClaimed={handleRefundClaimed} addToast={addToast} />
@@ -994,7 +994,7 @@ export default function DashboardPage() {
                         )}
 
                         {isPending && (
-                          <div className="flex justify-end mt-3 pt-3 border-t border-gray-100">
+                          <div className="flex justify-end mt-3 pt-3 border-t border-sage/20">
                             <button
                               onClick={() => resumeOrder(order.id)}
                               disabled={resumingOrder === order.id}
@@ -1013,22 +1013,22 @@ export default function DashboardPage() {
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between pt-4">
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-sage">
                       {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, orders.length)} of {orders.length} orders
                     </p>
                     <div className="flex gap-1">
                       <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-sage/30 bg-ivory text-ink hover:border-gold/40 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                         ← Prev
                       </button>
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
                         <button key={p} onClick={() => setPage(p)}
-                          className={`w-8 h-8 text-xs font-medium rounded-lg border transition-all ${p === page ? 'bg-purple-600 border-purple-600 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600'}`}>
+                          className={`w-8 h-8 text-xs font-medium rounded-lg border transition-all ${p === page ? 'bg-gold border-gold text-white' : 'border-sage/30 bg-ivory text-ink hover:border-gold/40 hover:text-gold'}`}>
                           {p}
                         </button>
                       ))}
                       <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-sage/30 bg-ivory text-ink hover:border-gold/40 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                         Next →
                       </button>
                     </div>

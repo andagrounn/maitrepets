@@ -168,8 +168,8 @@ export default function MoviePosterCanvas({ imageUrl, movieTitle, actorName, pet
       {rendering && (
         <div className="aspect-[2/3] bg-gray-900 rounded-2xl flex items-center justify-center">
           <div className="text-center text-white">
-            <div className="w-10 h-10 border-2 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-sm text-gray-400">Compositing poster...</p>
+            <div className="w-10 h-10 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-sm text-sage">Compositing poster...</p>
           </div>
         </div>
       )}
@@ -181,7 +181,7 @@ export default function MoviePosterCanvas({ imageUrl, movieTitle, actorName, pet
               <img
                 src={posterUrl}
                 alt="Movie Poster"
-                className="w-full rounded-2xl shadow-2xl ring-2 ring-purple-500/30"
+                className="w-full rounded-2xl shadow-2xl ring-2 ring-gold/30"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-2xl transition-all flex items-center justify-center">
                 <span className="opacity-0 group-hover:opacity-100 transition-all bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
@@ -219,7 +219,7 @@ export default function MoviePosterCanvas({ imageUrl, movieTitle, actorName, pet
               <a
                 href={posterUrl}
                 download={`${movieTitle || 'movie-poster'}.jpg`}
-                className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all shadow-lg"
+                className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-gold hover:bg-[#7a560f] text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all shadow-lg"
                 onClick={(e) => e.stopPropagation()}
               >
                 ⬇️ Download Poster
