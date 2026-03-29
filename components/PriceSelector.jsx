@@ -3,9 +3,9 @@ import { SIZE_MULTIPLIERS, URGENCY_FEES } from '@/lib/pricing';
 
 const Select = ({ label, value, onChange, options, placeholder }) => (
   <div>
-    <label className="block text-xs font-semibold text-sage uppercase tracking-wide mb-1.5">{label}</label>
+    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{label}</label>
     <select value={value} onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-ivory border border-sage rounded-xl px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all appearance-none cursor-pointer">
+      className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none cursor-pointer">
       {placeholder && <option value="">{placeholder}</option>}
       {options.map((o) => (
         <option key={o.value} value={o.value}>{o.label}</option>

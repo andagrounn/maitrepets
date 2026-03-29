@@ -108,18 +108,18 @@ function UpsellSuccessInner() {
   }
 
   return (
-    <div className="min-h-screen bg-ivory flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#F8F5F2] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
 
         {status === 'generating' && (
           <div className="text-center">
             <div className="text-7xl mb-6 animate-bounce">🎁</div>
-            <h1 className="text-2xl font-black text-ink mb-2">Creating your surprise…</h1>
-            <p className="text-sage mb-6">We're generating a brand-new art style for your pet</p>
-            <div className="w-full bg-gold/10 rounded-full h-2 overflow-hidden">
-              <div className="bg-gold h-full rounded-full animate-pulse w-3/4" />
+            <h1 className="text-2xl font-black text-gray-900 mb-2">Creating your surprise…</h1>
+            <p className="text-gray-500 mb-6">We're generating a brand-new art style for your pet</p>
+            <div className="w-full bg-purple-100 rounded-full h-2 overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full animate-pulse w-3/4" />
             </div>
-            <p className="text-xs text-sage mt-3">This takes about 30–60 seconds</p>
+            <p className="text-xs text-gray-400 mt-3">This takes about 30–60 seconds</p>
           </div>
         )}
 
@@ -127,9 +127,9 @@ function UpsellSuccessInner() {
           <>
             <div className="text-center mb-5">
               <div className="text-5xl mb-3">🎉</div>
-              <h1 className="text-3xl font-black text-ink mb-1">Your surprise is here!</h1>
-              <p className="text-sage">
-                {styleEmoji} Your pet in <span className="font-bold text-gold">{styleLabel}</span> style
+              <h1 className="text-3xl font-black text-gray-900 mb-1">Your surprise is here!</h1>
+              <p className="text-gray-500">
+                {styleEmoji} Your pet in <span className="font-bold text-purple-600">{styleLabel}</span> style
               </p>
             </div>
 
@@ -138,7 +138,7 @@ function UpsellSuccessInner() {
               <img
                 src={generatedUrl}
                 alt="Surprise Portrait"
-                className="w-full aspect-[2/3] object-cover rounded-2xl shadow-2xl ring-4 ring-gold"
+                className="w-full aspect-[2/3] object-cover rounded-2xl shadow-2xl ring-4 ring-purple-300"
               />
             </div>
 
@@ -162,7 +162,7 @@ function UpsellSuccessInner() {
               <button
                 onClick={handleOrderFramed}
                 disabled={!newOrderId || printLoading}
-                className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-2xl bg-gold hover:bg-[#7a560f] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-colors shadow-md shadow-[#8B6212]/20"
+                className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-2xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-colors shadow-md shadow-purple-200"
               >
                 {printLoading ? (
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -178,12 +178,12 @@ function UpsellSuccessInner() {
               <button
                 onClick={handleOrderPaper}
                 disabled={!imageId || paperLoading}
-                className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-2xl bg-ivory hover:bg-ivory disabled:opacity-50 disabled:cursor-not-allowed text-ink font-bold text-sm border border-sage/30 transition-colors"
+                className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-2xl bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-800 font-bold text-sm border border-gray-200 transition-colors"
               >
                 {paperLoading ? (
                   <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <svg className="w-5 h-5 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 )}
@@ -194,10 +194,10 @@ function UpsellSuccessInner() {
 
             {/* Nav links */}
             <div className="flex gap-3">
-              <Link href="/create" className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium text-gold hover:bg-gold/8 border border-gold/40 transition-colors">
+              <Link href="/create" className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium text-purple-600 hover:bg-purple-50 border border-purple-200 transition-colors">
                 Create Another
               </Link>
-              <Link href="/dashboard" className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium text-ink hover:bg-sage/20 border border-sage/30 transition-colors">
+              <Link href="/dashboard" className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 border border-gray-200 transition-colors">
                 View Orders
               </Link>
             </div>
@@ -207,8 +207,8 @@ function UpsellSuccessInner() {
         {status === 'error' && (
           <div className="text-center">
             <div className="text-6xl mb-4">⚠️</div>
-            <h1 className="text-2xl font-black text-ink mb-3">Something went wrong</h1>
-            <p className="text-sage mb-6">
+            <h1 className="text-2xl font-black text-gray-900 mb-3">Something went wrong</h1>
+            <p className="text-gray-500 mb-6">
               Your payment went through. Our team will manually generate your surprise portrait within 24 hours.
             </p>
             <Link href="/dashboard" className="btn-primary px-6 py-3">View Orders</Link>
@@ -222,7 +222,7 @@ function UpsellSuccessInner() {
 
 export default function UpsellSuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
       <UpsellSuccessInner />
     </Suspense>
   );

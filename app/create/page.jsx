@@ -241,7 +241,7 @@ function CreatePageInner() {
       <Navbar />
       <Toast message={toast?.message} type={toast?.type} onDismiss={dismiss} />
 
-      <main className="min-h-screen bg-ivory pt-20">
+      <main className="min-h-screen bg-[#F8F5F2] pt-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
           {/* Trust badges placeholder */}
@@ -252,9 +252,9 @@ function CreatePageInner() {
             {STEPS.map((s, i) => (
               <div key={s} className="flex items-center gap-1">
                 <div className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${
-                  i === step ? 'bg-gold text-ivory shadow-md shadow-[#8B6212]/20'
-                  : i < step  ? 'bg-gold/15 text-gold'
-                  :              'bg-ink/5 text-sage'
+                  i === step ? 'bg-purple-600 text-white shadow-md shadow-purple-200'
+                  : i < step  ? 'bg-purple-100 text-purple-600'
+                  :              'bg-gray-100 text-gray-400'
                 }`}>
                   {i < step
                     ? <span className="text-xs">✓</span>
@@ -265,7 +265,7 @@ function CreatePageInner() {
                   {i === step && <span className="sm:hidden">{s}</span>}
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div className={`h-px w-3 sm:w-6 transition-colors duration-500 ${i < step ? 'bg-gold/40' : 'bg-sage/30'}`} />
+                  <div className={`h-px w-3 sm:w-6 transition-colors duration-500 ${i < step ? 'bg-purple-300' : 'bg-gray-200'}`} />
                 )}
               </div>
             ))}
@@ -304,10 +304,10 @@ function CreatePageInner() {
           {/* ── Free limit reached banner ── */}
           {/* Guest limit */}
           {guestLimitReached && (
-            <div className="max-w-lg mx-auto mb-8 bg-gold/8 border border-gold/30 rounded-2xl p-6 text-center">
+            <div className="max-w-lg mx-auto mb-8 bg-purple-50 border border-purple-200 rounded-2xl p-6 text-center">
               <div className="text-3xl mb-2">🎨</div>
-              <h3 className="font-bold text-ink mb-1">You've used your free preview</h3>
-              <p className="text-sm text-sage mb-5">
+              <h3 className="font-bold text-gray-900 mb-1">You've used your free preview</h3>
+              <p className="text-sm text-gray-500 mb-5">
                 Create a free account to get <strong>3 full AI generations</strong> and unlock all art styles.
               </p>
               <div className="flex flex-col gap-3 max-w-xs mx-auto">
@@ -319,10 +319,10 @@ function CreatePageInner() {
 
           {/* Logged-in free limit reached */}
           {freeLimitReached && (
-            <div className="max-w-lg mx-auto mb-8 bg-gold/8 border border-gold/30 rounded-2xl p-5 text-center">
+            <div className="max-w-lg mx-auto mb-8 bg-amber-50 border border-amber-200 rounded-2xl p-5 text-center">
               <div className="text-3xl mb-2">🔒</div>
-              <h3 className="font-bold text-ink mb-1">You've used all 3 free generations</h3>
-              <p className="text-sm text-sage mb-4">
+              <h3 className="font-bold text-gray-900 mb-1">You've used all 3 free generations</h3>
+              <p className="text-sm text-gray-500 mb-4">
                 Purchase a portrait print to unlock 3 more generations. Every order restarts your generation count.
               </p>
               <Link href="/dashboard" className="btn-primary px-6 py-2.5 text-sm">Order a Portrait →</Link>
@@ -335,8 +335,8 @@ function CreatePageInner() {
 
               {/* Left — Upload */}
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-ink mb-1">Upload Your Pet Photo</h2>
-                <p className="text-sage text-sm mb-4">Clear, front-facing, good lighting = best results</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Upload Your Pet Photo</h2>
+                <p className="text-gray-500 text-sm mb-4">Clear, front-facing, good lighting = best results</p>
                 <UploadZone onFile={handleFile} preview={preview} />
 
                 {file && (
@@ -350,7 +350,7 @@ function CreatePageInner() {
               {/* Right — Theme + Customize + Price */}
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-ink mb-3">Choose Your Art Style</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">Choose Your Art Style</h2>
 
                   {/* Style Picker */}
                   <div className="mb-1">
@@ -375,7 +375,7 @@ function CreatePageInner() {
                     ? <><span className="hidden sm:inline">Generate My {STYLE_PROMPTS[selectedStyle]?.label} Portrait →</span><span className="sm:hidden">Generate Portrait →</span></>
                     : '← Upload a photo first'}
                 </button>
-                <p className="text-xs text-sage text-center">1 free AI generation • Print not included • No charge until you order • ~60 seconds</p>
+                <p className="text-xs text-gray-400 text-center">1 free AI generation • Print not included • No charge until you order • ~60 seconds</p>
               </div>
             </div>
           )}
@@ -385,8 +385,8 @@ function CreatePageInner() {
             <div className="max-w-lg mx-auto text-center py-16">
               <div className="w-28 h-28 mx-auto mb-8 relative">
                 <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="44" fill="none" stroke="#E2E1DC" strokeWidth="8" />
-                  <circle cx="50" cy="50" r="44" fill="none" stroke="#8B6212" strokeWidth="8"
+                  <circle cx="50" cy="50" r="44" fill="none" stroke="#e9d5ff" strokeWidth="8" />
+                  <circle cx="50" cy="50" r="44" fill="none" stroke="#9333ea" strokeWidth="8"
                     strokeLinecap="round"
                     strokeDasharray={`${2 * Math.PI * 44}`}
                     strokeDashoffset={`${2 * Math.PI * 44 * (1 - genProgress / 100)}`}
@@ -397,28 +397,28 @@ function CreatePageInner() {
                 </span>
               </div>
 
-              <h2 className="text-2xl font-bold text-ink mb-2">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 {isUploading ? 'Uploading your photo…' : genProgress < 40 ? 'Casting your pet…' : genProgress < 75 ? 'Painting your Masterpiece…' : 'Adding finishing touches…'}
               </h2>
-              <p className="text-sage mb-2">
+              <p className="text-gray-500 mb-2">
                 {isUploading
                   ? 'Securely transferring your image'
                   : genProgress < 40 ? 'Removing background & analyzing your pet'
                   : genProgress < 75 ? `Applying ${STYLE_PROMPTS[selectedStyle]?.label} style`
                   : 'Upscaling to high resolution'}
               </p>
-              <p className="text-gold font-semibold text-sm mb-6">{genProgress}% complete</p>
+              <p className="text-purple-500 font-semibold text-sm mb-6">{genProgress}% complete</p>
 
-              <div className="w-full bg-gold/15 rounded-full h-2.5 overflow-hidden">
-                <div className="bg-gold h-full rounded-full transition-all duration-700"
+              <div className="w-full bg-purple-100 rounded-full h-2.5 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full transition-all duration-700"
                   style={{ width: `${genProgress}%` }} />
               </div>
 
               {!isUploading && (
-                <div className="mt-6 grid grid-cols-3 gap-3 text-xs text-sage">
+                <div className="mt-6 grid grid-cols-3 gap-3 text-xs text-gray-400">
                   {['Casting your pet', 'Painting', 'Creating masterpiece'].map((s, i) => (
-                    <div key={s} className={`flex flex-col items-center gap-1 transition-all ${genProgress > i * 30 ? 'text-gold' : ''}`}>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs ${genProgress > i * 30 ? 'border-gold bg-gold/10' : 'border-sage/40'}`}>
+                    <div key={s} className={`flex flex-col items-center gap-1 transition-all ${genProgress > i * 30 ? 'text-purple-500' : ''}`}>
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs ${genProgress > i * 30 ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
                         {genProgress > i * 30 ? '✓' : i + 1}
                       </div>
                       {s}
@@ -436,24 +436,24 @@ function CreatePageInner() {
               {/* Image reveal — 3 cols */}
               <div className="md:col-span-3 space-y-4">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-xl sm:text-2xl font-bold text-ink">Your Portrait is Ready!</h2>
-                  <button onClick={startOver} className="text-sm text-sage hover:text-ink underline flex-shrink-0">Start over</button>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Your Portrait is Ready!</h2>
+                  <button onClick={startOver} className="text-sm text-gray-400 hover:text-gray-600 underline flex-shrink-0">Start over</button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-xs font-semibold text-sage uppercase tracking-wide mb-2">Original</p>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Original</p>
                     <img src={preview} alt="Your pet" className="w-full object-contain rounded-2xl shadow-sm bg-gray-900" style={{ aspectRatio: '4/3' }} />
                   </div>
                   <div className={`transition-all duration-700 ${imageRevealed ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-                    <p className="text-xs font-semibold text-gold uppercase tracking-wide mb-2">
+                    <p className="text-xs font-semibold text-purple-500 uppercase tracking-wide mb-2">
                       {STYLE_PROMPTS[selectedStyle]?.label} Portrait
                     </p>
                     <div className="relative group">
                       <img
                         src={generatedUrl}
                         alt="Generated Portrait"
-                        className={`w-full aspect-[2/3] object-cover rounded-2xl shadow-xl ring-2 ring-gold/30 ${freeLimitReached || guestLimitReached ? 'brightness-75' : ''}`}
+                        className={`w-full aspect-[2/3] object-cover rounded-2xl shadow-xl ring-2 ring-purple-200 ${freeLimitReached || guestLimitReached ? 'brightness-75' : ''}`}
                       />
                       {/* Brand tag — bottom right */}
                       <div className="absolute bottom-3 right-3 pointer-events-none select-none">
@@ -516,7 +516,7 @@ function CreatePageInner() {
 
                 {/* Regenerate CTA — all styles */}
                 <div>
-                  <p className="text-xs font-semibold text-sage uppercase tracking-wide mb-2">Try another style</p>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Try another style</p>
                   <div className="grid grid-cols-6 gap-1">
                     {Object.keys(STYLE_PROMPTS).map(k => (
                       <div key={k} className="w-full">
@@ -529,25 +529,25 @@ function CreatePageInner() {
 
               {/* Order panel — 2 cols */}
               <div className="md:col-span-2 space-y-4">
-                <h2 className="text-xl font-bold text-ink">Order Your Portrait Print</h2>
+                <h2 className="text-xl font-bold text-gray-900">Order Your Portrait Print</h2>
 
                 {/* Live Price — prominent */}
-                <div className="rounded-2xl p-5 text-center shadow-lg" style={{ background: '#1B1B1B' }}>
-                  <p className="text-sm mb-1 text-sage">Your custom portrait</p>
-                  <span className="text-5xl font-black text-ivory">${price}</span>
-                  <p className="text-xs mt-2 text-sage">{URGENCY_LABELS[urgency]}</p>
+                <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-5 text-white text-center shadow-lg shadow-purple-200">
+                  <p className="text-purple-200 text-sm mb-1">Your custom portrait</p>
+                  <span className="text-5xl font-black">${price}</span>
+                  <p className="text-purple-200 text-xs mt-2">{URGENCY_LABELS[urgency]}</p>
                 </div>
 
                 {/* Frame Color */}
-                <div className="bg-ivory border border-sage/30 rounded-2xl p-4">
-                  <p className="text-xs font-semibold text-sage uppercase tracking-wide mb-3">Frame Color</p>
+                <div className="bg-white border border-gray-100 rounded-2xl p-4">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Frame Color</p>
                   <div className="flex gap-3">
                     {FRAME_COLORS.map((c) => (
                       <button key={c.id} onClick={() => setFrameColor(c.id)}
                         className={`flex flex-col items-center gap-1.5 group`}>
-                        <span className={`w-9 h-9 rounded-full border-2 transition-all ${frameColor === c.id ? 'scale-110 border-gold shadow-md shadow-[#8B6212]/30' : 'border-sage/40 hover:border-sage'}`}
-                          style={{ backgroundColor: c.hex, boxShadow: c.id === 'white' ? 'inset 0 0 0 1px #C4C5BA' : undefined }} />
-                        <span className={`text-[10px] font-medium ${frameColor === c.id ? 'text-gold' : 'text-sage'}`}>{c.label}</span>
+                        <span className={`w-9 h-9 rounded-full border-2 transition-all ${frameColor === c.id ? 'scale-110 border-purple-500 shadow-md shadow-purple-200' : 'border-gray-200 hover:border-gray-400'}`}
+                          style={{ backgroundColor: c.hex, boxShadow: c.id === 'white' ? 'inset 0 0 0 1px #e5e7eb' : undefined }} />
+                        <span className={`text-[10px] font-medium ${frameColor === c.id ? 'text-purple-600' : 'text-gray-400'}`}>{c.label}</span>
                       </button>
                     ))}
                   </div>
@@ -555,7 +555,7 @@ function CreatePageInner() {
 
                 {/* Reconfigure */}
                 <details className="group">
-                  <summary className="text-sm font-medium text-sage cursor-pointer hover:text-gold flex items-center gap-1 select-none">
+                  <summary className="text-sm font-medium text-gray-600 cursor-pointer hover:text-purple-600 flex items-center gap-1 select-none">
                     <span className="group-open:rotate-90 inline-block transition-transform">▶</span>
                     Adjust options
                   </summary>
@@ -574,11 +574,11 @@ function CreatePageInner() {
                     { icon: '✅', title: 'Replacement for damaged prints', sub: 'Full reprint if your order arrives damaged' },
                     { icon: '🖼️', title: 'Premium framed canvas', sub: 'Ready-to-hang with premium frame' },
                   ].map((t) => (
-                    <div key={t.title} className="flex items-center gap-3 text-sm bg-ivory rounded-xl p-3 border border-sage/30">
+                    <div key={t.title} className="flex items-center gap-3 text-sm bg-white rounded-xl p-3 border border-gray-100">
                       <span className="text-xl">{t.icon}</span>
                       <div>
-                        <p className="font-semibold text-ink">{t.title}</p>
-                        <p className="text-sage text-xs">{t.sub}</p>
+                        <p className="font-semibold text-gray-800">{t.title}</p>
+                        <p className="text-gray-400 text-xs">{t.sub}</p>
                       </div>
                     </div>
                   ))}
@@ -586,33 +586,33 @@ function CreatePageInner() {
 
                 {/* ── Pre-checkout upsells ── */}
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-sage uppercase tracking-wide">Add-ons</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Add-ons</p>
                   {EXTRAS.map((e) => (
                     <label key={e.key}
-                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${extras[e.key] ? 'border-gold bg-gold/8' : 'border-sage/40 bg-ivory hover:border-gold/40'}`}>
+                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${extras[e.key] ? 'border-purple-400 bg-purple-50' : 'border-gray-200 bg-white hover:border-purple-200'}`}>
                       <input
                         type="checkbox"
                         checked={extras[e.key]}
                         onChange={() => setExtras((prev) => ({ ...prev, [e.key]: !prev[e.key] }))}
-                        className="accent-[#8B6212] w-4 h-4 shrink-0"
+                        className="accent-purple-600 w-4 h-4 shrink-0"
                       />
                       <span className="text-lg">{e.emoji}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-ink">{e.label} <span className="text-gold">+${e.price}</span></p>
-                        <p className="text-xs text-sage truncate">{e.sub}</p>
+                        <p className="text-sm font-semibold text-gray-800">{e.label} <span className="text-purple-600">+${e.price}</span></p>
+                        <p className="text-xs text-gray-400 truncate">{e.sub}</p>
                       </div>
                     </label>
                   ))}
                 </div>
 
                 {/* Total with extras */}
-                <div className="bg-ivory border border-sage/20 rounded-xl px-4 py-3 flex items-center justify-between">
-                  <span className="text-sm text-sage">Total</span>
-                  <span className="text-2xl font-black text-ink">${totalPrice}</span>
+                <div className="bg-gray-50 rounded-xl px-4 py-3 flex items-center justify-between">
+                  <span className="text-sm text-gray-500">Total</span>
+                  <span className="text-2xl font-black text-gray-900">${totalPrice}</span>
                 </div>
 
                 {!size && (
-                  <p className="text-xs text-center text-gold bg-gold/8 border border-gold/30 rounded-xl py-2 px-3">
+                  <p className="text-xs text-center text-amber-600 bg-amber-50 border border-amber-200 rounded-xl py-2 px-3">
                     Please select a print size above to continue
                   </p>
                 )}
@@ -636,7 +636,7 @@ function CreatePageInner() {
                     </>
                   )}
                 </button>
-                <p className="text-xs text-sage text-center flex items-center justify-center gap-1.5">
+                <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1.5">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                   Secure checkout by Stripe · No hidden fees
                 </p>
@@ -652,15 +652,15 @@ function CreatePageInner() {
           <div className="card p-8 max-w-lg w-full my-8 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gold/15 rounded-full flex items-center justify-center text-gold font-bold text-sm">2</div>
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold text-sm">2</div>
                 <div>
-                  <p className="text-xs text-sage uppercase tracking-wide">Final step</p>
-                  <p className="font-bold text-ink">Shipping & Payment</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wide">Final step</p>
+                  <p className="font-bold text-gray-900">Shipping & Payment</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-black text-gold">${totalPrice}</p>
-                <p className="text-xs text-sage">{shipping.shippingRate ? 'incl. shipping' : 'excl. shipping'}</p>
+                <p className="text-2xl font-black text-purple-600">${totalPrice}</p>
+                <p className="text-xs text-gray-400">{shipping.shippingRate ? 'incl. shipping' : 'excl. shipping'}</p>
               </div>
             </div>
             <ShippingForm
@@ -682,13 +682,13 @@ function CreatePageInner() {
           <div className="card p-8 max-w-sm w-full shadow-2xl">
             <div className="text-center mb-6">
               <div className="text-4xl mb-3">🐶</div>
-              <h3 className="text-xl font-bold text-ink">Sign in to continue</h3>
-              <p className="text-sage text-sm mt-1">Free account · 3 generations · No credit card required</p>
+              <h3 className="text-xl font-bold text-gray-900">Sign in to continue</h3>
+              <p className="text-gray-500 text-sm mt-1">Free account · 3 generations · No credit card required</p>
             </div>
             <div className="flex flex-col gap-3">
               <Link href="/signup" className="btn-primary text-center py-3">Create Free Account →</Link>
               <Link href="/login" className="btn-secondary text-center py-3">Sign In</Link>
-              <button onClick={() => setShowAuthModal(false)} className="text-sm text-sage hover:text-ink transition-colors py-1">Continue as guest (1 preview)</button>
+              <button onClick={() => setShowAuthModal(false)} className="text-sm text-gray-400 hover:text-gray-600 transition-colors py-1">Continue as guest (1 preview)</button>
             </div>
           </div>
         </div>

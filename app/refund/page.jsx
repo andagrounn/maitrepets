@@ -10,14 +10,14 @@ export default function RefundPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-ivory pt-24 pb-16 px-4 md:px-6">
+      <main className="min-h-screen bg-[#F8F5F2] pt-24 pb-16 px-4 md:px-6">
         <div className="max-w-3xl mx-auto">
 
           <div className="mb-8">
-            <Link href="/" className="text-sm text-gold hover:text-[#7a560f] transition-colors">← Back to home</Link>
+            <Link href="/" className="text-sm text-purple-600 hover:text-purple-800 transition-colors">← Back to home</Link>
           </div>
 
-          <div className="bg-ivory rounded-2xl shadow-sm border border-sage/30 p-6 md:p-10">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">Refund Policy</h1>
             <p className="text-sm text-gray-400 mb-8">Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
 
@@ -28,7 +28,7 @@ export default function RefundPage() {
                 { icon: '🎨', title: 'AI Generation', desc: 'Regeneration only as part of a damaged-print replacement — not for style preference' },
                 { icon: '💾', title: 'Digital Downloads', desc: 'Non-refundable once the file has been delivered' },
               ].map((b) => (
-                <div key={b.title} className="bg-gold/8 border border-gold/20 rounded-2xl p-4 text-center">
+                <div key={b.title} className="bg-purple-50 border border-purple-100 rounded-2xl p-4 text-center">
                   <div className="text-2xl mb-2">{b.icon}</div>
                   <p className="font-bold text-gray-900 text-sm mb-1">{b.title}</p>
                   <p className="text-xs text-gray-500 leading-snug">{b.desc}</p>
@@ -58,7 +58,7 @@ export default function RefundPage() {
                 </ul>
 
                 <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-800">
-                  <strong>How to request a refund:</strong> Email <a href="mailto:hello@maitrepets.com" className="text-gold hover:underline">hello@maitrepets.com</a> within <strong>14 days of delivery</strong> with your order number and clear photos of the damage. We will respond within 2 business days.
+                  <strong>How to request a refund:</strong> Email <a href="mailto:hello@maitrepets.com" className="text-purple-600 hover:underline">hello@maitrepets.com</a> within <strong>14 days of delivery</strong> with your order number and clear photos of the damage. We will respond within 2 business days.
                 </div>
               </section>
 
@@ -86,7 +86,7 @@ export default function RefundPage() {
 
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">6. Cancellations</h2>
-                <p>You may cancel an order <strong>within 1 hour of placing it</strong>, before production begins. To cancel, email <a href="mailto:hello@maitrepets.com" className="text-gold hover:underline">hello@maitrepets.com</a> immediately with your order number. Once production has started with Printful, cancellation is no longer possible.</p>
+                <p>You may cancel an order <strong>within 1 hour of placing it</strong>, before production begins. To cancel, email <a href="mailto:hello@maitrepets.com" className="text-purple-600 hover:underline">hello@maitrepets.com</a> immediately with your order number. Once production has started with Printful, cancellation is no longer possible.</p>
               </section>
 
               <section>
@@ -96,7 +96,7 @@ export default function RefundPage() {
 
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">8. Contact Us</h2>
-                <p>For all refund and return inquiries: <a href="mailto:hello@maitrepets.com" className="text-gold hover:underline">hello@maitrepets.com</a></p>
+                <p>For all refund and return inquiries: <a href="mailto:hello@maitrepets.com" className="text-purple-600 hover:underline">hello@maitrepets.com</a></p>
                 <p className="text-sm text-gray-500 mt-1">Please include your order number and relevant photos in your email to speed up the process.</p>
               </section>
 

@@ -7,13 +7,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Archival Gallery palette
-        'ink':    '#1B1B1B',
-        'ivory':  '#F0EFEB',
-        'sage':   '#C4C5BA',
-        'gold':   '#8B6212',
-        // keep cream as alias for backward compat
-        cream: '#F0EFEB',
+        cream: '#F8F5F2',
+        brand: {
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          400: '#c084fc',
+          500: '#a855f7',
+          600: '#9333ea',
+          700: '#7e22ce',
+          900: '#4a044e',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

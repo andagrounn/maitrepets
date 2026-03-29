@@ -26,7 +26,7 @@ function PostPurchaseUpsell({ orderId }) {
   if (claimed) return null;
 
   return (
-    <div className="relative bg-gold rounded-2xl p-6 text-white text-left shadow-xl shadow-[#8B6212]/20 mb-2">
+    <div className="relative bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-6 text-white text-left shadow-xl shadow-purple-200 mb-2">
       <div className="absolute -top-3 left-4 bg-yellow-400 text-yellow-900 text-xs font-black px-3 py-1 rounded-full">
         ONE-TIME DEAL
       </div>
@@ -34,20 +34,20 @@ function PostPurchaseUpsell({ orderId }) {
         <span className="text-4xl">🎨</span>
         <div className="flex-1">
           <h3 className="text-lg font-black mb-1">Get a surprise HD print style — just $6 🎁</h3>
-          <p className="text-gold/80 text-sm mb-4">
+          <p className="text-purple-100 text-sm mb-4">
             We'll secretly pick a different art style, regenerate your pet, and send you the HD file instantly. Normally $29+. Only available right now — gone when you leave.
           </p>
           <div className="flex gap-3">
             <button
               onClick={claimUpsell}
               disabled={loading}
-              className="bg-white text-[#7a560f] font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-gold/10 transition-all disabled:opacity-60"
+              className="bg-white text-purple-700 font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-purple-50 transition-all disabled:opacity-60"
             >
               {loading ? 'Redirecting…' : 'Grab it for $6 →'}
             </button>
             <button
               onClick={() => setClaimed(true)}
-              className="text-gold/80 text-sm hover:text-white underline"
+              className="text-purple-200 text-sm hover:text-white underline"
             >
               No thanks
             </button>
@@ -114,22 +114,22 @@ function SuccessInner() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-ivory flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#F8F5F2] flex items-center justify-center px-4">
       <div className="text-center max-w-md">
 
         {status === 'confirming' && (
           <>
-            <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-6" />
-            <h1 className="text-2xl font-bold text-ink mb-2">Confirming your order…</h1>
-            <p className="text-sage">Just a moment while we verify your payment.</p>
+            <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-6" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Confirming your order…</h1>
+            <p className="text-gray-500">Just a moment while we verify your payment.</p>
           </>
         )}
 
         {status === 'confirmed' && (
           <>
             <div className="text-8xl mb-4">🎉</div>
-            <h1 className="text-4xl font-black text-ink mb-2">Your pet is now a star ⭐</h1>
-            <p className="text-ink text-lg mb-4">
+            <h1 className="text-4xl font-black text-gray-900 mb-2">Your pet is now a star ⭐</h1>
+            <p className="text-gray-600 text-lg mb-4">
               Your Portrait is being sent to print!
             </p>
             {(txId || sessionId) && (
@@ -149,7 +149,7 @@ function SuccessInner() {
                   <span className="text-2xl">{t.icon}</span>
                   <div>
                     <p className="font-semibold">{t.title}</p>
-                    <p className="text-sm text-sage">{t.sub}</p>
+                    <p className="text-sm text-gray-500">{t.sub}</p>
                   </div>
                 </div>
               ))}
@@ -161,8 +161,8 @@ function SuccessInner() {
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-3xl">💾</span>
                   <div>
-                    <p className="font-bold text-ink">Your HD Digital Copy is ready</p>
-                    <p className="text-sm text-sage">Full-resolution PNG — download and keep forever</p>
+                    <p className="font-bold text-gray-900">Your HD Digital Copy is ready</p>
+                    <p className="text-sm text-gray-500">Full-resolution PNG — download and keep forever</p>
                   </div>
                 </div>
                 <a
@@ -183,16 +183,16 @@ function SuccessInner() {
             </div>
 
             {/* Social proof */}
-            <p className="text-sage text-sm mt-6">Loved by 10,000+ pet owners</p>
-            <p className="text-sage text-xs mt-1">Printed on Enhanced Matte Paper · Ships from USA</p>
+            <p className="text-gray-400 text-sm mt-6">Loved by 10,000+ pet owners</p>
+            <p className="text-gray-400 text-xs mt-1">Printed on Enhanced Matte Paper · Ships from USA</p>
           </>
         )}
 
         {status === 'error' && (
           <>
             <div className="text-8xl mb-6">⚠️</div>
-            <h1 className="text-3xl font-black text-ink mb-4">Payment received</h1>
-            <p className="text-ink mb-6">
+            <h1 className="text-3xl font-black text-gray-900 mb-4">Payment received</h1>
+            <p className="text-gray-600 mb-6">
               Your payment was successful but we had trouble confirming your order automatically.
               Our team will process it manually within 24 hours.
             </p>
@@ -207,7 +207,7 @@ function SuccessInner() {
 
 export default function SuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
       <SuccessInner />
     </Suspense>
   );

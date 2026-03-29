@@ -14,7 +14,7 @@ export default function PrivacyPage() {
         <div className="max-w-3xl mx-auto">
 
           <div className="mb-8">
-            <Link href="/" className="text-sm text-gold hover:text-[#7a560f] transition-colors">← Back to home</Link>
+            <Link href="/" className="text-sm text-purple-600 hover:text-purple-800 transition-colors">← Back to home</Link>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
@@ -96,7 +96,7 @@ export default function PrivacyPage() {
 
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">7. Data Retention</h2>
-                <p>We retain your account data for as long as your account is active. Order records are retained for 7 years for tax and legal compliance. You may request deletion of your account and associated data at any time by emailing <a href="mailto:hello@maitrepets.com" className="text-gold hover:underline">hello@maitrepets.com</a>.</p>
+                <p>We retain your account data for as long as your account is active. Order records are retained for 7 years for tax and legal compliance. You may request deletion of your account and associated data at any time by emailing <a href="mailto:hello@maitrepets.com" className="text-purple-600 hover:underline">hello@maitrepets.com</a>.</p>
               </section>
 
               <section>
@@ -109,7 +109,7 @@ export default function PrivacyPage() {
                   <li><strong>Portability:</strong> Request your data in a portable format</li>
                   <li><strong>Opt-out:</strong> Opt out of any marketing communications at any time</li>
                 </ul>
-                <p className="mt-2 text-sm">To exercise any of these rights, email <a href="mailto:hello@maitrepets.com" className="text-gold hover:underline">hello@maitrepets.com</a>. We will respond within 30 days.</p>
+                <p className="mt-2 text-sm">To exercise any of these rights, email <a href="mailto:hello@maitrepets.com" className="text-purple-600 hover:underline">hello@maitrepets.com</a>. We will respond within 30 days.</p>
               </section>
 
               <section>
@@ -129,7 +129,7 @@ export default function PrivacyPage() {
 
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">12. Contact Us</h2>
-                <p>For privacy questions or requests, contact us at: <a href="mailto:hello@maitrepets.com" className="text-gold hover:underline">hello@maitrepets.com</a></p>
+                <p>For privacy questions or requests, contact us at: <a href="mailto:hello@maitrepets.com" className="text-purple-600 hover:underline">hello@maitrepets.com</a></p>
               </section>
 
             </div>

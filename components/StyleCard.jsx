@@ -29,7 +29,7 @@ export default function StyleCard({ styleKey, selected, onClick, popular = false
       className={`group relative overflow-hidden aspect-square transition-all duration-200 ${
         compact ? 'rounded-lg' : 'rounded-2xl'
       } ${
-        selected ? 'ring-2 ring-gold scale-105 shadow-lg' : 'hover:scale-105 hover:shadow-md'
+        selected ? 'ring-2 ring-purple-500 scale-105 shadow-lg' : 'hover:scale-105 hover:shadow-md'
       }`}
     >
       <img
@@ -38,7 +38,7 @@ export default function StyleCard({ styleKey, selected, onClick, popular = false
         className="w-full h-full object-cover"
       />
       <div className={`absolute inset-0 transition-all duration-200 ${
-        selected ? 'bg-gold/40' : 'bg-black/30 group-hover:bg-black/10'
+        selected ? 'bg-purple-600/40' : 'bg-black/30 group-hover:bg-black/10'
       }`} />
       <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent ${compact ? 'p-1' : 'p-2.5'}`}>
         <p className={`text-white font-bold leading-tight ${compact ? 'text-[8px]' : 'text-xs'}`}>
@@ -52,7 +52,7 @@ export default function StyleCard({ styleKey, selected, onClick, popular = false
         </div>
       )}
       {selected && (
-        <div className={`absolute bg-gold rounded-full flex items-center justify-center shadow-lg ${compact ? 'top-1 right-1 w-4 h-4' : 'top-2 right-2 w-6 h-6'}`}>
+        <div className={`absolute bg-purple-500 rounded-full flex items-center justify-center shadow-lg ${compact ? 'top-1 right-1 w-4 h-4' : 'top-2 right-2 w-6 h-6'}`}>
           <svg className={`text-white ${compact ? 'w-2.5 h-2.5' : 'w-4 h-4'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
           </svg>
