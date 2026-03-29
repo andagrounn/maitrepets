@@ -625,6 +625,86 @@ function DownloadBtn({ imageId }) {
   );
 }
 
+// ─── Address edit modal ────────────────────────────────────────────────────────
+function AddressEditModal({ order, onClose, onSaved }) {
+  const [fields, setFields] = useState({
+    name:     order.shippingName     || '',
+    address1: order.shippingAddress  || '',
+    address2: order.shippingAddress2 || '',
+    city:     order.shippingCity     || '',
+    state:    order.shippingState    || '',
+    zip:      order.shippingZip      || '',
+    country:  order.shippingCountry  || 'US',
+    phone:    order.shippingPhone    || '',
+  });
+  const [saving, setSaving]   = useState(false);
+  const [error,  setError]    = useState('');
+
+  const set = (k) => (e) => setFields(f => ({ ...f, [k]: e.target.value }));
+
+  async function save() {
+    if (!fields.address1 || !fields.city || !fields.state || !fields.zip) {
+      setError('Address, city, state and zip are required.'); return;
+    }
+    setSaving(true); setError('');
+    try {
+      const res  = await fetch('/api/orders/update-address', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: order.id, ...fields }),
+      });
+      const data = await res.json();
+      if (data.ok) { onSaved(); onClose(); }
+      else setError(data.error || 'Failed to update address.');
+    } catch { setError('Network error. Please try again.'); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <p className="font-bold text-gray-900">Update Shipping Address</p>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><IconX size={16} /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          <p className="text-xs text-orange-600 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2">
+            Your order failed because of a missing or invalid address. Update it below and we'll resubmit to print automatically.
+          </p>
+          {[
+            { label: 'Full Name',   key: 'name',     placeholder: 'Jane Smith' },
+            { label: 'Address Line 1', key: 'address1', placeholder: '123 Main St' },
+            { label: 'Address Line 2', key: 'address2', placeholder: 'Apt 4B (optional)' },
+            { label: 'City',        key: 'city',     placeholder: 'New York' },
+            { label: 'State',       key: 'state',    placeholder: 'NY' },
+            { label: 'ZIP Code',    key: 'zip',      placeholder: '10001' },
+            { label: 'Country',     key: 'country',  placeholder: 'US' },
+            { label: 'Phone (optional)', key: 'phone', placeholder: '+1 555 000 0000' },
+          ].map(({ label, key, placeholder }) => (
+            <div key={key}>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">{label}</label>
+              <input
+                value={fields[key]}
+                onChange={set(key)}
+                placeholder={placeholder}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+            </div>
+          ))}
+          {error && <p className="text-xs text-red-600">{error}</p>}
+          <button
+            onClick={save}
+            disabled={saving}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-60 mt-1"
+          >
+            {saving ? 'Saving & Resubmitting…' : 'Save & Resubmit to Print →'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Preview modal ─────────────────────────────────────────────────────────────
 function PreviewModal({ src, onClose }) {
   useEffect(() => {
@@ -661,6 +741,7 @@ export default function DashboardPage() {
   const [dismissedBanner, setDismissedBanner] = useState(false);
   const [showPendingList, setShowPendingList] = useState(true);
   const [resumingOrder, setResumingOrder]     = useState(null);
+  const [editingAddress, setEditingAddress]   = useState(null);
   const { toasts, addToast }    = useToast();
 
   useEffect(() => {
@@ -726,6 +807,17 @@ export default function DashboardPage() {
     <>
       <Navbar />
       {preview && <PreviewModal src={preview} onClose={() => setPreview(null)} />}
+      {editingAddress && (
+        <AddressEditModal
+          order={editingAddress}
+          onClose={() => setEditingAddress(null)}
+          onSaved={() => {
+            setOrders(prev => prev.map(o => o.id === editingAddress.id ? { ...o, status: 'fulfilling' } : o));
+            addToast('Address saved — resubmitted to print!', 'success');
+            setEditingAddress(null);
+          }}
+        />
+      )}
       <ToastContainer toasts={toasts} />
 
       <main className="min-h-screen bg-[#F8F5F2] pt-20">
@@ -934,7 +1026,8 @@ export default function DashboardPage() {
                     const sc       = STATUS_CONFIG[order.status] || { color: 'bg-gray-100 text-gray-500 border border-gray-200', label: order.status, Icon: IconClock, step: 0 };
                     const isFire   = (printCounts[order.imageId] || 0) > 3;
                     const StatusIcon = sc.Icon;
-                    const isPending  = order.status === 'pending';
+                    const isPending   = order.status === 'pending';
+                    const isAddrFail  = ['paid_fulfillment_failed','paid_printful_failed'].includes(order.status);
 
                     return (
                       <div key={order.id} className={`card p-4 ${isPending ? 'opacity-80 border-dashed' : ''}`}>
@@ -984,6 +1077,14 @@ export default function DashboardPage() {
                         {/* Actions row */}
                         {!isPending && (
                           <div className="flex justify-end items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 flex-wrap">
+                            {isAddrFail && (
+                              <button
+                                onClick={() => setEditingAddress(order)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 text-xs font-semibold rounded-xl transition-colors"
+                              >
+                                <IconAlertTriangle size={12} /> Fix Address
+                              </button>
+                            )}
                             {order.imageId && <DownloadBtn imageId={order.imageId} />}
                             <ReorderBtn order={order} />
                             <RefundStatusSection order={order} onReported={handleRefundRequested} onClaimed={handleRefundClaimed} addToast={addToast} />
