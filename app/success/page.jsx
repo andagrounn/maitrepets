@@ -132,7 +132,7 @@ function SuccessInner() {
             <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
-            <h1 className="text-4xl font-black text-gray-900 mb-2">Your masterpiece is on its way</h1>
+            <h1 className="text-4xl font-black text-gray-900 mb-2">Your masterpiece<br />is on its way</h1>
             <p className="text-gray-600 text-lg mb-4">
               Your Portrait is being sent to print!
             </p>
