@@ -33,9 +33,26 @@ export async function GET(req) {
     const captureId = capture?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
 
     if (captureStatus === 'COMPLETED') {
+      // Pull shipping address from PayPal capture response
+      const ppShipping = capture?.purchase_units?.[0]?.shipping;
+      const ppAddress  = ppShipping?.address;
+      const ppName     = ppShipping?.name?.full_name || capture?.payer?.name
+        ? `${capture.payer.name.given_name} ${capture.payer.name.surname}`.trim()
+        : null;
+
       await prisma.order.update({
         where: { id: order.id },
-        data: { status: 'paid', updatedAt: new Date() },
+        data: {
+          status:           'paid',
+          updatedAt:        new Date(),
+          ...(ppName     && { shippingName:    ppName }),
+          ...(ppAddress?.address_line_1 && { shippingAddress:  ppAddress.address_line_1 }),
+          ...(ppAddress?.address_line_2 && { shippingAddress2: ppAddress.address_line_2 }),
+          ...(ppAddress?.admin_area_2   && { shippingCity:     ppAddress.admin_area_2   }),
+          ...(ppAddress?.admin_area_1   && { shippingState:    ppAddress.admin_area_1   }),
+          ...(ppAddress?.postal_code    && { shippingZip:      ppAddress.postal_code    }),
+          ...(ppAddress?.country_code   && { shippingCountry:  ppAddress.country_code   }),
+        },
       });
 
       // Auto-submit to Printful (fire-and-forget — don't block redirect)
