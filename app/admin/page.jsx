@@ -436,6 +436,116 @@ function OverviewTab({ data, setTab }) {
         </div>
       </div>
 
+      {/* ── Profit Breakdown ── */}
+      <div className="grid md:grid-cols-2 gap-4">
+
+        {/* Order flow waterfall — avg 16×20 framed canvas */}
+        <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Order Flow — Per Sale</h3>
+          <p className="text-gray-600 text-[10px] mb-4">16×20" Framed Canvas (base price, standard shipping)</p>
+          {(() => {
+            const sell = 79.99;
+            const stripe = parseFloat((sell * 0.029 + 0.30).toFixed(2));
+            const printfulPrint = 28.95;  // Printful framed canvas print cost
+            const printfulShip  = 5.99;   // Standard shipping
+            const printfulTotal = printfulPrint + printfulShip;
+            const profit = sell - stripe - printfulTotal;
+            const margin = (profit / sell * 100).toFixed(1);
+            return (
+              <>
+                {[
+                  { label: 'Customer Pays',        value: sell,           color: 'bg-emerald-500',   text: 'text-emerald-400', sign: '+' },
+                  { label: 'Stripe Fee',            value: -stripe,        color: 'bg-red-500/70',    text: 'text-red-400',     sign: '−', note: '2.9% + $0.30' },
+                  { label: 'Printful Canvas Print', value: -printfulPrint, color: 'bg-orange-500/70', text: 'text-orange-400',  sign: '−', note: 'framed canvas' },
+                  { label: 'Standard Shipping',     value: -printfulShip,  color: 'bg-yellow-500/70', text: 'text-yellow-400',  sign: '−', note: 'via Printful' },
+                  { label: 'Net Profit',            value: profit,         color: 'bg-purple-500',    text: 'text-purple-300',  sign: '=', bold: true },
+                ].map((row, i) => (
+                  <div key={i} className={`flex items-center gap-3 py-2.5 ${i < 4 ? 'border-b border-white/5' : ''}`}>
+                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${row.color}`} />
+                    <div className="flex-1">
+                      <span className="text-xs text-gray-300">{row.label}</span>
+                      {row.note && <span className="text-gray-600 text-xs ml-1.5">({row.note})</span>}
+                    </div>
+                    <div className={`flex items-center gap-1 font-mono text-sm ${row.bold ? 'font-black' : 'font-medium'} ${row.text}`}>
+                      <span className="text-gray-600 text-xs">{row.sign}</span>
+                      ${Math.abs(row.value).toFixed(2)}
+                    </div>
+                  </div>
+                ))}
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-xs text-gray-500">Profit margin</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-purple-500 rounded-full" style={{width:`${margin}%`}} />
+                    </div>
+                    <span className="text-purple-300 text-xs font-bold">{margin}%</span>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+
+        {/* Per-product margin table — framed canvas costs */}
+        <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Margin by Print Size</h3>
+          <p className="text-gray-600 text-[10px] mb-4">Framed Canvas · base sell price · standard ship $5.99</p>
+          <div className="space-y-0">
+            {[
+              { size: '8×10"',   sell: 49.99,  printful: 16.95 },
+              { size: '11×14"',  sell: 59.99,  printful: 21.50 },
+              { size: '16×20"',  sell: 79.99,  printful: 28.95 },
+              { size: '18×24"',  sell: 99.99,  printful: 35.50 },
+              { size: '24×36"',  sell: 139.99, printful: 52.95 },
+            ].map((r, i) => {
+              const stripe = parseFloat((r.sell * 0.029 + 0.30).toFixed(2));
+              const ship = 5.99;
+              const profit = r.sell - r.printful - stripe - ship;
+              const margin = (profit / r.sell * 100).toFixed(0);
+              return (
+                <div key={i} className="flex items-center gap-3 py-2.5 border-b border-white/5 last:border-0">
+                  <span className="text-gray-400 text-xs w-14 flex-shrink-0">{r.size}</span>
+                  <div className="flex-1">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-gray-600">${r.printful} + $5.99 ship</span>
+                      <span className="text-emerald-400 font-semibold">${profit.toFixed(2)}</span>
+                    </div>
+                    <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full"
+                        style={{width:`${margin}%`, background:'linear-gradient(90deg,#7c3aed,#a855f7)'}} />
+                    </div>
+                  </div>
+                  <span className="text-xs font-bold text-purple-300 w-9 text-right">{margin}%</span>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-gray-700 text-[10px] mt-3">* Printful framed canvas fulfillment costs (est.). Stripe: 2.9% + $0.30. Actual profit higher with style/size multipliers.</p>
+        </div>
+      </div>
+
+      {/* Printful flow status */}
+      <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Printful Fulfillment Pipeline</h3>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {[
+            { label: 'Order Placed',   icon: '💳', count: stats.paidOrders,         color: 'text-emerald-400', sub: 'Paid by customer' },
+            { label: 'Sent to Print',  icon: '📤', count: stats.fulfillingOrders,    color: 'text-blue-400',    sub: 'At Printful' },
+            { label: 'In Production',  icon: '🖨️', count: stats.fulfillingOrders,    color: 'text-yellow-400',  sub: 'Being printed' },
+            { label: 'Shipped',        icon: '📦', count: stats.shippedOrders,       color: 'text-purple-400',  sub: 'With carrier' },
+            { label: 'Delivered',      icon: '🏠', count: stats.deliveredOrders,     color: 'text-teal-400',    sub: 'At customer' },
+          ].map((step, i) => (
+            <div key={i} className="relative flex flex-col items-center text-center p-3 rounded-xl bg-white/5 border border-white/5">
+              {i < 4 && <div className="hidden md:block absolute -right-3.5 top-1/2 -translate-y-1/2 text-gray-700 text-xs z-10">→</div>}
+              <span className="text-2xl mb-1">{step.icon}</span>
+              <p className={`text-xl font-black ${step.color}`}>{step.count}</p>
+              <p className="text-white text-xs font-medium mt-0.5">{step.label}</p>
+              <p className="text-gray-600 text-[10px] mt-0.5">{step.sub}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Alerts */}
       {(refundRequests.length > 0 || errorOrders.length > 0) && (
         <div className="grid md:grid-cols-2 gap-4">

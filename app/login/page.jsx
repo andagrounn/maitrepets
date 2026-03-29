@@ -237,7 +237,7 @@ export default function LoginPage() {
             </p>
 
             <div className="mt-5 pt-5 border-t border-gray-100 text-xs text-gray-400 text-center">
-              Demo: demo@maitrepets.com / password123
+              Free preview — no credit card required
             </div>
           </div>
         </div>
