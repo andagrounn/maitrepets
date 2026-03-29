@@ -57,6 +57,7 @@ export async function POST(req) {
         orderId: order.id,
         amount: Number(price),
         description,
+        shipping,
       });
       // Reuse stripeId column to store PayPal order ID
       await prisma.order.update({ where: { id: order.id }, data: { stripeId: paypalOrderId } });
