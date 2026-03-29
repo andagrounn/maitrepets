@@ -31,7 +31,7 @@ export async function POST(req) {
   }
 
   try {
-    const { imageUrl, style, imageId } = await req.json();
+    const { imageUrl, style, imageId, productKey } = await req.json();
     if (!imageUrl || !style) return NextResponse.json({ error: 'imageUrl and style required' }, { status: 400 });
 
     // ── Logged-in generation limits (skip demo account) ───────────────────
@@ -65,7 +65,7 @@ export async function POST(req) {
       await new Promise((r) => setTimeout(r, 2000));
       generatedUrl = 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&q=80';
     } else {
-      ({ generatedUrl, finalPrompt } = await runGenerationPipeline(imageUrl, style));
+      ({ generatedUrl, finalPrompt } = await runGenerationPipeline(imageUrl, style, productKey));
     }
 
     if (!generatedUrl) throw new Error('No output URL from any generation model');

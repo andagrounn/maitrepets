@@ -173,7 +173,7 @@ function CreatePageInner() {
       setStep(2);
       setIsGenerating(true);
 
-      const genData = await api.generate({ imageUrl: uploadData.url, style: selectedStyle, imageId: uploadData.imageId });
+      const genData = await api.generate({ imageUrl: uploadData.url, style: selectedStyle, imageId: uploadData.imageId, productKey });
 
       if (genData?.error === 'FREE_LIMIT_REACHED') {
         setFreeLimitReached(true);
