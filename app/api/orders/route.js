@@ -7,10 +7,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const orders = await prisma.order.findMany({
-    where: {
-      userId: session.id,
-      status: { notIn: ['pending', 'paid_fulfillment_failed', 'paid_printful_failed', 'cancelled'] },
-    },
+    where: { userId: session.id },
     include: { image: true },
     orderBy: { createdAt: 'desc' },
   });
