@@ -626,6 +626,31 @@ function DownloadBtn({ imageId }) {
 }
 
 // ─── Address edit modal ────────────────────────────────────────────────────────
+const COUNTRIES = [
+  { code: 'US', name: 'United States' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'JM', name: 'Jamaica' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'FR', name: 'France' },
+  { code: 'NL', name: 'Netherlands' },
+  { code: 'SE', name: 'Sweden' },
+  { code: 'NO', name: 'Norway' },
+  { code: 'DK', name: 'Denmark' },
+  { code: 'IE', name: 'Ireland' },
+  { code: 'NZ', name: 'New Zealand' },
+  { code: 'SG', name: 'Singapore' },
+  { code: 'JP', name: 'Japan' },
+];
+
+// Normalize common mistakes → ISO 2-letter code
+function normalizeCountry(val) {
+  const v = (val || '').trim().toUpperCase();
+  const map = { USA: 'US', 'UNITED STATES': 'US', 'UNITED STATES OF AMERICA': 'US', UK: 'GB', 'UNITED KINGDOM': 'GB', CAN: 'CA', AUS: 'AU' };
+  return map[v] || v;
+}
+
 function AddressEditModal({ order, onClose, onSaved }) {
   const [fields, setFields] = useState({
     name:     order.shippingName     || '',
@@ -634,7 +659,7 @@ function AddressEditModal({ order, onClose, onSaved }) {
     city:     order.shippingCity     || '',
     state:    order.shippingState    || '',
     zip:      order.shippingZip      || '',
-    country:  order.shippingCountry  || 'US',
+    country:  normalizeCountry(order.shippingCountry) || 'US',
     phone:    order.shippingPhone    || '',
   });
   const [saving, setSaving]   = useState(false);
@@ -644,7 +669,7 @@ function AddressEditModal({ order, onClose, onSaved }) {
 
   async function save() {
     if (!fields.address1 || !fields.city || !fields.state || !fields.zip) {
-      setError('Address, city, state and zip are required.'); return;
+      setError('Address, city, state and ZIP are required.'); return;
     }
     setSaving(true); setError('');
     try {
@@ -660,10 +685,12 @@ function AddressEditModal({ order, onClose, onSaved }) {
     finally { setSaving(false); }
   }
 
+  const inputCls = 'w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400';
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
           <p className="font-bold text-gray-900">Update Shipping Address</p>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><IconX size={16} /></button>
         </div>
@@ -671,26 +698,31 @@ function AddressEditModal({ order, onClose, onSaved }) {
           <p className="text-xs text-orange-600 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2">
             Your order failed because of a missing or invalid address. Update it below and we'll resubmit to print automatically.
           </p>
+
           {[
-            { label: 'Full Name',   key: 'name',     placeholder: 'Jane Smith' },
-            { label: 'Address Line 1', key: 'address1', placeholder: '123 Main St' },
-            { label: 'Address Line 2', key: 'address2', placeholder: 'Apt 4B (optional)' },
-            { label: 'City',        key: 'city',     placeholder: 'New York' },
-            { label: 'State',       key: 'state',    placeholder: 'NY' },
-            { label: 'ZIP Code',    key: 'zip',      placeholder: '10001' },
-            { label: 'Country',     key: 'country',  placeholder: 'US' },
-            { label: 'Phone (optional)', key: 'phone', placeholder: '+1 555 000 0000' },
+            { label: 'Full Name',        key: 'name',     placeholder: 'Jane Smith' },
+            { label: 'Address Line 1',   key: 'address1', placeholder: '123 Main St' },
+            { label: 'Address Line 2',   key: 'address2', placeholder: 'Apt 4B (optional)' },
+            { label: 'City',             key: 'city',     placeholder: 'New York' },
+            { label: 'State / Province', key: 'state',    placeholder: 'NY' },
+            { label: 'ZIP / Postal Code',key: 'zip',      placeholder: '10001' },
+            { label: 'Phone (optional)', key: 'phone',    placeholder: '+1 555 000 0000' },
           ].map(({ label, key, placeholder }) => (
             <div key={key}>
               <label className="block text-xs font-semibold text-gray-600 mb-1">{label}</label>
-              <input
-                value={fields[key]}
-                onChange={set(key)}
-                placeholder={placeholder}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
-              />
+              <input value={fields[key]} onChange={set(key)} placeholder={placeholder} className={inputCls} />
             </div>
           ))}
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Country</label>
+            <select value={fields.country} onChange={set('country')} className={inputCls}>
+              {COUNTRIES.map(c => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
           {error && <p className="text-xs text-red-600">{error}</p>}
           <button
             onClick={save}
