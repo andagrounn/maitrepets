@@ -28,9 +28,23 @@ export async function POST(req) {
       return NextResponse.json({ ok: true, already: true, digitalCopy: order.digitalCopy });
     }
 
+    // Pull shipping address from Stripe session if present
+    const sa = session.shipping_details?.address || session.customer_details?.address;
+    const sn = session.shipping_details?.name    || session.customer_details?.name;
+
     const updated = await prisma.order.update({
       where: { id: orderId },
-      data: { status: 'paid', stripeId: sessionId },
+      data: {
+        status:   'paid',
+        stripeId: sessionId,
+        ...(sn             && { shippingName:     sn }),
+        ...(sa?.line1      && { shippingAddress:  sa.line1 }),
+        ...(sa?.line2      && { shippingAddress2: sa.line2 }),
+        ...(sa?.city       && { shippingCity:     sa.city }),
+        ...(sa?.state      && { shippingState:    sa.state }),
+        ...(sa?.postal_code && { shippingZip:     sa.postal_code }),
+        ...(sa?.country    && { shippingCountry:  sa.country }),
+      },
     });
 
     // Fire Printful fulfillment

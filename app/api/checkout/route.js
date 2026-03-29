@@ -123,6 +123,7 @@ export async function POST(req) {
         productKey: productKey || 'canvas-16x20',
       },
       shipping_address_collection: { allowed_countries: ['US', 'CA', 'GB', 'AU', 'JM'] },
+      billing_address_collection: 'required',
     });
 
     await prisma.order.update({ where: { id: order.id }, data: { stripeId: checkoutSession.id } });
