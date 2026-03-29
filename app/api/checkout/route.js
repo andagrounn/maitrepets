@@ -52,7 +52,7 @@ export async function POST(req) {
 
     // ── PayPal ────────────────────────────────────────────────────────────────
     if (PAYMENT_PROVIDER === 'paypal') {
-      const description = `Maîtrepets Framed Poster — ${size}`;
+      const description = `Maîtrepets Framed Canvas — ${size}`;
       const { id: paypalOrderId, approveUrl } = await createPayPalOrder({
         orderId: order.id,
         amount: Number(price),
@@ -84,8 +84,8 @@ export async function POST(req) {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `Maîtrepets Framed Poster — ${size}`,
-            description: 'Custom AI-generated pet art, professionally printed & framed',
+            name: `Maîtrepets Framed Canvas — ${size}`,
+            description: 'Custom AI-generated pet art on premium framed canvas',
             images: generatedUrl ? [generatedUrl] : [],
           },
           unit_amount: Math.round(basePrice * 100),
