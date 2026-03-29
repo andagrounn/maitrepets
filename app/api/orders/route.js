@@ -9,7 +9,7 @@ export async function GET() {
   const orders = await prisma.order.findMany({
     where: {
       userId: session.id,
-      NOT: { status: 'pending' },
+      status: { notIn: ['pending', 'paid_fulfillment_failed', 'paid_printful_failed', 'cancelled'] },
     },
     include: { image: true },
     orderBy: { createdAt: 'desc' },
