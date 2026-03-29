@@ -1112,9 +1112,10 @@ export default function DashboardPage() {
                             {isAddrFail && (
                               <button
                                 onClick={() => setEditingAddress(order)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 text-xs font-semibold rounded-xl transition-colors"
+                                title="Fix Address"
+                                className="p-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 rounded-xl transition-colors"
                               >
-                                <IconAlertTriangle size={12} /> Fix Address
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                               </button>
                             )}
                             {order.imageId && <DownloadBtn imageId={order.imageId} />}
