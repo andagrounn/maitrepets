@@ -5,7 +5,7 @@ const faqs = [
   { q: 'What kind of photo should I upload?',  a: "A clear, front-facing photo with good lighting works best. Make sure your pet's face is visible and in focus." },
   { q: 'How long does shipping take?',          a: 'Standard framed prints ship within 3–5 business days and arrive in 7–10 days. Express options available at checkout.' },
   { q: 'Can I get a refund?',                  a: 'Physical prints that arrive damaged or defective are eligible for a full replacement or refund. Digital downloads are non-refundable once delivered.' },
-  { q: 'What sizes are available?',             a: 'We offer framed poster prints in 8×10, 11×14, 16×20, 18×24, and 24×36 inches. Canvas-only prints are also available at checkout.' },
+  { q: 'What sizes are available?',             a: 'We offer framed canvas prints in 8×10, 11×14, 16×20, 18×24, and 24×36 inches. Thin canvas prints (no frame) are also available at checkout.' },
   { q: 'How does the AI work?',                a: "Our proprietary AI model analyzes your pet's unique features — coat, eyes, expression, and personality — then renders a stunning portrait in your chosen art style at full HD resolution." },
 ];
 

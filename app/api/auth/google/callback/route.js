@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { signToken } from '@/lib/auth';
 
@@ -6,6 +7,8 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const code    = searchParams.get('code');
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const cookieStore = cookies();
+  const guestImageId = cookieStore.get('_guest_img')?.value || null;
 
   if (!code) {
     return NextResponse.redirect(`${baseUrl}/login?error=oauth_cancelled`);
@@ -55,6 +58,14 @@ export async function GET(req) {
       });
     }
 
+    // Claim guest generation if one was in progress before OAuth
+    if (guestImageId) {
+      await prisma.image.updateMany({
+        where: { id: guestImageId, status: 'guest' },
+        data:  { userId: user.id, status: 'generated' },
+      });
+    }
+
     const token = signToken({ id: user.id, email: user.email, name: user.name });
 
     const response = NextResponse.redirect(`${baseUrl}/create`);
@@ -65,6 +76,8 @@ export async function GET(req) {
       path:     '/',
       sameSite: 'lax',
     });
+    // Clear the guest image carry cookie
+    response.cookies.delete('_guest_img');
 
     return response;
   } catch (err) {

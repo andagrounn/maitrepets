@@ -206,10 +206,22 @@ export default function ShippingForm({ data, onChange, onSubmit, onBack, loading
 
       <div className="flex gap-3">
         <button onClick={onBack} className="btn-secondary flex-1 py-3">← Back</button>
-        <button onClick={onSubmit} disabled={!valid || loading} className="btn-primary flex-1 py-3">
-          {loading
-            ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing…</span>
-            : `🛒 Pay $${total || price} →`}
+        <button onClick={onSubmit} disabled={!valid || loading} className="btn-primary flex-1 py-3 flex items-center justify-center gap-2.5">
+          {loading ? (
+            <>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Processing…
+            </>
+          ) : (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="3" y1="6" x2="21" y2="6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M16 10a4 4 0 01-8 0" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Pay ${total || price} <span className="opacity-70">→</span>
+            </>
+          )}
         </button>
       </div>
     </div>

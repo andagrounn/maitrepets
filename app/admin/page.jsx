@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback, Fragment } from 'react';
+import { PRODUCT_PRICES, URGENCY_FEES } from '@/lib/pricing';
 
 const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || 'maitrepets-admin-2025';
 const HEADERS   = { 'x-admin-key': ADMIN_KEY, 'Content-Type': 'application/json' };
@@ -227,17 +228,50 @@ function EmailModal({ defaultTo = '', defaultTemplate = 'custom', ctx = {}, onCl
 }
 
 // ─── Order edit modal ─────────────────────────────────────────────────────────
+const EDITABLE_STATUSES = ['pending', 'paid', 'fulfilling'];
+const FRAME_COLOR_OPTIONS = [
+  { id: 'black',   label: 'Black',   hex: '#1a1a1a' },
+  { id: 'white',   label: 'White',   hex: '#f5f5f5' },
+  { id: 'natural', label: 'Natural', hex: '#c8a97e' },
+];
+const SIZE_OPTIONS = [
+  { value: '8x10',  label: '8×10"'  },
+  { value: '11x14', label: '11×14"' },
+  { value: '16x20', label: '16×20"' },
+  { value: '18x24', label: '18×24"' },
+  { value: '24x36', label: '24×36"' },
+];
+const ADDON_PRICES = { digitalCopy: 12, extraCopy: 29 };
+
 function OrderEditModal({ order, onClose, onSaved }) {
+  const canEditItems = EDITABLE_STATUSES.includes(order.status);
+
   const [fields, setFields] = useState({
-    status:        order.status,
+    status:         order.status,
     trackingNumber: order.trackingNumber || '',
-    trackingUrl:   order.trackingUrl    || '',
+    trackingUrl:    order.trackingUrl    || '',
+    digitalCopy:    order.digitalCopy   ?? false,
+    extraCopy:      order.extraCopy     ?? false,
+    frameColor:     order.frameColor    || 'black',
+    size:           order.size          || '16x20',
   });
   const [saving, setSaving] = useState(false);
 
+  // Compute price delta from original
+  const origAddonTotal = (order.digitalCopy ? ADDON_PRICES.digitalCopy : 0) + (order.extraCopy ? ADDON_PRICES.extraCopy : 0);
+  const newAddonTotal  = (fields.digitalCopy ? ADDON_PRICES.digitalCopy : 0) + (fields.extraCopy ? ADDON_PRICES.extraCopy : 0);
+  const addonDelta     = newAddonTotal - origAddonTotal;
+  const newPrice       = Math.max(0, Number(order.price) + addonDelta).toFixed(2);
+
+  function toggleAddon(key) {
+    setFields(f => ({ ...f, [key]: !f[key] }));
+  }
+
   async function save() {
     setSaving(true);
-    await fetch('/api/admin/order', { method: 'PATCH', headers: HEADERS, body: JSON.stringify({ orderId: order.id, ...fields }) });
+    const payload = { orderId: order.id, ...fields };
+    if (canEditItems) payload.price = Number(newPrice);
+    await fetch('/api/admin/order', { method: 'PATCH', headers: HEADERS, body: JSON.stringify(payload) });
     setSaving(false);
     onSaved();
     onClose();
@@ -245,31 +279,126 @@ function OrderEditModal({ order, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+      <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 sticky top-0 bg-gray-900 z-10">
           <p className="text-white font-semibold flex items-center gap-2"><Icon.Edit /> Edit Order</p>
           <button onClick={onClose} className="text-gray-500 hover:text-white"><Icon.X /></button>
         </div>
-        <div className="p-5 space-y-4">
-          <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Status</label>
-            <select value={fields.status} onChange={e => setFields(f => ({ ...f, status: e.target.value }))}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
-              {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_META[s]?.label || s}</option>)}
-            </select>
+
+        <div className="p-5 space-y-5">
+          {/* ── Status & Tracking ── */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Fulfilment</p>
+            <div>
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Status</label>
+              <select value={fields.status} onChange={e => setFields(f => ({ ...f, status: e.target.value }))}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_META[s]?.label || s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Tracking Number</label>
+              <input value={fields.trackingNumber} onChange={e => setFields(f => ({ ...f, trackingNumber: e.target.value }))}
+                placeholder="e.g. 1Z999AA10123456784"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Tracking URL</label>
+              <input value={fields.trackingUrl} onChange={e => setFields(f => ({ ...f, trackingUrl: e.target.value }))}
+                placeholder="https://tools.usps.com/…"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+            </div>
           </div>
-          <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Tracking Number</label>
-            <input value={fields.trackingNumber} onChange={e => setFields(f => ({ ...f, trackingNumber: e.target.value }))}
-              placeholder="e.g. 1Z999AA10123456784"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+
+          {/* ── Order Items — editable only while not yet shipped ── */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Order Items</p>
+              {!canEditItems && (
+                <span className="text-[10px] text-yellow-500 bg-yellow-500/10 border border-yellow-500/20 px-2 py-0.5 rounded-full">
+                  Locked — already {order.status}
+                </span>
+              )}
+            </div>
+
+            {/* Size */}
+            <div>
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Print Size</label>
+              <select value={fields.size}
+                onChange={e => setFields(f => ({ ...f, size: e.target.value }))}
+                disabled={!canEditItems}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 disabled:opacity-40 disabled:cursor-not-allowed">
+                {SIZE_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
+
+            {/* Frame Color */}
+            <div>
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-2">Frame Color</label>
+              <div className="flex gap-3">
+                {FRAME_COLOR_OPTIONS.map(c => (
+                  <button key={c.id}
+                    onClick={() => canEditItems && setFields(f => ({ ...f, frameColor: c.id }))}
+                    disabled={!canEditItems}
+                    className={`flex flex-col items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed`}>
+                    <span className={`w-8 h-8 rounded-full border-2 transition-all ${fields.frameColor === c.id ? 'border-purple-400 scale-110' : 'border-white/20'}`}
+                      style={{ backgroundColor: c.hex, boxShadow: c.id === 'white' ? 'inset 0 0 0 1px rgba(255,255,255,0.2)' : undefined }} />
+                    <span className={`text-[10px] ${fields.frameColor === c.id ? 'text-purple-300' : 'text-gray-500'}`}>{c.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Add-ons */}
+            <div>
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-2">Add-ons</label>
+              <div className="space-y-2">
+                {[
+                  { key: 'digitalCopy', label: 'HD Digital Copy',  sub: 'Download + print anywhere', price: ADDON_PRICES.digitalCopy },
+                  { key: 'extraCopy',   label: 'Thin Canvas Print', sub: 'Same portrait, no frame',   price: ADDON_PRICES.extraCopy  },
+                ].map(addon => (
+                  <button key={addon.key}
+                    onClick={() => canEditItems && toggleAddon(addon.key)}
+                    disabled={!canEditItems}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                      fields[addon.key]
+                        ? 'border-purple-500/60 bg-purple-500/10'
+                        : 'border-white/10 bg-white/[0.02] hover:border-white/20'
+                    }`}>
+                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                      fields[addon.key] ? 'bg-purple-500 border-purple-500' : 'border-gray-600'
+                    }`}>
+                      {fields[addon.key] && <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className={`text-xs font-semibold ${fields[addon.key] ? 'text-white' : 'text-gray-400'}`}>{addon.label}</p>
+                      <p className="text-gray-600 text-[10px]">{addon.sub}</p>
+                    </div>
+                    <span className={`text-xs font-bold ${fields[addon.key] ? 'text-purple-300' : 'text-gray-600'}`}>+${addon.price}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price summary */}
+            <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+              <span className="text-xs text-gray-500">Order Total</span>
+              <div className="flex items-center gap-2">
+                {addonDelta !== 0 && (
+                  <span className="text-gray-600 line-through text-xs">${Number(order.price).toFixed(2)}</span>
+                )}
+                <span className={`text-sm font-bold ${addonDelta > 0 ? 'text-emerald-400' : addonDelta < 0 ? 'text-red-400' : 'text-white'}`}>
+                  ${newPrice}
+                </span>
+                {addonDelta !== 0 && (
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${addonDelta > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                    {addonDelta > 0 ? '+' : ''}${addonDelta}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Tracking URL</label>
-            <input value={fields.trackingUrl} onChange={e => setFields(f => ({ ...f, trackingUrl: e.target.value }))}
-              placeholder="https://tools.usps.com/…"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-          </div>
+
           <div className="flex gap-2 pt-1">
             <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm text-gray-400 border border-white/10 hover:bg-white/5">Cancel</button>
             <button onClick={save} disabled={saving}
@@ -345,6 +474,101 @@ function CustomerPanel({ customer, onClose, onEmail }) {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Profit breakdown cards (product toggle) ──────────────────────────────────
+function ProfitBreakdownCards() {
+  const [productKey, setProductKey] = useState('framed');
+  const p    = PRODUCT_PRICES[productKey];
+  // Use 16×20 (large) as the waterfall example
+  const ex   = p.sizes.large;
+  const ship = 5.99;
+  const stripe = parseFloat((ex.sell * 0.029 + 0.30).toFixed(2));
+  const profit = ex.sell - stripe - ex.printful - ship;
+  const margin = (profit / ex.sell * 100).toFixed(1);
+
+  return (
+    <div className="grid md:grid-cols-2 gap-4">
+      {/* Order flow waterfall */}
+      <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Order Flow — Per Sale</h3>
+          <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
+            {Object.entries(PRODUCT_PRICES).map(([key, val]) => (
+              <button key={key} onClick={() => setProductKey(key)}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  productKey === key ? 'bg-purple-600 text-white shadow' : 'text-gray-500 hover:text-gray-300'
+                }`}>
+                {val.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="text-gray-600 text-[10px] mb-4">16×20" {p.label} · base sell price · standard shipping</p>
+        {[
+          { label: 'Customer Pays',    value: ex.sell,     color: 'bg-emerald-500',   text: 'text-emerald-400', sign: '+' },
+          { label: 'Stripe Fee',       value: -stripe,     color: 'bg-red-500/70',    text: 'text-red-400',     sign: '−', note: '2.9% + $0.30' },
+          { label: p.printLabel,       value: -ex.printful,color: 'bg-orange-500/70', text: 'text-orange-400',  sign: '−' },
+          { label: 'Standard Shipping',value: -ship,       color: 'bg-yellow-500/70', text: 'text-yellow-400',  sign: '−', note: 'via Printful' },
+          { label: 'Net Profit',       value: profit,      color: 'bg-purple-500',    text: 'text-purple-300',  sign: '=', bold: true },
+        ].map((row, i) => (
+          <div key={i} className={`flex items-center gap-3 py-2.5 ${i < 4 ? 'border-b border-white/5' : ''}`}>
+            <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${row.color}`} />
+            <div className="flex-1">
+              <span className="text-xs text-gray-300">{row.label}</span>
+              {row.note && <span className="text-gray-600 text-xs ml-1.5">({row.note})</span>}
+            </div>
+            <div className={`flex items-center gap-1 font-mono text-sm ${row.bold ? 'font-black' : 'font-medium'} ${row.text}`}>
+              <span className="text-gray-600 text-xs">{row.sign}</span>
+              ${Math.abs(row.value).toFixed(2)}
+            </div>
+          </div>
+        ))}
+        <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+          <span className="text-xs text-gray-500">Profit margin</span>
+          <div className="flex items-center gap-2">
+            <div className="w-24 h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-purple-500 rounded-full" style={{width:`${margin}%`}} />
+            </div>
+            <span className="text-purple-300 text-xs font-bold">{margin}%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Per-size margin table */}
+      <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Margin by Print Size</h3>
+          <span className="text-[10px] text-purple-400 font-semibold">{p.label}</span>
+        </div>
+        <p className="text-gray-600 text-[10px] mb-4">{p.label} · base sell price · standard ship $5.99</p>
+        <div className="space-y-0">
+          {Object.entries(p.sizes).map(([sizeKey, r], i) => {
+            const s  = parseFloat((r.sell * 0.029 + 0.30).toFixed(2));
+            const pr = r.sell - r.printful - s - 5.99;
+            const mg = (pr / r.sell * 100).toFixed(0);
+            return (
+              <div key={sizeKey} className="flex items-center gap-3 py-2.5 border-b border-white/5 last:border-0">
+                <span className="text-gray-400 text-xs w-14 flex-shrink-0">{r.desc}</span>
+                <div className="flex-1">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-gray-600">${r.printful} + $5.99 ship</span>
+                    <span className="text-emerald-400 font-semibold">${pr.toFixed(2)}</span>
+                  </div>
+                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full"
+                      style={{width:`${mg}%`, background:'linear-gradient(90deg,#7c3aed,#a855f7)'}} />
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-purple-300 w-9 text-right">{mg}%</span>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-gray-700 text-[10px] mt-3">* Printful fulfillment costs (est.). Stripe: 2.9% + $0.30.</p>
       </div>
     </div>
   );
@@ -437,92 +661,7 @@ function OverviewTab({ data, setTab }) {
       </div>
 
       {/* ── Profit Breakdown ── */}
-      <div className="grid md:grid-cols-2 gap-4">
-
-        {/* Order flow waterfall — avg 16×20 framed canvas */}
-        <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Order Flow — Per Sale</h3>
-          <p className="text-gray-600 text-[10px] mb-4">16×20" Framed Canvas (base price, standard shipping)</p>
-          {(() => {
-            const sell = 79.99;
-            const stripe = parseFloat((sell * 0.029 + 0.30).toFixed(2));
-            const printfulPrint = 28.95;  // Printful framed canvas print cost
-            const printfulShip  = 5.99;   // Standard shipping
-            const printfulTotal = printfulPrint + printfulShip;
-            const profit = sell - stripe - printfulTotal;
-            const margin = (profit / sell * 100).toFixed(1);
-            return (
-              <>
-                {[
-                  { label: 'Customer Pays',        value: sell,           color: 'bg-emerald-500',   text: 'text-emerald-400', sign: '+' },
-                  { label: 'Stripe Fee',            value: -stripe,        color: 'bg-red-500/70',    text: 'text-red-400',     sign: '−', note: '2.9% + $0.30' },
-                  { label: 'Printful Canvas Print', value: -printfulPrint, color: 'bg-orange-500/70', text: 'text-orange-400',  sign: '−', note: 'framed canvas' },
-                  { label: 'Standard Shipping',     value: -printfulShip,  color: 'bg-yellow-500/70', text: 'text-yellow-400',  sign: '−', note: 'via Printful' },
-                  { label: 'Net Profit',            value: profit,         color: 'bg-purple-500',    text: 'text-purple-300',  sign: '=', bold: true },
-                ].map((row, i) => (
-                  <div key={i} className={`flex items-center gap-3 py-2.5 ${i < 4 ? 'border-b border-white/5' : ''}`}>
-                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${row.color}`} />
-                    <div className="flex-1">
-                      <span className="text-xs text-gray-300">{row.label}</span>
-                      {row.note && <span className="text-gray-600 text-xs ml-1.5">({row.note})</span>}
-                    </div>
-                    <div className={`flex items-center gap-1 font-mono text-sm ${row.bold ? 'font-black' : 'font-medium'} ${row.text}`}>
-                      <span className="text-gray-600 text-xs">{row.sign}</span>
-                      ${Math.abs(row.value).toFixed(2)}
-                    </div>
-                  </div>
-                ))}
-                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-                  <span className="text-xs text-gray-500">Profit margin</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-24 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-purple-500 rounded-full" style={{width:`${margin}%`}} />
-                    </div>
-                    <span className="text-purple-300 text-xs font-bold">{margin}%</span>
-                  </div>
-                </div>
-              </>
-            );
-          })()}
-        </div>
-
-        {/* Per-product margin table — framed canvas costs */}
-        <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Margin by Print Size</h3>
-          <p className="text-gray-600 text-[10px] mb-4">Framed Canvas · base sell price · standard ship $5.99</p>
-          <div className="space-y-0">
-            {[
-              { size: '8×10"',   sell: 49.99,  printful: 16.95 },
-              { size: '11×14"',  sell: 59.99,  printful: 21.50 },
-              { size: '16×20"',  sell: 79.99,  printful: 28.95 },
-              { size: '18×24"',  sell: 99.99,  printful: 35.50 },
-              { size: '24×36"',  sell: 139.99, printful: 52.95 },
-            ].map((r, i) => {
-              const stripe = parseFloat((r.sell * 0.029 + 0.30).toFixed(2));
-              const ship = 5.99;
-              const profit = r.sell - r.printful - stripe - ship;
-              const margin = (profit / r.sell * 100).toFixed(0);
-              return (
-                <div key={i} className="flex items-center gap-3 py-2.5 border-b border-white/5 last:border-0">
-                  <span className="text-gray-400 text-xs w-14 flex-shrink-0">{r.size}</span>
-                  <div className="flex-1">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-600">${r.printful} + $5.99 ship</span>
-                      <span className="text-emerald-400 font-semibold">${profit.toFixed(2)}</span>
-                    </div>
-                    <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full"
-                        style={{width:`${margin}%`, background:'linear-gradient(90deg,#7c3aed,#a855f7)'}} />
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold text-purple-300 w-9 text-right">{margin}%</span>
-                </div>
-              );
-            })}
-          </div>
-          <p className="text-gray-700 text-[10px] mt-3">* Printful framed canvas fulfillment costs (est.). Stripe: 2.9% + $0.30. Actual profit higher with style/size multipliers.</p>
-        </div>
-      </div>
+      <ProfitBreakdownCards />
 
       {/* Printful flow status */}
       <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">

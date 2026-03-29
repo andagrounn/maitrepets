@@ -47,8 +47,6 @@ function CreatePageInner() {
 
   // Customization state
   const [selectedStyle, setSelectedStyle] = useState('chibi');
-  const [petType, setPetType] = useState('dog');
-  const [emotion, setEmotion] = useState('normal');
   const [size, setSize] = useState('');
   const [urgency, setUrgency] = useState('standard');
   const [frameColor, setFrameColor] = useState('black');
@@ -57,7 +55,7 @@ function CreatePageInner() {
   const [extras, setExtras] = useState({ digitalCopy: true, extraCopy: false, priorityProcessing: false });
   const EXTRAS = [
     { key: 'digitalCopy',        label: 'HD Digital Copy',      sub: 'Download instantly + print anywhere',    price: 12, emoji: '💾', default: true },
-    { key: 'extraCopy',          label: 'Add a Canvas Print',   sub: 'Same portrait on premium thin canvas', price: 29, emoji: '🖼️' },
+    { key: 'extraCopy',          label: 'Add a Thin Canvas',    sub: 'Same portrait on thin canvas — no frame', price: 29, emoji: '🖼️' },
     { key: 'priorityProcessing', label: 'Priority Processing',  sub: 'Moved to front of queue — ships in 1–2 days', price: 9, emoji: '⚡' },
   ];
   const extrasTotal = EXTRAS.reduce((sum, e) => sum + (extras[e.key] ? e.price : 0), 0);
@@ -102,9 +100,8 @@ function CreatePageInner() {
   const [showBreakdown, setShowBreakdown] = useState(false);
 
   // Live price
-  const price = calculatePrice({ product: 'poster', size, style: selectedStyle, petType, urgency, emotion });
-  const compareAtPrice = Math.ceil(price * 1.2 / 5) * 5;
-  const pricingParams = { product: 'poster', size, style: selectedStyle, petType, urgency, emotion };
+  const price = calculatePrice({ size, urgency });
+  const pricingParams = { size, urgency };
 
   useEffect(() => {
     api.me().then((d) => setUser(d.user)).catch(() => {});
@@ -367,33 +364,10 @@ function CreatePageInner() {
 
                 {/* Dynamic Price Selector */}
                 <PriceSelector
-                  emotion={emotion}  setEmotion={setEmotion}
                   size={size}        setSize={setSize}
                   urgency={urgency}  setUrgency={setUrgency}
                   price={price}
                 />
-
-                {/* Memorial message */}
-                {emotion === 'memorial' && (
-                  <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex gap-3 items-start animate-in fade-in">
-                    <span className="text-2xl">🕊️</span>
-                    <div>
-                      <p className="font-semibold text-rose-700">Honor their memory</p>
-                      <p className="text-sm text-rose-500 mt-0.5">We'll create a portrait worthy of the love you shared. Forever on your wall.</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Gift message */}
-                {emotion === 'gift' && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 items-start">
-                    <span className="text-2xl">🎁</span>
-                    <div>
-                      <p className="font-semibold text-amber-700">Perfect gift idea</p>
-                      <p className="text-sm text-amber-500 mt-0.5">Over 10,000 pet owners have gifted a portrait. Rated the #1 unique pet gift.</p>
-                    </div>
-                  </div>
-                )}
 
                 <button onClick={handleGenerate} disabled={!file}
                   className="btn-primary w-full py-4 text-sm sm:text-base font-bold disabled:opacity-40 disabled:cursor-not-allowed">
@@ -560,14 +534,8 @@ function CreatePageInner() {
                 {/* Live Price — prominent */}
                 <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-5 text-white text-center shadow-lg shadow-purple-200">
                   <p className="text-purple-200 text-sm mb-1">Your custom portrait</p>
-                  <div className="flex items-center justify-center gap-3 mb-1">
-                    <span className="line-through text-purple-300 text-lg">${compareAtPrice}</span>
-                    <span className="text-5xl font-black">${price}</span>
-                  </div>
-                  <div className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-0.5 rounded-full">
-                    Save ${compareAtPrice - price} today
-                  </div>
-                  <p className="text-purple-200 text-xs mt-2">Limited-time offer · {URGENCY_LABELS[urgency]}</p>
+                  <span className="text-5xl font-black">${price}</span>
+                  <p className="text-purple-200 text-xs mt-2">{URGENCY_LABELS[urgency]}</p>
                 </div>
 
                 {/* Frame Color */}
@@ -593,8 +561,6 @@ function CreatePageInner() {
                   </summary>
                   <div className="mt-3">
                     <PriceSelector
-                      petType={petType} setPetType={setPetType}
-                      emotion={emotion}  setEmotion={setEmotion}
                       size={size}        setSize={setSize}
                       urgency={urgency}  setUrgency={setUrgency}
                       price={price}      params={pricingParams}
@@ -606,8 +572,7 @@ function CreatePageInner() {
                 <div className="space-y-2">
                   {[
                     { icon: '✅', title: 'Replacement for damaged prints', sub: 'Full reprint if your order arrives damaged' },
-                    { icon: '🖼️', title: 'Premium canvas material', sub: 'Ready-to-hang, gallery-wrapped' },
-                    { icon: '🚚', title: `Ships in ${urgency === 'express' ? '1–2' : urgency === 'fast' ? '3–5' : '7–10'} days`, sub: 'Tracked & insured delivery' },
+                    { icon: '🖼️', title: 'Premium framed canvas', sub: 'Ready-to-hang with premium frame' },
                   ].map((t) => (
                     <div key={t.title} className="flex items-center gap-3 text-sm bg-white rounded-xl p-3 border border-gray-100">
                       <span className="text-xl">{t.icon}</span>
@@ -618,14 +583,6 @@ function CreatePageInner() {
                     </div>
                   ))}
                 </div>
-
-                {/* Memorial / Gift upsell */}
-                {emotion === 'memorial' && (
-                  <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-sm text-rose-600 flex gap-2">
-                    <span>🕊️</span>
-                    <span>Honor their memory with a timeless portrait ❤️</span>
-                  </div>
-                )}
 
                 {/* ── Pre-checkout upsells ── */}
                 <div className="space-y-2">
@@ -660,13 +617,28 @@ function CreatePageInner() {
                   </p>
                 )}
                 <button onClick={handleCheckout} disabled={isCheckingOut || !size}
-                  className="btn-primary w-full py-4 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed">
-                  {isCheckingOut
-                    ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Redirecting…</span>
-                    : size ? `🛒 Order for $${totalPrice} →` : '🛒 Select a size to order'}
+                  className="btn-primary w-full py-4 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5">
+                  {isCheckingOut ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Redirecting…
+                    </>
+                  ) : (
+                    <>
+                      {/* Flat bag/cart icon */}
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <line x1="3" y1="6" x2="21" y2="6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M16 10a4 4 0 01-8 0" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      {size ? `Order for $${totalPrice}` : 'Select a size to order'}
+                      {size && <span className="opacity-70">→</span>}
+                    </>
+                  )}
                 </button>
-                <p className="text-xs text-gray-400 text-center">
-                  🔒 Secure checkout by Stripe · No hidden fees
+                <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1.5">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                  Secure checkout by Stripe · No hidden fees
                 </p>
               </div>
             </div>

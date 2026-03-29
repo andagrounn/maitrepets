@@ -24,6 +24,6 @@ export const useStore = create(
       setIsGenerating: (v) => set({ isGenerating: v }),
       resetCreate: () => set({ uploadedUrl: null, generatedUrl: null, imageId: null, isUploading: false, isGenerating: false }),
     }),
-    { name: 'maitrepets-store', partialize: (s) => ({ user: s.user }) }
+    { name: 'maitrepets-store', partialize: (s) => ({ user: s.user, imageId: s.imageId }) }
   )
 );

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import FaqAccordion from '@/components/FaqAccordion';
+import { PRODUCT_PRICES } from '@/lib/pricing';
 
 const S3 = 'https://artifyai-images-951411651703-us-east-2-an.s3.us-east-2.amazonaws.com';
 
@@ -449,7 +450,7 @@ export default function Home() {
                 },
                 {
                   name: '8×10" Framed',
-                  price: 'from $60',
+                  price: `from $${PRODUCT_PRICES.framed.sizes.small.sell}`,
                   sub: 'Great for gifts',
                   desc: 'Perfect bedside or desk size. Arrives ready to display.',
                   features: ['Premium frame', 'Ready to hang', '7–10 day ship', 'Gift-ready packaging'],
@@ -459,7 +460,7 @@ export default function Home() {
                 },
                 {
                   name: '16×20" Framed',
-                  price: 'from $79',
+                  price: `from $${PRODUCT_PRICES.framed.sizes.large.sell}`,
                   sub: 'Most popular',
                   desc: 'The crowd favourite. Makes a stunning statement in any room.',
                   features: ['Premium frame', 'Ready to hang', '7–10 day ship', 'Certificate of art'],
@@ -469,7 +470,7 @@ export default function Home() {
                 },
                 {
                   name: '24×36" Framed',
-                  price: 'from $120',
+                  price: `from $${PRODUCT_PRICES.framed.sizes.xxlarge.sell}`,
                   sub: 'Statement piece',
                   desc: 'Gallery-worthy. Dominates a wall and starts conversations.',
                   features: ['Premium frame', 'Ready to hang', '7–10 day ship', 'Certificate of art'],
@@ -525,7 +526,7 @@ export default function Home() {
 
             {/* Bottom note */}
             <p className="text-center text-gray-600 text-sm mt-10">
-              Prices vary by art style, pet type & delivery speed. &nbsp;·&nbsp; Express shipping available at checkout. &nbsp;·&nbsp; Choose framed prints or canvas-only at checkout.
+              Express & fast shipping available at checkout. &nbsp;·&nbsp; Choose framed canvas or thin canvas at checkout.
             </p>
           </div>
         </section>

@@ -82,16 +82,21 @@ export default function SignupPage() {
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
-  const { setUser } = useStore();
-  const router      = useRouter();
+  const { setUser, imageId, setImageId } = useStore();
+  const router = useRouter();
+
+  const googleUrl = imageId
+    ? `/api/auth/google?guestImageId=${imageId}`
+    : '/api/auth/google';
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const d = await api.signup(form);
+      const d = await api.signup({ ...form, guestImageId: imageId || undefined });
       setUser(d.user);
+      if (imageId) setImageId(null); // clear after claim
       router.push('/create');
     } catch (err) {
       setError(err.message);
@@ -183,7 +188,7 @@ export default function SignupPage() {
             )}
 
             {/* Google button */}
-            <a href="/api/auth/google"
+            <a href={googleUrl}
               className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-2xl border-2 border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all font-semibold text-gray-700 text-sm shadow-sm mb-5">
               <GoogleIcon />
               Continue with Google
