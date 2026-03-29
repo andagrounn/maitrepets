@@ -31,9 +31,11 @@ function PostPurchaseUpsell({ orderId }) {
         ONE-TIME DEAL
       </div>
       <div className="flex items-start gap-4">
-        <span className="text-4xl">🎨</span>
+        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="white"/><circle cx="17.5" cy="10.5" r=".5" fill="white"/><circle cx="8.5" cy="7.5" r=".5" fill="white"/><circle cx="6.5" cy="12.5" r=".5" fill="white"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        </div>
         <div className="flex-1">
-          <h3 className="text-lg font-black mb-1">Get a surprise HD print style — just $6 🎁</h3>
+          <h3 className="text-lg font-black mb-1">Get a surprise HD print style — just $6</h3>
           <p className="text-purple-100 text-sm mb-4">
             We'll secretly pick a different art style, regenerate your pet, and send you the HD file instantly. Normally $29+. Only available right now — gone when you leave.
           </p>
@@ -127,8 +129,10 @@ function SuccessInner() {
 
         {status === 'confirmed' && (
           <>
-            <div className="text-8xl mb-4">🎉</div>
-            <h1 className="text-4xl font-black text-gray-900 mb-2">Your pet is now a star ⭐</h1>
+            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h1 className="text-4xl font-black text-gray-900 mb-2">Your pet is now a star</h1>
             <p className="text-gray-600 text-lg mb-4">
               Your Portrait is being sent to print!
             </p>
@@ -141,12 +145,12 @@ function SuccessInner() {
             {/* Order status */}
             <div className="card p-6 mb-6 text-left">
               {[
-                { icon: '🖨️', title: 'Printing in Progress',  sub: 'Your portrait is being prepared' },
-                { icon: '📦', title: 'Ships in 3–5 Days',     sub: 'Carefully packaged for safe delivery' },
-                { icon: '🏠', title: 'Delivered in 7–10 Days', sub: 'Right to your front door' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>, title: 'Printing in Progress',  sub: 'Your portrait is being prepared' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>, title: 'Ships in 3–5 Days',     sub: 'Carefully packaged for safe delivery' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, title: 'Delivered in 7–10 Days', sub: 'Right to your front door' },
               ].map((t) => (
                 <div key={t.title} className="flex items-center gap-3 mb-3 last:mb-0">
-                  <span className="text-2xl">{t.icon}</span>
+                  <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-600">{t.icon}</div>
                   <div>
                     <p className="font-semibold">{t.title}</p>
                     <p className="text-sm text-gray-500">{t.sub}</p>
@@ -159,7 +163,9 @@ function SuccessInner() {
             {hasDigitalCopy && orderId && (
               <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-4 text-left">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-3xl">💾</span>
+                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-600">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  </div>
                   <div>
                     <p className="font-bold text-gray-900">Your HD Digital Copy is ready</p>
                     <p className="text-sm text-gray-500">Full-resolution PNG — download and keep forever</p>
@@ -190,7 +196,9 @@ function SuccessInner() {
 
         {status === 'error' && (
           <>
-            <div className="text-8xl mb-6">⚠️</div>
+            <div className="w-20 h-20 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-6">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
             <h1 className="text-3xl font-black text-gray-900 mb-4">Payment received</h1>
             <p className="text-gray-600 mb-6">
               Your payment was successful but we had trouble confirming your order automatically.
