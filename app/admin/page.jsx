@@ -1578,46 +1578,32 @@ export default function AdminPage() {
         .admin-root .text-red-300,.admin-root .text-red-400 { color:#dc2626 !important; }
         .admin-root .text-teal-300    { color:#0d9488 !important; }
 
-        /* ── Buttons — ghost/transparent variants ── */
-        .admin-root .bg-white\\/5  { background:#f1f5f9 !important; border-color:#e2e8f0 !important; box-shadow:none !important; }
-        .admin-root .hover\\:bg-white\\/10:hover { background:#e2e8f0 !important; }
-        .admin-root .hover\\:bg-white\\/20:hover { background:#cbd5e1 !important; }
-        .admin-root .hover\\:text-white:hover  { color:#0f172a !important; }
+        /* ── Buttons — all ghost/transparent variants match sidebar ── */
+        .admin-root .bg-white\\/5  { background:#ffffff !important; border:1px solid #e2e8f0 !important; box-shadow:0 1px 2px rgba(0,0,0,0.04) !important; }
+        .admin-root .hover\\:bg-white\\/5:hover  { background:#f8fafc !important; }
+        .admin-root .hover\\:bg-white\\/10:hover { background:#f1f5f9 !important; }
+        .admin-root .hover\\:bg-white\\/20:hover { background:#e2e8f0 !important; }
+        .admin-root .hover\\:text-white:hover    { color:#0f172a !important; }
         .admin-root .hover\\:text-gray-200:hover { color:#334155 !important; }
         .admin-root .hover\\:text-gray-300:hover { color:#475569 !important; }
 
-        /* ── Purple tinted buttons (active states) ── */
-        .admin-root .bg-purple-600\\/20 { background:#ede9fe !important; }
-        .admin-root .bg-purple-600\\/30 { background:#ddd6fe !important; }
-        .admin-root .hover\\:bg-purple-600\\/40:hover { background:#c4b5fd !important; }
-        .admin-root .border-purple-500\\/50 { border-color:#a78bfa !important; }
-        .admin-root .text-purple-200 { color:#6d28d9 !important; }
+        /* ── Purple active / tinted — match sidebar active ── */
+        .admin-root .bg-purple-600\\/20 { background:#ede9fe !important; border:1px solid #c4b5fd !important; }
+        .admin-root .bg-purple-600\\/30 { background:#ede9fe !important; border:1px solid #c4b5fd !important; }
+        .admin-root .hover\\:bg-purple-600\\/40:hover { background:#ddd6fe !important; }
+        .admin-root .border-purple-500\\/50 { border-color:#c4b5fd !important; }
+        .admin-root .border-purple-500\\/30 { border-color:#c4b5fd !important; }
+        .admin-root .text-purple-200 { color:#7c3aed !important; }
+        .admin-root .text-purple-400 { color:#7c3aed !important; }
 
-        /* ── Red/rose action buttons ── */
-        .admin-root .bg-red-500\\/20   { background:#fee2e2 !important; }
-        .admin-root .hover\\:bg-red-500\\/40:hover { background:#fecaca !important; }
-        .admin-root .bg-rose-500       { background:#f43f5e !important; }
-
-        /* ── Filter & toggle pills ── */
-        .admin-root [class*="bg-white\\/5"][class*="text-gray-400"] {
-          background:#f1f5f9 !important;
-          color:#64748b !important;
-          border:1px solid #e2e8f0 !important;
-        }
+        /* ── Red/rose action buttons — white bg, colored border ── */
+        .admin-root .bg-red-500\\/20  { background:#ffffff !important; border:1px solid #fca5a5 !important; }
+        .admin-root .hover\\:bg-red-500\\/40:hover { background:#fee2e2 !important; }
+        .admin-root .bg-rose-500 { background:#f43f5e !important; }
 
         /* ── Sort / view toggle inactive ── */
-        .admin-root .text-gray-500.hover\\:text-white { color:#64748b !important; }
-
-        /* ── Pagination ── */
-        .admin-root [class*="bg-white\\/5"][class*="rounded"] {
-          background:#f1f5f9 !important;
-          color:#475569 !important;
-          border:1px solid #e2e8f0 !important;
-        }
-
-        /* ── Card metadata area ── */
-        .admin-root .text-purple-400 { color:#7c3aed !important; }
-        .admin-root .border-purple-500\\/30 { border-color:#c4b5fd !important; }
+        .admin-root .text-gray-500 { color:#64748b !important; }
+        .admin-root .hover\\:text-white:hover { color:#0f172a !important; }
       `}</style>
     )}
 

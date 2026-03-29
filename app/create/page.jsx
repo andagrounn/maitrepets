@@ -57,7 +57,7 @@ function CreatePageInner() {
   const [extras, setExtras] = useState({ digitalCopy: true, extraCopy: false, priorityProcessing: false });
   const EXTRAS = [
     { key: 'digitalCopy',        label: 'HD Digital Copy',      sub: 'Download instantly + print anywhere',    price: 12, emoji: '💾', default: true },
-    { key: 'extraCopy',          label: 'Extra Print Copy',     sub: 'Same design shipped to a second address', price: 19, emoji: '🖼️' },
+    { key: 'extraCopy',          label: 'Add a Canvas Print',   sub: 'Same portrait on premium thin canvas', price: 29, emoji: '🖼️' },
     { key: 'priorityProcessing', label: 'Priority Processing',  sub: 'Moved to front of queue — ships in 1–2 days', price: 9, emoji: '⚡' },
   ];
   const extrasTotal = EXTRAS.reduce((sum, e) => sum + (extras[e.key] ? e.price : 0), 0);
@@ -103,6 +103,7 @@ function CreatePageInner() {
 
   // Live price
   const price = calculatePrice({ product: 'poster', size, style: selectedStyle, petType, urgency, emotion });
+  const compareAtPrice = Math.ceil(price * 1.2 / 5) * 5;
   const pricingParams = { product: 'poster', size, style: selectedStyle, petType, urgency, emotion };
 
   useEffect(() => {
@@ -423,7 +424,7 @@ function CreatePageInner() {
               </div>
 
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {isUploading ? 'Uploading your photo…' : genProgress < 40 ? 'Casting your pet…' : genProgress < 75 ? 'Designing your portrait…' : 'Adding finishing touches…'}
+                {isUploading ? 'Uploading your photo…' : genProgress < 40 ? 'Casting your pet…' : genProgress < 75 ? 'Painting your Masterpiece…' : 'Adding finishing touches…'}
               </h2>
               <p className="text-gray-500 mb-2">
                 {isUploading
@@ -441,7 +442,7 @@ function CreatePageInner() {
 
               {!isUploading && (
                 <div className="mt-6 grid grid-cols-3 gap-3 text-xs text-gray-400">
-                  {['Casting your pet', 'Designing poster', 'Adding cinematic effects'].map((s, i) => (
+                  {['Casting your pet', 'Painting', 'Creating masterpiece'].map((s, i) => (
                     <div key={s} className={`flex flex-col items-center gap-1 transition-all ${genProgress > i * 30 ? 'text-purple-500' : ''}`}>
                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs ${genProgress > i * 30 ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
                         {genProgress > i * 30 ? '✓' : i + 1}
@@ -461,7 +462,7 @@ function CreatePageInner() {
               {/* Image reveal — 3 cols */}
               <div className="md:col-span-3 space-y-4">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Your Portrait is Ready! 🐾</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Your Portrait is Ready!</h2>
                   <button onClick={startOver} className="text-sm text-gray-400 hover:text-gray-600 underline flex-shrink-0">Start over</button>
                 </div>
 
@@ -472,7 +473,7 @@ function CreatePageInner() {
                   </div>
                   <div className={`transition-all duration-700 ${imageRevealed ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                     <p className="text-xs font-semibold text-purple-500 uppercase tracking-wide mb-2">
-                      🐾 {STYLE_PROMPTS[selectedStyle]?.label} Portrait
+                      {STYLE_PROMPTS[selectedStyle]?.label} Portrait
                     </p>
                     <div className="relative group">
                       <img
@@ -542,9 +543,9 @@ function CreatePageInner() {
                 {/* Regenerate CTA — all styles */}
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Try another style</p>
-                  <div className="flex gap-1 overflow-x-auto pb-1 snap-x" style={{ scrollbarWidth: 'none' }}>
+                  <div className="grid grid-cols-6 gap-1">
                     {Object.keys(STYLE_PROMPTS).map(k => (
-                      <div key={k} className="flex-shrink-0 w-12 snap-start">
+                      <div key={k} className="w-full">
                         <StyleCard styleKey={k} selected={selectedStyle === k} onClick={k2 => { setSelectedStyle(k2); startOver(); }} popular={popularStyles.includes(k)} compact previewUrl={stylePreviews[k]} />
                       </div>
                     ))}
@@ -560,14 +561,12 @@ function CreatePageInner() {
                 <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-5 text-white text-center shadow-lg shadow-purple-200">
                   <p className="text-purple-200 text-sm mb-1">Your custom portrait</p>
                   <div className="flex items-center justify-center gap-3 mb-1">
-                    <span className="line-through text-purple-300 text-lg">$120</span>
+                    <span className="line-through text-purple-300 text-lg">${compareAtPrice}</span>
                     <span className="text-5xl font-black">${price}</span>
                   </div>
-                  {price < 120 && (
-                    <div className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-0.5 rounded-full">
-                      Save ${120 - price} today
-                    </div>
-                  )}
+                  <div className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-0.5 rounded-full">
+                    Save ${compareAtPrice - price} today
+                  </div>
                   <p className="text-purple-200 text-xs mt-2">Limited-time offer · {URGENCY_LABELS[urgency]}</p>
                 </div>
 

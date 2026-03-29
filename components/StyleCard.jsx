@@ -14,7 +14,7 @@ const themeImages = {
   dadaism:     'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&q=80',
   renaissance:   'https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=400&q=80',
   neoclassicism: 'https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?w=400&q=80',
-  fauvism:       'https://images.unsplash.com/photo-1542281286-9e0a16bb7366?w=400&q=80',
+  davinci:       'https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=400&q=80',
   romanticism:   'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=80',
   expressionism: 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400&q=80',
   rococo:        'https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=400&q=80',

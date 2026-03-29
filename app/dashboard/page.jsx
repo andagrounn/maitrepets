@@ -431,12 +431,19 @@ function ImgPlaceholder({ className = '' }) {
 // ─── Icon button ───────────────────────────────────────────────────────────────
 function IconBtn({ onClick, disabled, title, children }) {
   return (
-    <button onClick={onClick} disabled={disabled} title={title}
-      className="w-7 h-7 flex items-center justify-center rounded-lg bg-white hover:bg-gray-50 text-gray-400 hover:text-purple-600 border border-gray-200 hover:border-purple-300 transition-all disabled:opacity-40 shadow-sm">
-      {disabled
-        ? <span className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
-        : children}
-    </button>
+    <div className="relative group/tip">
+      <button onClick={onClick} disabled={disabled}
+        className="w-7 h-7 flex items-center justify-center rounded-lg bg-white hover:bg-gray-50 text-gray-400 hover:text-purple-600 border border-gray-200 hover:border-purple-300 transition-all disabled:opacity-40 shadow-sm">
+        {disabled
+          ? <span className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+          : children}
+      </button>
+      {title && (
+        <div className="pointer-events-none absolute top-full right-0 mt-1.5 px-2 py-1 rounded-md bg-gray-900 text-white text-[10px] font-medium leading-tight w-max max-w-[110px] text-center opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150 shadow-lg z-50">
+          {title}
+        </div>
+      )}
+    </div>
   );
 }
 
