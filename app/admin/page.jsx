@@ -1427,7 +1427,6 @@ function GenerationBankTab() {
                     <img src={img.generatedUrl} alt={img.style}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       loading="lazy" onError={e => { e.target.src='https://placedog.net/300/300?id='+i; }} />
-                    <span className="absolute bottom-1 left-1 bg-purple-600/90 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded capitalize">{img.style}</span>
                     {img.status === 'guest' && <span className="absolute top-1 right-1 bg-amber-500/90 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">GUEST</span>}
                   </div>
                 </div>
@@ -1462,7 +1461,6 @@ function GenerationBankTab() {
                   </div>
                   <div className="relative w-12 h-12 rounded-lg overflow-hidden ring-1 ring-purple-500/40">
                     <img src={img.generatedUrl} alt={img.style} className="w-full h-full object-cover" loading="lazy" />
-                    <span className="absolute bottom-0 left-0 right-0 bg-purple-700/80 text-white text-[7px] font-semibold text-center py-0.5 capitalize">{img.style}</span>
                   </div>
                 </div>
                 {/* Info */}
@@ -1689,6 +1687,79 @@ function useAdminTheme() {
   return { theme, isDark, cycleTheme };
 }
 
+function SettingsTab() {
+  const provider = process.env.NEXT_PUBLIC_PAYMENT_PROVIDER || 'paypal';
+  const isPayPal = provider === 'paypal';
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6 p-6">
+      <div>
+        <h2 className="text-xl font-black text-white mb-1">Settings</h2>
+        <p className="text-gray-500 text-sm">Manage app configuration.</p>
+      </div>
+
+      {/* Payment Provider */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-white">Payment Provider</p>
+            <p className="text-xs text-gray-500 mt-0.5">Controls which processor handles checkout</p>
+          </div>
+          <span className={`text-xs font-bold px-3 py-1 rounded-full ${isPayPal ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'}`}>
+            {isPayPal ? 'PayPal' : 'Stripe'} — Active
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {/* PayPal card */}
+          <div className={`rounded-xl border p-4 ${isPayPal ? 'border-blue-500/50 bg-blue-500/10' : 'border-white/10 bg-white/3 opacity-50'}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 11C7 8 9 6 12.5 6H16c2 0 3.5 1 3.5 3s-1.5 3-3.5 3h-2L13 17H9.5L11 12H8.5A1.5 1.5 0 017 11z" fill="#009cde"/><path d="M4 14c0-3 2-5 5.5-5H13c2 0 3.5 1 3.5 3s-1.5 3-3.5 3h-2L10 20H6.5L8 15H5.5A1.5 1.5 0 014 14z" fill="#012169"/></svg>
+              <span className="text-sm font-bold text-white">PayPal</span>
+              {isPayPal && <span className="ml-auto text-[10px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>}
+            </div>
+            <p className="text-xs text-gray-400">Hosted redirect checkout. No Stripe account needed.</p>
+          </div>
+
+          {/* Stripe card */}
+          <div className={`rounded-xl border p-4 ${!isPayPal ? 'border-purple-500/50 bg-purple-500/10' : 'border-white/10 bg-white/3 opacity-50'}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#635bff"/><path d="M10.5 9.5c0-.8.7-1.1 1.8-1.1 1.6 0 3.6.5 5 1.3V6.2c-1.7-.7-3.3-1-5-1-4.1 0-6.8 2.1-6.8 5.7 0 5.5 7.6 4.6 7.6 7 0 .9-.8 1.2-1.9 1.2-1.7 0-3.8-.7-5.5-1.7v3.5c1.9.8 3.7 1.1 5.5 1.1 4.2 0 7-2.1 7-5.7-.1-5.9-7.7-4.9-7.7-6.8z" fill="white"/></svg>
+              <span className="text-sm font-bold text-white">Stripe</span>
+              {!isPayPal && <span className="ml-auto text-[10px] bg-purple-500 text-white px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>}
+            </div>
+            <p className="text-xs text-gray-400">Native card checkout. Requires active Stripe account.</p>
+          </div>
+        </div>
+
+        <div className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-xs text-gray-400 space-y-1.5">
+          <p className="font-semibold text-gray-300">To switch payment provider:</p>
+          <p>1. Open <code className="bg-white/10 px-1 rounded">.env</code> and set <code className="bg-white/10 px-1 rounded">PAYMENT_PROVIDER="stripe"</code> or <code className="bg-white/10 px-1 rounded">"paypal"</code></p>
+          <p>2. Add the corresponding env vars to Vercel → Settings → Environment Variables</p>
+          <p>3. Redeploy for changes to take effect</p>
+        </div>
+      </div>
+
+      {/* Current credentials status */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-3">
+        <p className="text-sm font-bold text-white">Credential Status</p>
+        {[
+          { label: 'PayPal Client ID', value: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID, present: !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID },
+          { label: 'PayPal Environment', value: process.env.NEXT_PUBLIC_PAYPAL_ENVIRONMENT || 'live', present: true },
+          { label: 'Stripe Key', value: process.env.STRIPE_SECRET_KEY ? '••••••••' : null, present: !!process.env.STRIPE_SECRET_KEY },
+        ].map(({ label, value, present }) => (
+          <div key={label} className="flex items-center justify-between text-xs">
+            <span className="text-gray-400">{label}</span>
+            <span className={`font-mono px-2 py-0.5 rounded ${present ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'}`}>
+              {present ? (value || 'set') : 'not set'}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [data, setData]     = useState(null);
@@ -1727,6 +1798,7 @@ export default function AdminPage() {
     { key: 'refunds',    label: 'Refunds',     Icon: Icon.Refunds, badge: data?.stats?.refundRequestedOrders },
     { key: 'messaging',  label: 'Messaging',   Icon: Icon.Messaging },
     { key: 'generations', label: 'Gen Bank',   Icon: Icon.GenBank },
+    { key: 'settings',   label: 'Settings',    Icon: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
   ];
 
   return (
@@ -1936,6 +2008,7 @@ export default function AdminPage() {
               {tab === 'customers' && <CustomersTab userList={data.userList} />}
               {tab === 'refunds'   && <RefundsTab   refundRequests={data.refundRequests} onRefresh={fetchData} />}
               {tab === 'messaging' && <MessagingTab userList={data.userList} />}
+              {tab === 'settings'  && <SettingsTab />}
             </>
           )}
         </main>

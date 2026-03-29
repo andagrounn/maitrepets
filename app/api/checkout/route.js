@@ -3,6 +3,10 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { fulfillOrder } from '@/lib/fulfillment';
+import { createPayPalOrder } from '@/lib/paypal';
+
+// ─── Switch between "paypal" and "stripe" via PAYMENT_PROVIDER env var ───────
+const PAYMENT_PROVIDER = process.env.PAYMENT_PROVIDER || 'stripe';
 
 export async function POST(req) {
   const session = await getSession();
@@ -44,16 +48,29 @@ export async function POST(req) {
       },
     });
 
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
+    // ── PayPal ────────────────────────────────────────────────────────────────
+    if (PAYMENT_PROVIDER === 'paypal') {
+      const description = `Maîtrepets Framed Poster — ${size}`;
+      const { id: paypalOrderId, approveUrl } = await createPayPalOrder({
+        orderId: order.id,
+        amount: Number(price),
+        description,
+      });
+      // Reuse stripeId column to store PayPal order ID
+      await prisma.order.update({ where: { id: order.id }, data: { stripeId: paypalOrderId } });
+      return NextResponse.json({ url: approveUrl });
+    }
+
+    // ── Demo / Stripe ─────────────────────────────────────────────────────────
     const isDemo = !process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_demo';
 
     if (isDemo) {
       await prisma.order.update({ where: { id: order.id }, data: { status: 'paid' } });
       fulfillOrder(order.id).catch((e) => console.error('[Demo fulfillment]', e.message));
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
       return NextResponse.json({ url: `${baseUrl}/success?order=${order.id}&tx=DEMO-${Date.now()}` });
     }
-
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
     // Build line items — base print + any selected upsells
     const basePrice = Number(price) -
@@ -93,7 +110,6 @@ export async function POST(req) {
       }] : []),
     ];
 
-    // Create Stripe Checkout Session
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
@@ -108,12 +124,7 @@ export async function POST(req) {
       shipping_address_collection: { allowed_countries: ['US', 'CA', 'GB', 'AU', 'JM'] },
     });
 
-    // Save Stripe session ID
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { stripeId: checkoutSession.id },
-    });
-
+    await prisma.order.update({ where: { id: order.id }, data: { stripeId: checkoutSession.id } });
     return NextResponse.json({ url: checkoutSession.url });
   } catch (err) {
     console.error('Checkout error:', err);

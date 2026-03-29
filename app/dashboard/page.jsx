@@ -869,9 +869,6 @@ export default function DashboardPage() {
                         ) : (
                           <ImgPlaceholder className="w-full aspect-square" />
                         )}
-                        <span className="absolute bottom-2 left-2 bg-black/50 text-white text-xs font-medium px-2 py-0.5 rounded-md capitalize backdrop-blur-sm">
-                          {img.style}
-                        </span>
                         {img.generatedUrl && (
                           <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <PaperPrintIcon imageId={img.id} />
