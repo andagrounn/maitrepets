@@ -7,7 +7,10 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const orders = await prisma.order.findMany({
-    where: { userId: session.id },
+    where: {
+      userId: session.id,
+      NOT: { status: 'pending' },
+    },
     include: { image: true },
     orderBy: { createdAt: 'desc' },
   });
