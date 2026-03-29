@@ -543,7 +543,7 @@ function QuickOrderBtn({ img }) {
           imageId:      img.id,
           generatedUrl: img.generatedUrl,
           productKey:   'poster-16x20',
-          price:        79,
+          price:        119.99,
           shipping:     { country: 'US' },
           extras:       {},
         }),

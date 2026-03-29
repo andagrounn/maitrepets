@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { fulfillOrder } from '@/lib/fulfillment';
 
-const PAPER_PRICE = 29.99; // thin canvas print
+const PAPER_PRICE = 64.99; // thin canvas 16×20 (in)
 
 export async function POST(req) {
   const session = await getSession();
