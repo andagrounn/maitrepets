@@ -69,6 +69,18 @@ function SuccessInner() {
 
   const [status, setStatus]           = useState('confirming'); // confirming | confirmed | error
   const [hasDigitalCopy, setHasDigitalCopy] = useState(false);
+  const [showUpsell, setShowUpsell]   = useState(false);
+
+  function resolveUpsellVisibility(isNewConfirm) {
+    const STORAGE_KEY = 'mp_purchase_count';
+    let count = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+    if (isNewConfirm) {
+      count += 1;
+      localStorage.setItem(STORAGE_KEY, String(count));
+    }
+    // Show on every 3rd purchase (count 3, 6, 9…)
+    setShowUpsell(count > 0 && count % 3 === 0);
+  }
 
   useEffect(() => {
     resetCreate?.();
@@ -76,6 +88,7 @@ function SuccessInner() {
     // Demo mode (DEMO prefix from demo checkout) — skip confirmation
     if (sessionId?.startsWith('DEMO')) {
       setStatus('confirmed');
+      resolveUpsellVisibility(true);
       return;
     }
     // No session_id = direct navigation without payment — show error
@@ -93,6 +106,7 @@ function SuccessInner() {
         const d = JSON.parse(cached);
         setStatus('confirmed');
         setHasDigitalCopy(!!d.digitalCopy);
+        resolveUpsellVisibility(false); // don't re-count on refresh
         return;
       } catch {}
     }
@@ -108,6 +122,7 @@ function SuccessInner() {
           sessionStorage.setItem(cacheKey, JSON.stringify(d));
           setStatus('confirmed');
           setHasDigitalCopy(!!d.digitalCopy);
+          resolveUpsellVisibility(true); // new confirmed purchase
         } else {
           setStatus('error');
         }
@@ -177,8 +192,8 @@ function SuccessInner() {
               </div>
             )}
 
-            {/* ── Post-purchase upsell ── */}
-            <PostPurchaseUpsell orderId={orderId} />
+            {/* ── Post-purchase upsell — every 3rd purchase ── */}
+            {showUpsell && <PostPurchaseUpsell orderId={orderId} />}
 
             <div className="flex gap-3 justify-center mt-6">
               <Link href="/create" className="btn-primary px-8 py-3">Create Another →</Link>
