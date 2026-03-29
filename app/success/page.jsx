@@ -91,7 +91,13 @@ function SuccessInner() {
       resolveUpsellVisibility(true);
       return;
     }
-    // No session_id = direct navigation without payment — show error
+    // PayPal payment — tx param present, no session_id needed (fulfilled in capture route)
+    if (!sessionId && txId) {
+      setStatus('confirmed');
+      resolveUpsellVisibility(true);
+      return;
+    }
+    // No session_id and no tx = direct navigation without payment — show error
     if (!sessionId) {
       setStatus('error');
       return;

@@ -758,6 +758,23 @@ function OrdersTab({ orders, onRefresh }) {
   const [expanded, setExpanded]       = useState(null);
   const [editing, setEditing]         = useState(null);
   const [emailing, setEmailing]       = useState(null);
+  const [retrying, setRetrying]       = useState(null);
+
+  async function retryFulfillment(orderId) {
+    setRetrying(orderId);
+    try {
+      const res = await fetch('/api/admin/retry-fulfillment', {
+        method: 'POST', headers: HEADERS, body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (data.ok) { alert(`Sent to Printful ✓ (ID: ${data.printfulId})`); onRefresh(); }
+      else alert(`Failed: ${data.error}`);
+    } catch (e) {
+      alert(`Error: ${e.message}`);
+    } finally {
+      setRetrying(null);
+    }
+  }
 
   const filtered = orders.filter(o => {
     const matchStatus = statusFilter === 'all' || o.status === statusFilter;
@@ -846,6 +863,14 @@ function OrdersTab({ orders, onRefresh }) {
                           className="p-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/40 text-purple-400 hover:text-purple-200 transition-all" title="Email customer">
                           <Icon.Mail />
                         </button>
+                        {['paid_fulfillment_failed','paid_printful_failed'].includes(order.status) && (
+                          <button onClick={() => retryFulfillment(order.id)} disabled={retrying === order.id}
+                            className="p-1.5 rounded-lg bg-orange-600/20 hover:bg-orange-600/40 text-orange-400 hover:text-orange-200 transition-all disabled:opacity-50" title="Retry Printful fulfillment">
+                            {retrying === order.id
+                              ? <span className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin block" />
+                              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
