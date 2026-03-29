@@ -114,8 +114,8 @@ function UpsellSuccessInner() {
         {status === 'generating' && (
           <div className="text-center">
             <div className="text-7xl mb-6 animate-bounce">🎁</div>
-            <h1 className="text-2xl font-black text-gray-900 mb-2">Creating your surprise…</h1>
-            <p className="text-gray-500 mb-6">We're generating a brand-new art style for your pet</p>
+            <h1 className="text-2xl font-black text-gray-900 mb-2">Crafting your masterpiece…</h1>
+            <p className="text-gray-500 mb-6">We're painting a brand-new masterpiece of your pet</p>
             <div className="w-full bg-purple-100 rounded-full h-2 overflow-hidden">
               <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full animate-pulse w-3/4" />
             </div>
