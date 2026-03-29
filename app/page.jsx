@@ -38,9 +38,9 @@ const MARQUEE = [
 
 const STYLES_GRID = [
   ...GENERATED,
-  { url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&q=80', pet: 'Buddy', style: 'Chibi',      emoji: '🌸' },
-  { url: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=400&q=80', pet: 'Max',   style: 'Rembrandt',  emoji: '🕯️' },
-  { url: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=80', pet: 'Mochi', style: 'Lofi Art',   emoji: '🎧' },
+  { url: `${S3}/generated/1774629095050-xzkiul0l8fn.png`,                               pet: 'Buddy', style: 'Folk Art', emoji: '🎨' },
+  { url: `${S3}/generated/1774643764809-ln2zqseugf8.png`,                               pet: 'Max',   style: 'Kawaii',   emoji: '🍡' },
+  { url: `${S3}/generated/1774622686162-jetc92ep4u.png`,                                pet: 'Mochi', style: 'Lofi Art', emoji: '🎧' },
 ];
 
 const testimonials = [
@@ -62,7 +62,7 @@ const BRAND = 'Maîtrepets';
 export default function Home() {
   return (
     <>
-      <style>{`
+      <style suppressHydrationWarning>{`
         @keyframes letterIn {
           0%   { opacity: 0; transform: translateY(110%); }
           100% { opacity: 1; transform: translateY(0); }
@@ -118,6 +118,7 @@ export default function Home() {
           z-index: 50 !important;
           box-shadow: 0 50px 100px rgba(0,0,0,0.8), 0 0 60px rgba(168,85,247,0.3) !important;
         }
+
       `}</style>
 
       <Navbar />
@@ -301,7 +302,7 @@ export default function Home() {
                 <img src={s.url} alt={s.style} className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <p className="text-white font-black text-xl">{s.emoji} {s.style}</p>
+                  <p className="text-white font-black text-xl">{s.style}</p>
                   <p className="text-gray-400 text-xs mt-1">{s.pet}</p>
                 </div>
               </div>
