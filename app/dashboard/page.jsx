@@ -923,21 +923,6 @@ export default function DashboardPage() {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'returned' } : o));
   }
 
-  const [reorderingId, setReorderingId] = useState(null);
-  async function reorderFromDashboard(orderId) {
-    setReorderingId(orderId);
-    try {
-      const res  = await fetch('/api/reprint', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId }) });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else throw new Error(data.error || 'Could not start checkout');
-    } catch (err) {
-      addToast(err.message || 'Reorder failed. Please try again.', 'error');
-    } finally {
-      setReorderingId(null);
-    }
-  }
-
   async function handleCancelOrder(orderId) {
     try {
       const res  = await fetch('/api/cancel-order', {
@@ -1038,14 +1023,11 @@ export default function DashboardPage() {
                           className="w-7 h-7 flex items-center justify-center rounded-lg text-amber-400 hover:text-red-500 hover:bg-red-50 border border-amber-200 hover:border-red-200 transition-all">
                           <IconTrash size={13} />
                         </button>
-                        <button
-                          onClick={() => reorderFromDashboard(order.id)}
-                          disabled={reorderingId === order.id}
-                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors whitespace-nowrap disabled:opacity-60 flex items-center gap-1.5">
-                          {reorderingId === order.id
-                            ? <><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading…</>
-                            : 'Reorder →'}
-                        </button>
+                        <Link
+                          href="/create"
+                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors whitespace-nowrap">
+                          New Order →
+                        </Link>
                       </div>
                     </div>
                   ))}
@@ -1244,14 +1226,11 @@ export default function DashboardPage() {
 
                         {isPending && (
                           <div className="flex justify-end mt-3 pt-3 border-t border-gray-100">
-                            <button
-                              onClick={() => reorderFromDashboard(order.id)}
-                              disabled={reorderingId === order.id}
-                              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-60 flex items-center gap-1.5">
-                              {reorderingId === order.id
-                                ? <><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading…</>
-                                : 'Reorder →'}
-                            </button>
+                            <Link
+                              href="/create"
+                              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors">
+                              New Order →
+                            </Link>
                           </div>
                         )}
                       </div>
