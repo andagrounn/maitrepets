@@ -901,7 +901,6 @@ export default function DashboardPage() {
   const [portraitPage, setPortraitPage] = useState(1);
   const [dismissedBanner, setDismissedBanner] = useState(false);
   const [showPendingList, setShowPendingList] = useState(true);
-  const [resumingOrder, setResumingOrder]     = useState(null);
   const { toasts, addToast }    = useToast();
 
   useEffect(() => {
@@ -924,21 +923,18 @@ export default function DashboardPage() {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'returned' } : o));
   }
 
-  async function resumeOrder(orderId) {
-    setResumingOrder(orderId);
+  const [reorderingId, setReorderingId] = useState(null);
+  async function reorderFromDashboard(orderId) {
+    setReorderingId(orderId);
     try {
-      const res  = await fetch('/api/resume-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ orderId }),
-      });
+      const res  = await fetch('/api/reprint', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId }) });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Checkout failed');
-      window.location.href = data.url;
+      if (data.url) window.location.href = data.url;
+      else throw new Error(data.error || 'Could not start checkout');
     } catch (err) {
-      addToast(err.message || 'Could not resume checkout. Please try again.', 'error');
-      setResumingOrder(null);
+      addToast(err.message || 'Reorder failed. Please try again.', 'error');
+    } finally {
+      setReorderingId(null);
     }
   }
 
@@ -1043,12 +1039,12 @@ export default function DashboardPage() {
                           <IconTrash size={13} />
                         </button>
                         <button
-                          onClick={() => resumeOrder(order.id)}
-                          disabled={resumingOrder === order.id}
+                          onClick={() => reorderFromDashboard(order.id)}
+                          disabled={reorderingId === order.id}
                           className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors whitespace-nowrap disabled:opacity-60 flex items-center gap-1.5">
-                          {resumingOrder === order.id
+                          {reorderingId === order.id
                             ? <><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading…</>
-                            : 'Complete →'}
+                            : 'Reorder →'}
                         </button>
                       </div>
                     </div>
@@ -1227,10 +1223,10 @@ export default function DashboardPage() {
                             {/* Progress stepper — only for paid+ orders */}
                             {!isPending && <ProgressStepper status={order.status} trackingNumber={order.trackingNumber} trackingUrl={order.trackingUrl} />}
 
-                            {/* Pending: prompt to complete */}
+                            {/* Pending: prompt to reorder */}
                             {isPending && (
                               <p className="text-xs text-amber-600 mt-2">
-                                Payment not completed — <Link href="/create" className="underline font-semibold">resume your order →</Link>
+                                Payment not completed — use the button below to reorder
                               </p>
                             )}
                           </div>
@@ -1249,12 +1245,12 @@ export default function DashboardPage() {
                         {isPending && (
                           <div className="flex justify-end mt-3 pt-3 border-t border-gray-100">
                             <button
-                              onClick={() => resumeOrder(order.id)}
-                              disabled={resumingOrder === order.id}
+                              onClick={() => reorderFromDashboard(order.id)}
+                              disabled={reorderingId === order.id}
                               className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-60 flex items-center gap-1.5">
-                              {resumingOrder === order.id
+                              {reorderingId === order.id
                                 ? <><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading…</>
-                                : 'Complete Payment →'}
+                                : 'Reorder →'}
                             </button>
                           </div>
                         )}
