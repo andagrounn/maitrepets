@@ -905,13 +905,16 @@ export default function DashboardPage() {
   const { toasts, addToast }    = useToast();
 
   useEffect(() => {
-    if (!_hasHydrated) return;        // wait for localStorage to rehydrate
+    if (!_hasHydrated) return;
     if (!user) { router.push('/login'); return; }
+    // Reset dismissed state so the banner always shows on fresh login
+    setDismissedBanner(false);
+    setShowPendingList(true);
     Promise.all([api.getOrders(), api.getImages()])
       .then(([o, i]) => { setOrders(o.orders); setImages(i.images); })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [_hasHydrated, user]);
+  }, [_hasHydrated, user?.id]);
 
   function handleRefundRequested(orderId) {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'refund_requested' } : o));
@@ -927,6 +930,7 @@ export default function DashboardPage() {
       const res  = await fetch('/api/resume-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ orderId }),
       });
       const data = await res.json();
