@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
 import { fulfillOrder } from '@/lib/fulfillment';
+import { logger } from '@/lib/logger';
+import { sendEmail, orderConfirmationEmail } from '@/lib/email';
 
 /**
  * Called from the success page with ?session_id=...
@@ -21,14 +23,16 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Payment not completed' }, { status: 402 });
     }
 
-    // Mark order paid
-    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    // Find order
+    const order = await prisma.order.findUnique({ where: { id: orderId }, include: { image: true } });
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-    if (order.status === 'fulfilling' || order.status === 'paid') {
+
+    // Already sent to Printful — just return
+    if (order.status === 'fulfilling' || order.printfulId) {
       return NextResponse.json({ ok: true, already: true, digitalCopy: order.digitalCopy });
     }
 
-    // Pull shipping address from Stripe session if present
+    // Pull shipping address from Stripe session
     const sa = session.shipping_details?.address || session.customer_details?.address;
     const sn = session.shipping_details?.name    || session.customer_details?.name;
 
@@ -37,24 +41,33 @@ export async function POST(req) {
       data: {
         status:   'paid',
         stripeId: sessionId,
-        ...(sn             && { shippingName:     sn }),
-        ...(sa?.line1      && { shippingAddress:  sa.line1 }),
-        ...(sa?.line2      && { shippingAddress2: sa.line2 }),
-        ...(sa?.city       && { shippingCity:     sa.city }),
-        ...(sa?.state      && { shippingState:    sa.state }),
-        ...(sa?.postal_code && { shippingZip:     sa.postal_code }),
-        ...(sa?.country    && { shippingCountry:  sa.country }),
+        ...(sn              && { shippingName:     sn }),
+        ...(sa?.line1       && { shippingAddress:  sa.line1 }),
+        ...(sa?.line2       && { shippingAddress2: sa.line2 }),
+        ...(sa?.city        && { shippingCity:     sa.city }),
+        ...(sa?.state       && { shippingState:    sa.state }),
+        ...(sa?.postal_code && { shippingZip:      sa.postal_code }),
+        ...(sa?.country     && { shippingCountry:  sa.country }),
       },
     });
 
-    // Fire Printful fulfillment
-    fulfillOrder(orderId).catch((e) =>
-      console.error('[Fulfillment failed]', e.message)
-    );
+    // Send order confirmation email
+    const customerEmail = session.customer_details?.email;
+    if (customerEmail) {
+      const { subject, html } = orderConfirmationEmail(updated);
+      sendEmail({ to: customerEmail, subject, html, orderId }).catch(e =>
+        logger.warn('confirm', `Confirmation email failed: ${e.message}`, { orderId })
+      );
+    }
+
+    // Fire Printful fulfillment (address is now saved in DB)
+    fulfillOrder(orderId).catch(async (e) => {
+      await logger.error('confirm', `Fulfillment failed: ${e.message}`, { orderId });
+    });
 
     return NextResponse.json({ ok: true, digitalCopy: updated.digitalCopy });
   } catch (err) {
-    console.error('Confirm error:', err);
+    await logger.error('confirm', err.message);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

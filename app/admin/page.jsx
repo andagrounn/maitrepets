@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useCallback, Fragment } from 'react';
+import { useEffect, useState, useCallback, Fragment, useRef } from 'react';
 import { PRODUCT_PRICES, URGENCY_FEES } from '@/lib/pricing';
 
 const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || 'maitrepets-admin-2025';
@@ -412,70 +412,207 @@ function OrderEditModal({ order, onClose, onSaved }) {
   );
 }
 
-// ─── Customer slide-over ──────────────────────────────────────────────────────
-function CustomerPanel({ customer, onClose, onEmail }) {
+// ─── Admin address edit modal ─────────────────────────────────────────────────
+const ADDR_COUNTRIES = [
+  { code: 'US', name: 'United States' }, { code: 'CA', name: 'Canada' },
+  { code: 'GB', name: 'United Kingdom' }, { code: 'AU', name: 'Australia' },
+  { code: 'JM', name: 'Jamaica' }, { code: 'DE', name: 'Germany' },
+  { code: 'FR', name: 'France' }, { code: 'NL', name: 'Netherlands' },
+  { code: 'IE', name: 'Ireland' }, { code: 'NZ', name: 'New Zealand' },
+  { code: 'SE', name: 'Sweden' }, { code: 'NO', name: 'Norway' },
+  { code: 'SG', name: 'Singapore' }, { code: 'JP', name: 'Japan' },
+];
+
+function AdminAddressModal({ order, onClose, onSaved }) {
+  const [fields, setFields] = useState({
+    name:     order.shippingName     || '',
+    address1: order.shippingAddress  || '',
+    address2: order.shippingAddress2 || '',
+    city:     order.shippingCity     || '',
+    state:    order.shippingState    || '',
+    zip:      order.shippingZip      || '',
+    country:  order.shippingCountry  || 'US',
+    phone:    order.shippingPhone    || '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error,  setError]  = useState('');
+  const isFailed = ['paid_fulfillment_failed', 'paid_printful_failed'].includes(order.status);
+
+  const set = k => e => setFields(f => ({ ...f, [k]: e.target.value }));
+
+  async function save(retry) {
+    setSaving(true); setError('');
+    try {
+      const res  = await fetch('/api/admin/update-address', {
+        method:  'POST',
+        headers: HEADERS,
+        body:    JSON.stringify({ orderId: order.id, ...fields, retry }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      onSaved(data.fulfillError ? `Saved — but fulfillment error: ${data.fulfillError}` : 'Address saved!');
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inp = 'w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500';
+
   return (
-    <div className="fixed inset-0 z-40 flex" onClick={onClose}>
-      <div className="flex-1 bg-black/60 backdrop-blur-sm" />
-      <div className="w-full max-w-sm bg-gray-900 border-l border-white/10 h-full overflow-y-auto flex flex-col" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 sticky top-0 bg-gray-900 z-10">
-          <p className="text-white font-semibold text-sm">Customer Profile</p>
+          <p className="text-white font-bold text-sm">Edit Shipping Address</p>
           <button onClick={onClose} className="text-gray-500 hover:text-white"><Icon.X /></button>
         </div>
-
-        <div className="p-5 border-b border-white/10">
-          <div className="w-12 h-12 bg-purple-600/30 rounded-2xl flex items-center justify-center text-purple-300 text-xl font-black mb-3">
-            {(customer.name || customer.email || '?')[0].toUpperCase()}
+        <div className="p-5 space-y-3">
+          {[
+            { label: 'Full Name',         key: 'name',     ph: 'Jane Smith' },
+            { label: 'Address Line 1',    key: 'address1', ph: '123 Main St' },
+            { label: 'Address Line 2',    key: 'address2', ph: 'Apt 4B (optional)' },
+            { label: 'City',              key: 'city',     ph: 'New York' },
+            { label: 'State / Province',  key: 'state',    ph: 'NY' },
+            { label: 'ZIP / Postal Code', key: 'zip',      ph: '10001' },
+            { label: 'Phone',             key: 'phone',    ph: '+1 555 000 0000' },
+          ].map(({ label, key, ph }) => (
+            <div key={key}>
+              <label className="block text-xs font-semibold text-gray-400 mb-1">{label}</label>
+              <input value={fields[key]} onChange={set(key)} placeholder={ph} className={inp} />
+            </div>
+          ))}
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 mb-1">Country</label>
+            <select value={fields.country} onChange={set('country')} className={inp}>
+              {ADDR_COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+            </select>
           </div>
-          <p className="text-white font-bold">{customer.name || '—'}</p>
-          <p className="text-gray-400 text-sm">{customer.email}</p>
-          <p className="text-gray-600 text-xs mt-1">Joined {new Date(customer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-          <div className="grid grid-cols-2 gap-3 mt-4">
-            <div className="bg-white/5 rounded-xl p-3">
-              <p className="text-gray-500 text-xs">Orders</p>
-              <p className="text-white font-bold text-xl">{customer.orderCount}</p>
-            </div>
-            <div className="bg-white/5 rounded-xl p-3">
-              <p className="text-gray-500 text-xs">Lifetime Value</p>
-              <p className="text-emerald-400 font-bold text-xl">${customer.ltv.toFixed(2)}</p>
-            </div>
+          {error && <p className="text-xs text-red-400">{error}</p>}
+          <div className="flex gap-2 pt-1">
+            <button onClick={() => save(false)} disabled={saving}
+              className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/20 text-white transition-colors disabled:opacity-50">
+              {saving ? 'Saving…' : 'Save Only'}
+            </button>
+            {isFailed && (
+              <button onClick={() => save(true)} disabled={saving}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white transition-colors disabled:opacity-50">
+                {saving ? 'Saving…' : 'Save & Retry Print →'}
+              </button>
+            )}
           </div>
-        </div>
-
-        <div className="p-5 border-b border-white/10">
-          <button onClick={() => onEmail(customer.email)}
-            className="w-full py-2.5 rounded-xl text-sm font-medium bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 transition-all flex items-center justify-center gap-2">
-            <Icon.Mail /> Email Customer
-          </button>
-        </div>
-
-        <div className="p-5 flex-1">
-          <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Order History</p>
-          {customer.orders.length === 0 ? (
-            <p className="text-gray-600 text-sm">No orders yet</p>
-          ) : (
-            <div className="space-y-2">
-              {customer.orders.map(o => (
-                <div key={o.id} className="bg-white/5 rounded-xl p-3 flex items-center gap-3">
-                  {o.image?.generatedUrl
-                    ? <img src={o.image.generatedUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                    : <div className="w-10 h-10 rounded-lg bg-white/10 flex-shrink-0" />
-                  }
-                  <div className="flex-1 min-w-0">
-                    <p className="text-gray-300 text-xs capitalize truncate">{o.productType?.replace(/-/g,' ')}</p>
-                    <p className="text-gray-500 text-xs">{new Date(o.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-emerald-400 text-xs font-semibold">${o.price?.toFixed(2)}</p>
-                    <StatusBadge status={o.status} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── Customer slide-over ──────────────────────────────────────────────────────
+function CustomerPanel({ customer, onClose, onEmail }) {
+  const [editingOrder, setEditingOrder] = useState(null);
+  const [toast, setToast] = useState('');
+
+  function showToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3000);
+  }
+
+  return (
+    <>
+      {editingOrder && (
+        <AdminAddressModal
+          order={editingOrder}
+          onClose={() => setEditingOrder(null)}
+          onSaved={msg => { setEditingOrder(null); showToast(msg); }}
+        />
+      )}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-800 text-white text-sm font-medium px-4 py-3 rounded-2xl shadow-lg border border-white/10">
+          {toast}
+        </div>
+      )}
+      <div className="fixed inset-0 z-40 flex" onClick={onClose}>
+        <div className="flex-1 bg-black/60 backdrop-blur-sm" />
+        <div className="w-full max-w-sm bg-gray-900 border-l border-white/10 h-full overflow-y-auto flex flex-col" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 sticky top-0 bg-gray-900 z-10">
+            <p className="text-white font-semibold text-sm">Customer Profile</p>
+            <button onClick={onClose} className="text-gray-500 hover:text-white"><Icon.X /></button>
+          </div>
+
+          <div className="p-5 border-b border-white/10">
+            <div className="w-12 h-12 bg-purple-600/30 rounded-2xl flex items-center justify-center text-purple-300 text-xl font-black mb-3">
+              {(customer.name || customer.email || '?')[0].toUpperCase()}
+            </div>
+            <p className="text-white font-bold">{customer.name || '—'}</p>
+            <p className="text-gray-400 text-sm">{customer.email}</p>
+            <p className="text-gray-600 text-xs mt-1">Joined {new Date(customer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <div className="bg-white/5 rounded-xl p-3">
+                <p className="text-gray-500 text-xs">Orders</p>
+                <p className="text-white font-bold text-xl">{customer.orderCount}</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-3">
+                <p className="text-gray-500 text-xs">Lifetime Value</p>
+                <p className="text-emerald-400 font-bold text-xl">${customer.ltv.toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 border-b border-white/10">
+            <button onClick={() => onEmail(customer.email)}
+              className="w-full py-2.5 rounded-xl text-sm font-medium bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 transition-all flex items-center justify-center gap-2">
+              <Icon.Mail /> Email Customer
+            </button>
+          </div>
+
+          <div className="p-5 flex-1">
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Order History</p>
+            {customer.orders.length === 0 ? (
+              <p className="text-gray-600 text-sm">No orders yet</p>
+            ) : (
+              <div className="space-y-2">
+                {customer.orders.map(o => (
+                  <div key={o.id} className="bg-white/5 rounded-xl p-3">
+                    <div className="flex items-center gap-3">
+                      {o.image?.generatedUrl
+                        ? <img src={o.image.generatedUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                        : <div className="w-10 h-10 rounded-lg bg-white/10 flex-shrink-0" />
+                      }
+                      <div className="flex-1 min-w-0">
+                        <p className="text-gray-300 text-xs capitalize truncate">{o.productType?.replace(/-/g,' ')}</p>
+                        <p className="text-gray-500 text-xs">{new Date(o.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-emerald-400 text-xs font-semibold">${o.price?.toFixed(2)}</p>
+                        <StatusBadge status={o.status} />
+                      </div>
+                    </div>
+                    {/* Shipping address + edit */}
+                    <div className="mt-2 pt-2 border-t border-white/5 flex items-start justify-between gap-2">
+                      <div className="text-[10px] text-gray-600 leading-relaxed">
+                        {o.shippingName && <span className="block text-gray-500">{o.shippingName}</span>}
+                        {o.shippingAddress
+                          ? <span className="block">{o.shippingAddress}{o.shippingAddress2 ? `, ${o.shippingAddress2}` : ''}, {o.shippingCity}, {o.shippingState} {o.shippingZip}, {o.shippingCountry}</span>
+                          : <span className="text-orange-400">No address on file</span>
+                        }
+                      </div>
+                      <button
+                        onClick={() => setEditingOrder(o)}
+                        className="flex-shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold bg-white/10 hover:bg-white/20 text-gray-300 transition-colors whitespace-nowrap"
+                        title="Edit shipping address"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -752,6 +889,8 @@ function OverviewTab({ data, setTab }) {
 }
 
 // ─── Orders tab ───────────────────────────────────────────────────────────────
+const ORDERS_PAGE_SIZE = 10;
+
 function OrdersTab({ orders, onRefresh }) {
   const [search, setSearch]           = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -759,6 +898,10 @@ function OrdersTab({ orders, onRefresh }) {
   const [editing, setEditing]         = useState(null);
   const [emailing, setEmailing]       = useState(null);
   const [retrying, setRetrying]       = useState(null);
+  const [page, setPage]               = useState(1);
+  const [selected, setSelected]       = useState(new Set());
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting]       = useState(false);
 
   async function retryFulfillment(orderId) {
     setRetrying(orderId);
@@ -788,6 +931,33 @@ function OrdersTab({ orders, onRefresh }) {
     return matchStatus && matchSearch;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ORDERS_PAGE_SIZE));
+  const paginated  = filtered.slice((page - 1) * ORDERS_PAGE_SIZE, page * ORDERS_PAGE_SIZE);
+  const allPageSelected = paginated.length > 0 && paginated.every(o => selected.has(o.id));
+
+  useEffect(() => { setPage(1); }, [search, statusFilter]);
+  useEffect(() => { setSelected(new Set()); }, [search, statusFilter, page]);
+
+  function toggleSelect(id) {
+    setSelected(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  }
+  function toggleSelectAll() {
+    if (allPageSelected) setSelected(prev => { const s = new Set(prev); paginated.forEach(o => s.delete(o.id)); return s; });
+    else setSelected(prev => { const s = new Set(prev); paginated.forEach(o => s.add(o.id)); return s; });
+  }
+  async function deleteSelected() {
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/admin/orders', {
+        method: 'DELETE', headers: HEADERS, body: JSON.stringify({ ids: [...selected] }),
+      });
+      const data = await res.json();
+      if (data.ok) { setSelected(new Set()); setConfirmDelete(false); onRefresh(); }
+      else alert('Delete failed: ' + data.error);
+    } catch (e) { alert('Error: ' + e.message); }
+    finally { setDeleting(false); }
+  }
+
   return (
     <div>
       {editing && <OrderEditModal order={editing} onClose={() => setEditing(null)} onSaved={onRefresh} />}
@@ -797,6 +967,25 @@ function OrdersTab({ orders, onRefresh }) {
           defaultTemplate="shipping_update"
           onClose={() => setEmailing(null)} onSent={() => {}}
         />
+      )}
+
+      {/* Confirm delete modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-red-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center mb-4">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </div>
+            <h3 className="text-white font-bold text-lg mb-1">Delete {selected.size} order{selected.size !== 1 ? 's' : ''}?</h3>
+            <p className="text-gray-400 text-sm mb-6">This is permanent and cannot be undone. Associated images and data will remain.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDelete(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 text-sm transition-colors">Cancel</button>
+              <button onClick={deleteSelected} disabled={deleting} className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm disabled:opacity-50 transition-colors">
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Filters */}
@@ -810,6 +999,16 @@ function OrdersTab({ orders, onRefresh }) {
           {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_META[s]?.label || s}</option>)}
         </select>
         <span className="text-gray-500 text-sm">{filtered.length} orders</span>
+        {selected.size > 0 && (
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-gray-400">{selected.size} selected</span>
+            <button onClick={() => setConfirmDelete(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600/20 hover:bg-red-600/40 border border-red-500/30 text-red-400 hover:text-red-300 rounded-lg text-xs font-medium transition-colors">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Delete
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Table */}
@@ -818,6 +1017,10 @@ function OrdersTab({ orders, onRefresh }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/10 text-gray-500 text-xs uppercase tracking-wide">
+                <th className="px-4 py-3 w-8">
+                  <input type="checkbox" checked={allPageSelected} onChange={toggleSelectAll}
+                    className="w-3.5 h-3.5 rounded accent-purple-500 cursor-pointer" />
+                </th>
                 <th className="text-left px-4 py-3 w-12"></th>
                 <th className="text-left px-4 py-3">Customer</th>
                 <th className="text-left px-4 py-3">Product</th>
@@ -828,13 +1031,17 @@ function OrdersTab({ orders, onRefresh }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
-                <tr><td colSpan={7} className="text-center text-gray-600 py-12">No orders found</td></tr>
-              ) : filtered.map(order => (
+              {paginated.length === 0 ? (
+                <tr><td colSpan={8} className="text-center text-gray-600 py-12">No orders found</td></tr>
+              ) : paginated.map(order => (
                 <Fragment key={order.id}>
                   <tr className={`border-b border-white/5 transition-colors cursor-pointer
-                    ${expanded === order.id ? 'bg-purple-950/30' : 'hover:bg-white/5'}`}
+                    ${expanded === order.id ? 'bg-purple-950/30' : selected.has(order.id) ? 'bg-purple-950/20' : 'hover:bg-white/5'}`}
                     onClick={() => setExpanded(expanded === order.id ? null : order.id)}>
+                    <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                      <input type="checkbox" checked={selected.has(order.id)} onChange={() => toggleSelect(order.id)}
+                        className="w-3.5 h-3.5 rounded accent-purple-500 cursor-pointer" />
+                    </td>
                     <td className="px-4 py-3">
                       {order.image?.generatedUrl
                         ? <img src={order.image.generatedUrl} alt="" className="w-10 h-12 object-cover rounded-lg" />
@@ -876,7 +1083,7 @@ function OrdersTab({ orders, onRefresh }) {
                   </tr>
                   {expanded === order.id && (
                     <tr className="bg-purple-950/20 border-b border-white/5">
-                      <td colSpan={7} className="px-4 py-4">
+                      <td colSpan={8} className="px-4 py-4">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                           <div>
                             <p className="text-gray-500 uppercase tracking-wide mb-1">Shipping Address</p>
@@ -919,6 +1126,41 @@ function OrdersTab({ orders, onRefresh }) {
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <span className="text-gray-500 text-xs">
+            Page {page} of {totalPages} · {filtered.length} orders
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >← Prev</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+              .reduce((acc, p, i, arr) => {
+                if (i > 0 && p - arr[i - 1] > 1) acc.push('…');
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, i) => p === '…'
+                ? <span key={`ellipsis-${i}`} className="px-2 text-gray-600 text-sm">…</span>
+                : <button key={p} onClick={() => setPage(p)}
+                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${page === p ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
+                    {p}
+                  </button>
+              )}
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >Next →</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1116,24 +1358,60 @@ function RefundsTab({ refundRequests, onRefresh }) {
 
 // ─── Messaging tab ────────────────────────────────────────────────────────────
 function MessagingTab({ userList }) {
+  const [view, setView] = useState('inbox'); // 'inbox' | 'sent' | 'compose'
+
+  // Email lists
+  const [inbox,      setInbox]      = useState([]);
+  const [sent,       setSent]       = useState([]);
+  const [unread,     setUnread]     = useState(0);
+  const [loadingMail, setLoadingMail] = useState(false);
+  const [openEmail,  setOpenEmail]  = useState(null);
+
+  // Compose state
   const [to, setTo]               = useState('');
   const [template, setTemplate]   = useState('custom');
   const [subject, setSubject]     = useState('');
   const [body, setBody]           = useState('');
   const [sending, setSending]     = useState(false);
   const [result, setResult]       = useState(null);
-  const [sentLog, setSentLog]     = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const suggestions = to.length > 0
     ? userList.filter(u => u.email.toLowerCase().includes(to.toLowerCase()) || u.name?.toLowerCase().includes(to.toLowerCase())).slice(0, 5)
     : [];
 
+  async function fetchEmails() {
+    setLoadingMail(true);
+    const [inRes, sentRes] = await Promise.all([
+      fetch('/api/admin/emails?direction=received', { headers: HEADERS }),
+      fetch('/api/admin/emails?direction=sent',     { headers: HEADERS }),
+    ]);
+    const inData   = await inRes.json();
+    const sentData = await sentRes.json();
+    setInbox(inData.emails  || []);
+    setSent(sentData.emails || []);
+    setUnread(inData.unreadCount || 0);
+    setLoadingMail(false);
+  }
+
+  useEffect(() => { fetchEmails(); }, []);
+
+  async function markRead(email) {
+    if (email.direction === 'received' && !email.read) {
+      await fetch('/api/admin/emails', { method: 'PATCH', headers: HEADERS, body: JSON.stringify({ id: email.id }) });
+      setInbox(prev => prev.map(e => e.id === email.id ? { ...e, read: true } : e));
+      setUnread(u => Math.max(0, u - 1));
+    }
+    setOpenEmail(email);
+  }
+
   useEffect(() => {
-    const t = buildTemplate(template);
-    setSubject(t.subject);
-    setBody(t.body.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim());
-  }, [template]);
+    if (view === 'compose') {
+      const t = buildTemplate(template);
+      setSubject(t.subject);
+      setBody(t.body.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim());
+    }
+  }, [template, view]);
 
   async function send() {
     if (!to || !subject || !body) return;
@@ -1145,9 +1423,10 @@ function MessagingTab({ userList }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setSentLog(l => [{ to, subject, sentAt: new Date().toISOString(), ok: true }, ...l]);
       setResult('sent');
       setTo(''); setBody(''); setSubject(''); setTemplate('custom');
+      fetchEmails();
+      setTimeout(() => setView('sent'), 1200);
     } catch {
       setResult('error');
     } finally {
@@ -1164,113 +1443,353 @@ function MessagingTab({ userList }) {
     { value: 'custom',           label: '✏️ Custom Message' },
   ];
 
-  return (
-    <div className="grid md:grid-cols-5 gap-6">
-      {/* Compose */}
-      <div className="md:col-span-3 bg-gray-900 border border-white/10 rounded-2xl p-6 space-y-5">
-        <h3 className="text-white font-bold">Compose Email</h3>
+  const emailList = view === 'inbox' ? inbox : sent;
 
-        {/* Template picker */}
-        <div>
-          <label className="text-xs text-gray-500 uppercase tracking-wide block mb-2">Template</label>
-          <div className="grid grid-cols-3 gap-1.5">
-            {TMPL_OPTIONS.map(t => (
-              <button key={t.value} onClick={() => setTemplate(t.value)}
-                className={`text-xs px-2 py-2 rounded-lg border transition-all text-left ${template === t.value ? 'bg-purple-600/30 border-purple-500/50 text-purple-200' : 'border-white/10 text-gray-400 hover:border-white/20'}`}>
-                {t.label}
-              </button>
-            ))}
+  // ── Email viewer modal ──────────────────────────────────────────────────────
+  if (openEmail) {
+    return (
+      <div>
+        <button onClick={() => setOpenEmail(null)} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white mb-4 transition-colors">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to {openEmail.direction === 'received' ? 'Inbox' : 'Sent'}
+        </button>
+        <div className="bg-gray-900 border border-white/10 rounded-2xl overflow-hidden">
+          <div className="px-6 py-5 border-b border-white/10">
+            <p className="text-white font-bold text-base mb-1">{openEmail.subject}</p>
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <span><span className="text-gray-600">From:</span> {openEmail.from}</span>
+              <span><span className="text-gray-600">To:</span> {openEmail.to}</span>
+              <span>{new Date(openEmail.createdAt).toLocaleString()}</span>
+            </div>
           </div>
-        </div>
-
-        {/* To field with autocomplete */}
-        <div className="relative">
-          <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">To</label>
-          <input value={to} onChange={e => { setTo(e.target.value); setShowSuggestions(true); }}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-            placeholder="Customer email or name…"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-white/10 rounded-xl overflow-hidden z-10 shadow-2xl">
-              {suggestions.map(u => (
-                <button key={u.id} onMouseDown={() => { setTo(u.email); setShowSuggestions(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/10 text-left transition-colors">
-                  <div className="w-7 h-7 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-300 text-xs font-bold">
-                    {(u.name || u.email)[0].toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-white text-sm">{u.name || u.email}</p>
-                    {u.name && <p className="text-gray-500 text-xs">{u.email}</p>}
-                  </div>
-                  <span className="ml-auto text-gray-600 text-xs">${u.ltv.toFixed(0)} LTV</span>
-                </button>
-              ))}
+          <div className="p-6">
+            {openEmail.body.includes('<') ? (
+              <div className="prose prose-invert max-w-none text-sm" dangerouslySetInnerHTML={{ __html: openEmail.body }} />
+            ) : (
+              <pre className="text-gray-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">{openEmail.body}</pre>
+            )}
+          </div>
+          {openEmail.direction === 'received' && (
+            <div className="px-6 pb-5">
+              <button
+                onClick={() => { setTo(openEmail.from.replace(/.*<(.+)>/, '$1').trim()); setView('compose'); setOpenEmail(null); }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 transition-all">
+                <Icon.Mail /> Reply
+              </button>
             </div>
           )}
         </div>
+      </div>
+    );
+  }
 
-        {/* Subject */}
-        <div>
-          <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Subject</label>
-          <input value={subject} onChange={e => setSubject(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500" />
-        </div>
-
-        {/* Body */}
-        <div>
-          <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Message</label>
-          <textarea value={body} onChange={e => setBody(e.target.value)} rows={8}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 resize-none" />
-        </div>
-
-        {result === 'sent' && <p className="text-emerald-400 text-sm flex items-center gap-2"><Icon.Check /> Email sent successfully!</p>}
-        {result === 'error' && <p className="text-red-400 text-sm">Failed to send — check server logs.</p>}
-
-        <button onClick={send} disabled={!to || !subject || !body || sending}
-          className="w-full py-3 rounded-xl text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white transition-all disabled:opacity-40 flex items-center justify-center gap-2">
-          {sending ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Sending…</> : <><Icon.Mail /> Send Email</>}
+  return (
+    <div>
+      {/* Tab bar */}
+      <div className="flex items-center gap-2 mb-5">
+        {[
+          { key: 'inbox',   label: 'Inbox',   badge: unread },
+          { key: 'sent',    label: 'Sent' },
+          { key: 'compose', label: '+ Compose' },
+        ].map(t => (
+          <button key={t.key} onClick={() => setView(t.key)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all border
+              ${view === t.key ? 'bg-purple-600/30 border-purple-500/50 text-purple-200' : 'border-white/10 text-gray-400 hover:text-gray-200'}`}>
+            {t.label}
+            {t.badge > 0 && (
+              <span className="bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{t.badge}</span>
+            )}
+          </button>
+        ))}
+        <button onClick={fetchEmails} className="ml-auto text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-3.5"/></svg>
+          Refresh
         </button>
       </div>
 
-      {/* Sent log + customers */}
-      <div className="md:col-span-2 space-y-4">
-        {sentLog.length > 0 && (
-          <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">
-            <h3 className="text-xs text-gray-500 uppercase tracking-wide mb-3">Sent This Session</h3>
-            <div className="space-y-2">
-              {sentLog.map((l, i) => (
-                <div key={i} className="flex items-start gap-2 text-xs">
-                  <span className="text-emerald-400 mt-0.5"><Icon.Check /></span>
-                  <div>
-                    <p className="text-gray-300">{l.to}</p>
-                    <p className="text-gray-600 truncate">{l.subject}</p>
-                    <p className="text-gray-700">{new Date(l.sentAt).toLocaleTimeString()}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* Inbox / Sent list */}
+      {(view === 'inbox' || view === 'sent') && (
+        loadingMail ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
           </div>
-        )}
-
-        <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">
-          <h3 className="text-xs text-gray-500 uppercase tracking-wide mb-3">Quick Select Customer</h3>
-          <div className="space-y-1.5 max-h-72 overflow-y-auto">
-            {userList.slice(0, 20).map(u => (
-              <button key={u.id} onClick={() => setTo(u.email)}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/5 text-left transition-colors">
-                <div className="w-7 h-7 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-300 text-xs font-bold flex-shrink-0">
-                  {(u.name || u.email)[0].toUpperCase()}
+        ) : emailList.length === 0 ? (
+          <div className="bg-gray-900 border border-white/10 rounded-2xl p-16 text-center">
+            <Icon.Mail />
+            <p className="text-gray-500 text-sm mt-3">{view === 'inbox' ? 'No incoming emails yet' : 'No emails sent yet'}</p>
+            {view === 'inbox' && <p className="text-gray-600 text-xs mt-1">Set up Resend inbound to receive emails here</p>}
+          </div>
+        ) : (
+          <div className="bg-gray-900 border border-white/10 rounded-2xl overflow-hidden divide-y divide-white/5">
+            {emailList.map(email => (
+              <button key={email.id} onClick={() => markRead(email)}
+                className={`w-full flex items-start gap-4 px-5 py-4 hover:bg-white/5 text-left transition-colors
+                  ${email.direction === 'received' && !email.read ? 'bg-purple-500/5 border-l-2 border-purple-500' : ''}`}>
+                <div className="w-8 h-8 rounded-full bg-purple-600/20 flex items-center justify-center text-purple-300 text-xs font-bold flex-shrink-0 mt-0.5">
+                  {(email.direction === 'received' ? email.from : email.to)[0]?.toUpperCase() || '?'}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-gray-300 text-xs truncate">{u.name || u.email}</p>
-                  {u.name && <p className="text-gray-600 text-xs truncate">{u.email}</p>}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                    <p className={`text-sm truncate ${email.direction === 'received' && !email.read ? 'text-white font-semibold' : 'text-gray-300'}`}>
+                      {email.direction === 'received'
+                        ? email.from.replace(/<.*>/, '').trim() || email.from
+                        : `To: ${email.to}`}
+                    </p>
+                    <span className="text-xs text-gray-600 flex-shrink-0">{new Date(email.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <p className={`text-xs truncate ${email.direction === 'received' && !email.read ? 'text-gray-300' : 'text-gray-500'}`}>{email.subject}</p>
+                  <p className="text-xs text-gray-700 truncate mt-0.5">{email.body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80)}</p>
                 </div>
-                <span className="text-gray-600 text-xs flex-shrink-0">{u.orderCount} orders</span>
+                {email.direction === 'received' && !email.read && (
+                  <div className="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0 mt-2" />
+                )}
               </button>
             ))}
           </div>
+        )
+      )}
+
+      {/* Compose */}
+      {view === 'compose' && (
+        <div className="grid md:grid-cols-5 gap-6">
+          <div className="md:col-span-3 bg-gray-900 border border-white/10 rounded-2xl p-6 space-y-5">
+            <h3 className="text-white font-bold">Compose Email</h3>
+
+            <div>
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-2">Template</label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {TMPL_OPTIONS.map(t => (
+                  <button key={t.value} onClick={() => setTemplate(t.value)}
+                    className={`text-xs px-2 py-2 rounded-lg border transition-all text-left ${template === t.value ? 'bg-purple-600/30 border-purple-500/50 text-purple-200' : 'border-white/10 text-gray-400 hover:border-white/20'}`}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative">
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">To</label>
+              <input value={to} onChange={e => { setTo(e.target.value); setShowSuggestions(true); }}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                placeholder="Customer email or name…"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-white/10 rounded-xl overflow-hidden z-10 shadow-2xl">
+                  {suggestions.map(u => (
+                    <button key={u.id} onMouseDown={() => { setTo(u.email); setShowSuggestions(false); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/10 text-left transition-colors">
+                      <div className="w-7 h-7 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-300 text-xs font-bold">
+                        {(u.name || u.email)[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-white text-sm">{u.name || u.email}</p>
+                        {u.name && <p className="text-gray-500 text-xs">{u.email}</p>}
+                      </div>
+                      <span className="ml-auto text-gray-600 text-xs">${u.ltv.toFixed(0)} LTV</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Subject</label>
+              <input value={subject} onChange={e => setSubject(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500" />
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Message</label>
+              <textarea value={body} onChange={e => setBody(e.target.value)} rows={8}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 resize-none" />
+            </div>
+
+            {result === 'sent'  && <p className="text-emerald-400 text-sm flex items-center gap-2"><Icon.Check /> Email sent!</p>}
+            {result === 'error' && <p className="text-red-400 text-sm">Failed to send — check server logs.</p>}
+
+            <button onClick={send} disabled={!to || !subject || !body || sending}
+              className="w-full py-3 rounded-xl text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white transition-all disabled:opacity-40 flex items-center justify-center gap-2">
+              {sending ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Sending…</> : <><Icon.Mail /> Send Email</>}
+            </button>
+          </div>
+
+          <div className="md:col-span-2">
+            <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">
+              <h3 className="text-xs text-gray-500 uppercase tracking-wide mb-3">Quick Select Customer</h3>
+              <div className="space-y-1.5 max-h-96 overflow-y-auto">
+                {userList.slice(0, 30).map(u => (
+                  <button key={u.id} onClick={() => setTo(u.email)}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/5 text-left transition-colors">
+                    <div className="w-7 h-7 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-300 text-xs font-bold flex-shrink-0">
+                      {(u.name || u.email)[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-gray-300 text-xs truncate">{u.name || u.email}</p>
+                      {u.name && <p className="text-gray-600 text-xs truncate">{u.email}</p>}
+                    </div>
+                    <span className="text-gray-600 text-xs flex-shrink-0">{u.orderCount} orders</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Logs tab ─────────────────────────────────────────────────────────────────
+const LOG_LEVELS = ['all', 'info', 'warn', 'error'];
+const LOG_SOURCES = ['all', 'fulfillment', 'webhook', 'confirm', 'generate'];
+
+const LEVEL_STYLE = {
+  info:  { row: 'border-white/5',                  badge: 'bg-blue-500/20 text-blue-300 border border-blue-500/30',    dot: 'bg-blue-400' },
+  warn:  { row: 'border-yellow-500/10 bg-yellow-500/5', badge: 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30', dot: 'bg-yellow-400' },
+  error: { row: 'border-red-500/10 bg-red-500/5',   badge: 'bg-red-500/20 text-red-300 border border-red-500/30',      dot: 'bg-red-500' },
+};
+
+function LogsTab() {
+  const [logs,       setLogs]       = useState([]);
+  const [loading,    setLoading]    = useState(true);
+  const [level,      setLevel]      = useState('all');
+  const [source,     setSource]     = useState('all');
+  const [copied,     setCopied]     = useState(null);
+  const [clearing,   setClearing]   = useState(false);
+
+  async function fetchLogs() {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (level  !== 'all') params.set('level',  level);
+    if (source !== 'all') params.set('source', source);
+    params.set('limit', '200');
+    const res  = await fetch(`/api/admin/logs?${params}`, { headers: HEADERS });
+    const data = await res.json();
+    setLogs(data.logs || []);
+    setLoading(false);
+  }
+
+  useEffect(() => { fetchLogs(); }, [level, source]);
+
+  function copyLog(log) {
+    const meta = log.meta ? JSON.parse(log.meta) : null;
+    const text = [
+      `[${log.level.toUpperCase()}] ${log.source}`,
+      `Time: ${new Date(log.createdAt).toLocaleString()}`,
+      `Message: ${log.message}`,
+      meta ? `Meta: ${JSON.stringify(meta, null, 2)}` : null,
+    ].filter(Boolean).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(log.id);
+      setTimeout(() => setCopied(null), 2000);
+    });
+  }
+
+  async function clearLevel(lvl) {
+    if (!confirm(`Clear all ${lvl} logs?`)) return;
+    setClearing(true);
+    await fetch(`/api/admin/logs?level=${lvl}`, { method: 'DELETE', headers: HEADERS });
+    setClearing(false);
+    fetchLogs();
+  }
+
+  const counts = logs.reduce((acc, l) => { acc[l.level] = (acc[l.level] || 0) + 1; return acc; }, {});
+
+  return (
+    <div>
+      {/* Controls */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <div className="flex gap-1">
+          {LOG_LEVELS.map(l => (
+            <button key={l} onClick={() => setLevel(l)}
+              className={`text-xs px-3 py-1.5 rounded-lg border capitalize transition-all
+                ${level === l ? 'bg-purple-600/30 border-purple-500/50 text-purple-200' : 'border-white/10 text-gray-500 hover:text-gray-300'}`}>
+              {l}{l !== 'all' && counts[l] ? ` (${counts[l]})` : ''}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1">
+          {LOG_SOURCES.map(s => (
+            <button key={s} onClick={() => setSource(s)}
+              className={`text-xs px-3 py-1.5 rounded-lg border transition-all
+                ${source === s ? 'bg-blue-600/30 border-blue-500/50 text-blue-200' : 'border-white/10 text-gray-500 hover:text-gray-300'}`}>
+              {s}
+            </button>
+          ))}
+        </div>
+        <button onClick={fetchLogs} className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1 ml-auto">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-3.5"/></svg>
+          Refresh
+        </button>
+        {(level === 'warn' || level === 'error') && (
+          <button onClick={() => clearLevel(level)} disabled={clearing}
+            className="text-xs text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/40 px-3 py-1.5 rounded-lg transition-all disabled:opacity-40">
+            Clear {level} logs
+          </button>
+        )}
       </div>
+
+      {/* Summary pills */}
+      <div className="flex gap-2 mb-4">
+        {['info','warn','error'].map(l => {
+          const s = LEVEL_STYLE[l];
+          return (
+            <div key={l} className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium ${s.badge}`}>
+              <span className={`w-2 h-2 rounded-full ${s.dot}`} />
+              {l.charAt(0).toUpperCase() + l.slice(1)}: {counts[l] || 0}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Log list */}
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : logs.length === 0 ? (
+        <div className="text-center py-20 text-gray-600 text-sm">No logs found</div>
+      ) : (
+        <div className="bg-gray-900 border border-white/10 rounded-2xl overflow-hidden font-mono text-xs">
+          {logs.map((log, i) => {
+            const s    = LEVEL_STYLE[log.level] || LEVEL_STYLE.info;
+            const meta = log.meta ? (() => { try { return JSON.parse(log.meta); } catch { return null; } })() : null;
+            const canCopy = log.level === 'warn' || log.level === 'error';
+            return (
+              <div key={log.id} className={`flex items-start gap-3 px-4 py-3 border-b last:border-b-0 ${s.row}`}>
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${s.dot}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase ${s.badge}`}>{log.level}</span>
+                    <span className="text-purple-400">{log.source}</span>
+                    <span className="text-gray-600">{new Date(log.createdAt).toLocaleString()}</span>
+                  </div>
+                  <p className="text-gray-300 break-all leading-relaxed">{log.message}</p>
+                  {meta && (
+                    <div className="mt-1 text-gray-600 text-[10px] break-all">
+                      {Object.entries(meta).map(([k, v]) => (
+                        <span key={k} className="mr-3"><span className="text-gray-500">{k}:</span> {String(v)}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {canCopy && (
+                  <button
+                    onClick={() => copyLog(log)}
+                    title="Copy log"
+                    className="flex-shrink-0 p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-500 hover:text-gray-300 transition-all"
+                  >
+                    {copied === log.id
+                      ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+                      : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    }
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -1712,15 +2231,109 @@ function useAdminTheme() {
   return { theme, isDark, cycleTheme };
 }
 
+const AI_MODELS = [
+  {
+    key:         'gpt-image-1',
+    label:       'GPT-Image-1',
+    provider:    'OpenAI',
+    description: 'Highest quality. Uses edit mode with reference image for best likeness. Recommended.',
+    badge:       'Recommended',
+    badgeColor:  'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
+  },
+  {
+    key:         'flux',
+    label:       'Flux 1.1 Pro',
+    provider:    'Replicate',
+    description: 'Fast generation via Replicate. Lower cost, slightly less accurate likeness.',
+    badge:       'Faster',
+    badgeColor:  'bg-blue-500/20 text-blue-300 border border-blue-500/30',
+  },
+];
+
 function SettingsTab() {
   const provider = process.env.NEXT_PUBLIC_PAYMENT_PROVIDER || 'paypal';
   const isPayPal = provider === 'paypal';
+
+  const [activeModel, setActiveModel] = useState(null); // null = loading
+  const [savingModel, setSavingModel] = useState(false);
+  const [modelSaved,  setModelSaved]  = useState(false);
+
+  useEffect(() => {
+    fetch('/api/admin/config', { headers: HEADERS })
+      .then(r => r.json())
+      .then(d => setActiveModel(d.config?.ai_model || 'gpt-image-1'))
+      .catch(() => setActiveModel('gpt-image-1'));
+  }, []);
+
+  async function saveModel(key) {
+    setSavingModel(true);
+    await fetch('/api/admin/config', {
+      method:  'POST',
+      headers: HEADERS,
+      body:    JSON.stringify({ ai_model: key }),
+    });
+    setActiveModel(key);
+    setSavingModel(false);
+    setModelSaved(true);
+    setTimeout(() => setModelSaved(false), 2500);
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 p-6">
       <div>
         <h2 className="text-xl font-black text-white mb-1">Settings</h2>
         <p className="text-gray-500 text-sm">Manage app configuration.</p>
+      </div>
+
+      {/* AI Model */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-white">AI Generation Model</p>
+            <p className="text-xs text-gray-500 mt-0.5">Controls which model generates pet portraits in production</p>
+          </div>
+          {modelSaved && (
+            <span className="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full flex items-center gap-1.5">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+              Saved
+            </span>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {AI_MODELS.map(model => {
+            const isActive = activeModel === model.key;
+            return (
+              <button
+                key={model.key}
+                onClick={() => !isActive && saveModel(model.key)}
+                disabled={savingModel || activeModel === null}
+                className={`text-left rounded-xl border p-4 transition-all disabled:opacity-60
+                  ${isActive
+                    ? 'border-purple-500/60 bg-purple-500/10 ring-1 ring-purple-500/30'
+                    : 'border-white/10 bg-white/3 hover:border-white/20 hover:bg-white/5'}`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-sm font-bold text-white">{model.label}</p>
+                    <p className="text-[10px] text-gray-500">{model.provider}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    {isActive && (
+                      <span className="text-[10px] bg-purple-500 text-white px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+                    )}
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${model.badgeColor}`}>{model.badge}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 leading-relaxed">{model.description}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-xs text-gray-500">
+          Changes take effect immediately — no redeploy needed. The active model is stored in the database.
+        </div>
       </div>
 
       {/* Payment Provider */}
@@ -1792,6 +2405,40 @@ export default function AdminPage() {
   const [tab, setTab]       = useState('overview');
   const { theme, isDark, cycleTheme } = useAdminTheme();
 
+  // ── Unread email toast ─────────────────────────────────────────────────────
+  const [unreadEmails, setUnreadEmails]   = useState(0);
+  const [emailToast, setEmailToast]       = useState(false);
+  const [toastDismissed, setToastDismissed] = useState(false);
+  const prevUnread = useRef(0);
+
+  const pollUnread = useCallback(async () => {
+    try {
+      const res  = await fetch('/api/admin/emails', { headers: HEADERS });
+      const json = await res.json();
+      const count = json.unreadCount || 0;
+      setUnreadEmails(count);
+      if (count > prevUnread.current) {
+        setEmailToast(true);
+        setToastDismissed(false);
+      }
+      prevUnread.current = count;
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (!authed) return;
+    pollUnread();
+    const id = setInterval(pollUnread, 30000); // poll every 30s
+    return () => clearInterval(id);
+  }, [authed, pollUnread]);
+
+  useEffect(() => {
+    if (!emailToast) return;
+    const id = setTimeout(() => setEmailToast(false), 6000);
+    return () => clearTimeout(id);
+  }, [emailToast]);
+  // ──────────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     const stored = sessionStorage.getItem('admin_auth');
     if (stored === (process.env.NEXT_PUBLIC_ADMIN_KEY || '8133089')) {
@@ -1821,8 +2468,9 @@ export default function AdminPage() {
     { key: 'orders',     label: 'Orders',      Icon: Icon.Orders },
     { key: 'customers',  label: 'Customers',   Icon: Icon.Customers },
     { key: 'refunds',    label: 'Refunds',     Icon: Icon.Refunds, badge: data?.stats?.refundRequestedOrders },
-    { key: 'messaging',  label: 'Messaging',   Icon: Icon.Messaging },
+    { key: 'messaging',  label: 'Messaging',   Icon: Icon.Messaging, badge: unreadEmails || undefined },
     { key: 'generations', label: 'Gen Bank',   Icon: Icon.GenBank },
+    { key: 'logs',       label: 'Logs',        Icon: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> },
     { key: 'settings',   label: 'Settings',    Icon: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
   ];
 
@@ -2013,6 +2661,7 @@ export default function AdminPage() {
                 {tab === 'overview' && `$${data.stats?.totalRevenue?.toFixed(2) || '0.00'} total revenue`}
                 {tab === 'messaging'   && 'Send emails to customers'}
                 {tab === 'generations' && 'All AI-generated portraits'}
+                {tab === 'logs'        && 'System activity — fulfillment, generation, webhooks'}
               </p>
             )}
           </div>
@@ -2022,6 +2671,8 @@ export default function AdminPage() {
         <main className="p-6">
           {tab === 'generations' ? (
             <GenerationBankTab />
+          ) : tab === 'logs' ? (
+            <LogsTab />
           ) : loading || !data ? (
             <div className="flex items-center justify-center py-32">
               <div className="w-10 h-10 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
@@ -2033,12 +2684,42 @@ export default function AdminPage() {
               {tab === 'customers' && <CustomersTab userList={data.userList} />}
               {tab === 'refunds'   && <RefundsTab   refundRequests={data.refundRequests} onRefresh={fetchData} />}
               {tab === 'messaging' && <MessagingTab userList={data.userList} />}
+              {tab === 'logs'      && <LogsTab />}
               {tab === 'settings'  && <SettingsTab />}
             </>
           )}
         </main>
       </div>
     </div>
+
+    {/* ── Unread email toast ── */}
+    {emailToast && unreadEmails > 0 && (
+      <div className="fixed bottom-6 right-6 z-50 flex items-start gap-3 bg-[#1e1b2e] border border-purple-500/40 shadow-2xl rounded-xl px-4 py-3 max-w-xs">
+        <div className="flex-shrink-0 w-8 h-8 bg-purple-600/30 rounded-full flex items-center justify-center mt-0.5">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-white text-sm font-semibold leading-tight">
+            {unreadEmails} new {unreadEmails === 1 ? 'message' : 'messages'}
+          </p>
+          <p className="text-purple-300 text-xs mt-0.5">From customers in your inbox</p>
+          <button
+            onClick={() => { setTab('messaging'); setEmailToast(false); }}
+            className="mt-2 text-xs text-purple-400 hover:text-purple-200 font-medium underline underline-offset-2"
+          >
+            View inbox →
+          </button>
+        </div>
+        <button
+          onClick={() => setEmailToast(false)}
+          className="flex-shrink-0 text-gray-500 hover:text-gray-300 mt-0.5"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    )}
     </>
   );
 }

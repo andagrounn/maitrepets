@@ -447,6 +447,52 @@ function IconBtn({ onClick, disabled, title, children }) {
   );
 }
 
+// ─── Order error alert ─────────────────────────────────────────────────────────
+function OrderErrorAlert() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="p-1.5 bg-orange-50 hover:bg-orange-100 text-orange-500 border border-orange-200 rounded-xl transition-colors"
+        title="View issue"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setOpen(false)}>
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-500 flex-shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900">Print Issue Detected</h3>
+                <p className="text-xs text-gray-400">We're on it</p>
+              </div>
+            </div>
+            <div className="bg-orange-50 border border-orange-100 rounded-xl px-4 py-3 mb-5">
+              <p className="text-sm text-orange-800">
+                There was an issue sending your order to print. Our team has been notified and will resolve it within <strong>1 business day</strong>. No action needed on your end.
+              </p>
+            </div>
+            <button onClick={() => setOpen(false)} className="w-full py-2.5 rounded-xl text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors">
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ─── Order progress stepper ────────────────────────────────────────────────────
 function ProgressStepper({ status }) {
   const sc = STATUS_CONFIG[status];
@@ -530,29 +576,11 @@ function PaperPrintIcon({ imageId }) {
 }
 
 // ─── Quick order button — goes straight to Stripe checkout ────────────────────
-const QUICK_ORDER_COUNTRIES = [
-  { code: 'US', name: 'United States' }, { code: 'CA', name: 'Canada' },
-  { code: 'GB', name: 'United Kingdom' }, { code: 'AU', name: 'Australia' },
-  { code: 'JM', name: 'Jamaica' }, { code: 'DE', name: 'Germany' },
-  { code: 'FR', name: 'France' }, { code: 'NL', name: 'Netherlands' },
-  { code: 'IE', name: 'Ireland' }, { code: 'NZ', name: 'New Zealand' },
-];
-
 function QuickOrderBtn({ img }) {
-  const [showForm, setShowForm] = useState(false);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState('');
-  const [addr, setAddr] = useState({
-    name: '', address1: '', address2: '', city: '', state: '', zip: '', country: 'US', phone: '',
-  });
-
-  const set = (k) => (e) => setAddr(f => ({ ...f, [k]: e.target.value }));
+  const [loading, setLoading] = useState(false);
 
   async function checkout() {
-    if (!addr.name || !addr.address1 || !addr.city || !addr.state || !addr.zip) {
-      setError('Please fill in all required fields.'); return;
-    }
-    setLoading(true); setError('');
+    setLoading(true);
     try {
       const res  = await fetch('/api/checkout', {
         method: 'POST',
@@ -563,66 +591,22 @@ function QuickOrderBtn({ img }) {
           generatedUrl: img.generatedUrl,
           productKey:   'poster-16x20',
           price:        119.99,
-          shipping:     { name: addr.name, address1: addr.address1, address2: addr.address2, city: addr.city, state: addr.state, zip: addr.zip, country: addr.country, phone: addr.phone },
           extras:       {},
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Checkout failed');
       window.location.href = data.url;
-    } catch (err) {
-      setError(err.message);
+    } catch {
       setLoading(false);
     }
   }
 
-  const inputCls = 'w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400';
-
   return (
-    <>
-      <button onClick={() => setShowForm(true)}
-        className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors flex items-center gap-1">
-        Order →
-      </button>
-
-      {showForm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
-              <p className="font-bold text-gray-900">Shipping Address</p>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600"><IconX size={16} /></button>
-            </div>
-            <div className="p-5 space-y-3">
-              {[
-                { label: 'Full Name *',        key: 'name',     placeholder: 'Jane Smith' },
-                { label: 'Address Line 1 *',   key: 'address1', placeholder: '123 Main St' },
-                { label: 'Address Line 2',      key: 'address2', placeholder: 'Apt 4B (optional)' },
-                { label: 'City *',             key: 'city',     placeholder: 'New York' },
-                { label: 'State / Province *', key: 'state',    placeholder: 'NY' },
-                { label: 'ZIP / Postal Code *',key: 'zip',      placeholder: '10001' },
-                { label: 'Phone (optional)',   key: 'phone',    placeholder: '+1 555 000 0000' },
-              ].map(({ label, key, placeholder }) => (
-                <div key={key}>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">{label}</label>
-                  <input value={addr[key]} onChange={set(key)} placeholder={placeholder} className={inputCls} />
-                </div>
-              ))}
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Country</label>
-                <select value={addr.country} onChange={set('country')} className={inputCls}>
-                  {QUICK_ORDER_COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-                </select>
-              </div>
-              {error && <p className="text-xs text-red-600">{error}</p>}
-              <button onClick={checkout} disabled={loading}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-60">
-                {loading ? 'Redirecting to checkout…' : 'Continue to Payment →'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    <button onClick={checkout} disabled={loading}
+      className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors flex items-center gap-1 disabled:opacity-50">
+      {loading ? '…' : 'Order →'}
+    </button>
   );
 }
 
@@ -832,7 +816,6 @@ export default function DashboardPage() {
   const [dismissedBanner, setDismissedBanner] = useState(false);
   const [showPendingList, setShowPendingList] = useState(true);
   const [resumingOrder, setResumingOrder]     = useState(null);
-  const [editingAddress, setEditingAddress]   = useState(null);
   const { toasts, addToast }    = useToast();
 
   useEffect(() => {
@@ -898,17 +881,6 @@ export default function DashboardPage() {
     <>
       <Navbar />
       {preview && <PreviewModal src={preview} onClose={() => setPreview(null)} />}
-      {editingAddress && (
-        <AddressEditModal
-          order={editingAddress}
-          onClose={() => setEditingAddress(null)}
-          onSaved={() => {
-            setOrders(prev => prev.map(o => o.id === editingAddress.id ? { ...o, status: 'fulfilling' } : o));
-            addToast('Address saved — resubmitted to print!', 'success');
-            setEditingAddress(null);
-          }}
-        />
-      )}
       <ToastContainer toasts={toasts} />
 
       <main className="min-h-screen bg-[#F8F5F2] pt-20">
@@ -1168,15 +1140,7 @@ export default function DashboardPage() {
                         {/* Actions row */}
                         {!isPending && (
                           <div className="flex justify-end items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 flex-wrap">
-                            {isAddrFail && (
-                              <button
-                                onClick={() => setEditingAddress(order)}
-                                title="Fix Address"
-                                className="p-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 rounded-xl transition-colors"
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                              </button>
-                            )}
+                            {isAddrFail && <OrderErrorAlert />}
                             {order.imageId && <DownloadBtn imageId={order.imageId} />}
                             <ReorderBtn order={order} />
                             <RefundStatusSection order={order} onReported={handleRefundRequested} onClaimed={handleRefundClaimed} addToast={addToast} />

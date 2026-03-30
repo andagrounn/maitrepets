@@ -4,6 +4,7 @@ import { getSession } from '@/lib/auth';
 import { STYLE_PROMPTS } from '@/lib/replicate';
 import { prisma } from '@/lib/prisma';
 import { runGenerationPipeline } from '@/lib/generation';
+import { logger } from '@/lib/logger';
 
 const FREE_LIMIT        = 3;
 const DEMO_EMAIL        = 'demo@artifyai.com';
@@ -126,7 +127,7 @@ export async function POST(req) {
     return res;
 
   } catch (err) {
-    console.error('[generate] error:', err.message);
+    await logger.error('generate', err.message, { userId: session?.id });
     return NextResponse.json(
       { error: err?.message || 'Generation failed. Please try again.' },
       { status: 500 }

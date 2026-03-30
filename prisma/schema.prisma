@@ -69,3 +69,37 @@ model Order {
   user  User  @relation(fields: [userId], references: [id])
   image Image @relation(fields: [imageId], references: [id])
 }
+
+model Email {
+  id        String   @id @default(uuid())
+  direction String   // 'sent' | 'received'
+  from      String
+  to        String
+  subject   String
+  body      String   @db.Text
+  orderId   String?
+  read      Boolean  @default(false)
+  resendId  String?
+  createdAt DateTime @default(now())
+
+  @@index([direction])
+  @@index([createdAt])
+}
+
+model Config {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model Log {
+  id        String   @id @default(uuid())
+  level     String   // 'info' | 'warn' | 'error'
+  source    String   // e.g. 'fulfillment', 'webhook', 'generate', 'confirm'
+  message   String
+  meta      String?  // JSON string for extra context
+  createdAt DateTime @default(now())
+
+  @@index([level])
+  @@index([createdAt])
+}
