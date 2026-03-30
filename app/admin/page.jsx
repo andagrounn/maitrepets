@@ -2677,9 +2677,20 @@ export default function AdminPage() {
     const stored = sessionStorage.getItem('admin_auth');
     if (stored === (process.env.NEXT_PUBLIC_ADMIN_KEY || '8133089')) {
       setAuthed(true);
-    } else {
-      setLoading(false);
+      return;
     }
+    // Auto-auth if logged-in user is a superadmin
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(r => r.json())
+      .then(d => {
+        if (d.user?.isSuperAdmin) {
+          sessionStorage.setItem('admin_auth', process.env.NEXT_PUBLIC_ADMIN_KEY || '8133089');
+          setAuthed(true);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   const fetchData = useCallback(async () => {

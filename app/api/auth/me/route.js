@@ -6,5 +6,7 @@ export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const user = await prisma.user.findUnique({ where: { id: session.id }, select: { id: true, email: true, name: true } });
-  return NextResponse.json({ user });
+  const superadminEmails = (process.env.SUPERADMIN_EMAILS || '').split(',').map(e => e.trim());
+  const isSuperAdmin = superadminEmails.includes(user?.email);
+  return NextResponse.json({ user: { ...user, isSuperAdmin } });
 }
