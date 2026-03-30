@@ -1739,7 +1739,7 @@ const LEVEL_STYLE = {
 
 const LOGS_PAGE_SIZE = 50;
 
-function LogsTab() {
+function LogsTab({ highlightLogId = null, onHighlightClear = null }) {
   const [logs,       setLogs]       = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [level,      setLevel]      = useState('all');
@@ -1748,14 +1748,15 @@ function LogsTab() {
   const [clearing,   setClearing]   = useState(false);
   const [page,       setPage]       = useState(1);
   const [total,      setTotal]      = useState(0);
+  const [glowId,     setGlowId]     = useState(null);
 
   const totalPages = Math.max(1, Math.ceil(total / LOGS_PAGE_SIZE));
 
-  async function fetchLogs(p = page) {
+  async function fetchLogs(p = page, lvl = level, src = source) {
     setLoading(true);
     const params = new URLSearchParams();
-    if (level  !== 'all') params.set('level',  level);
-    if (source !== 'all') params.set('source', source);
+    if (lvl !== 'all') params.set('level',  lvl);
+    if (src !== 'all') params.set('source', src);
     params.set('limit', String(LOGS_PAGE_SIZE));
     params.set('page',  String(p));
     const res  = await fetch(`/api/admin/logs?${params}`, { headers: HEADERS });
@@ -1767,6 +1768,27 @@ function LogsTab() {
 
   useEffect(() => { setPage(1); fetchLogs(1); }, [level, source]);
   useEffect(() => { fetchLogs(page); }, [page]);
+
+  // When a notification deep-links to a specific log entry
+  useEffect(() => {
+    if (!highlightLogId) return;
+    // Force error filter + page 1 so the entry is visible
+    setLevel('error');
+    setPage(1);
+    fetchLogs(1, 'error', source);
+  }, [highlightLogId]);
+
+  // Once logs load and we have a highlight target — scroll + glow
+  useEffect(() => {
+    if (!highlightLogId || loading) return;
+    const el = document.querySelector(`[data-log-id="${highlightLogId}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setGlowId(highlightLogId);
+      const t = setTimeout(() => { setGlowId(null); onHighlightClear?.(); }, 3000);
+      return () => clearTimeout(t);
+    }
+  }, [logs, loading, highlightLogId]);
 
   function copyLog(log) {
     const meta = log.meta ? JSON.parse(log.meta) : null;
@@ -1853,7 +1875,12 @@ function LogsTab() {
             const meta = log.meta ? (() => { try { return JSON.parse(log.meta); } catch { return null; } })() : null;
             const canCopy = log.level === 'warn' || log.level === 'error';
             return (
-              <div key={log.id} className={`flex items-start gap-3 px-4 py-3 border-b last:border-b-0 ${s.row}`}>
+              <div
+              key={log.id}
+              data-log-id={log.id}
+              className={`flex items-start gap-3 px-4 py-3 border-b last:border-b-0 transition-all duration-300 ${s.row} ${glowId === log.id ? 'ring-2 ring-inset ring-red-500/70 bg-red-500/10' : ''}`}
+              style={glowId === log.id ? { animation: 'logHighlight 3s ease-out forwards' } : {}}
+            >
                 <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${s.dot}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-0.5">
@@ -2556,6 +2583,14 @@ export default function AdminPage() {
       if (count > prevUnread.current) {
         setEmailToast(true);
         setToastDismissed(false);
+        const diff = count - prevUnread.current;
+        setNotifItems(prev => [{
+          id:    `email-${Date.now()}`,
+          type:  'email',
+          title: `${diff} new ${diff === 1 ? 'message' : 'messages'}`,
+          body:  'New customer message in your inbox',
+          time:  new Date().toISOString(),
+        }, ...prev].slice(0, 30));
       }
       prevUnread.current = count;
     } catch {}
@@ -2564,7 +2599,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authed) return;
     pollUnread();
-    const id = setInterval(pollUnread, 30000); // poll every 30s
+    const id = setInterval(pollUnread, 30000);
     return () => clearInterval(id);
   }, [authed, pollUnread]);
 
@@ -2573,6 +2608,69 @@ export default function AdminPage() {
     const id = setTimeout(() => setEmailToast(false), 6000);
     return () => clearTimeout(id);
   }, [emailToast]);
+
+  // ── Error log notifications ────────────────────────────────────────────────
+  const [newErrorCount, setNewErrorCount] = useState(0);
+  const [errorToast, setErrorToast]       = useState(null);
+  const prevErrorTotal = useRef(null);
+
+  const pollErrors = useCallback(async () => {
+    try {
+      const res  = await fetch('/api/admin/logs?level=error&limit=3', { headers: HEADERS });
+      const json = await res.json();
+      const total = json.total || 0;
+      if (prevErrorTotal.current === null) {
+        prevErrorTotal.current = total;
+        setNewErrorCount(0);
+        return;
+      }
+      const diff = total - prevErrorTotal.current;
+      if (diff > 0) {
+        setNewErrorCount(prev => prev + diff);
+        const latest = json.logs?.[0];
+        setErrorToast({ count: diff, message: latest?.message || 'An error occurred', source: latest?.source || '' });
+        // Push into notification feed
+        const newItems = (json.logs || []).slice(0, diff).map(l => ({
+          id:       l.id,
+          type:     'error',
+          title:    `Error — ${l.source || 'system'}`,
+          body:     l.message,
+          time:     l.createdAt,
+          customer: l.customer || null, // { name, email } if linked to an order
+        }));
+        setNotifItems(prev => [...newItems, ...prev].slice(0, 30));
+        prevErrorTotal.current = total;
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (!authed) return;
+    pollErrors();
+    const id = setInterval(pollErrors, 30000);
+    return () => clearInterval(id);
+  }, [authed, pollErrors]);
+
+  useEffect(() => {
+    if (!errorToast) return;
+    const id = setTimeout(() => setErrorToast(null), 8000);
+    return () => clearTimeout(id);
+  }, [errorToast]);
+
+  // ── Notification panel ─────────────────────────────────────────────────────
+  const [highlightLogId, setHighlightLogId] = useState(null);
+  const [notifOpen, setNotifOpen]   = useState(false);
+  const [notifItems, setNotifItems] = useState([]); // { id, type, title, body, time }
+  const notifRef = useRef(null);
+
+  // Close panel on outside click
+  useEffect(() => {
+    function handleClick(e) { if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false); }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const totalNotif = notifItems.length + (unreadEmails > 0 ? 1 : 0);
   // ──────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -2606,12 +2704,19 @@ export default function AdminPage() {
     { key: 'refunds',    label: 'Refunds',     Icon: Icon.Refunds, badge: data?.stats?.refundRequestedOrders },
     { key: 'messaging',  label: 'Messaging',   Icon: Icon.Messaging, badge: unreadEmails || undefined },
     { key: 'generations', label: 'Gen Bank',   Icon: Icon.GenBank },
-    { key: 'logs',       label: 'Logs',        Icon: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> },
+    { key: 'logs',       label: 'Logs',        Icon: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>, badge: newErrorCount || undefined },
     { key: 'settings',   label: 'Settings',    Icon: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
   ];
 
   return (
     <>
+    <style>{`
+      @keyframes logHighlight {
+        0%   { background:rgba(239,68,68,0.22); box-shadow:0 0 0 2px rgba(239,68,68,0.5) inset; }
+        60%  { background:rgba(239,68,68,0.10); box-shadow:0 0 0 2px rgba(239,68,68,0.25) inset; }
+        100% { background:transparent; box-shadow:none; }
+      }
+    `}</style>
     {!isDark && (
       <style>{`
         /* ── Base ── */
@@ -2748,7 +2853,7 @@ export default function AdminPage() {
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1">
           {TABS.map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)}
+            <button key={t.key} onClick={() => { setTab(t.key); if (t.key === 'logs') setNewErrorCount(0); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
                 ${tab === t.key ? 'bg-purple-600/30 text-purple-200 border border-purple-500/30' : 'text-gray-500 hover:text-gray-200 hover:bg-white/5'}`}>
               <t.Icon />
@@ -2801,14 +2906,134 @@ export default function AdminPage() {
               </p>
             )}
           </div>
-          {loading && <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />}
+          <div className="flex items-center gap-3">
+            {loading && <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />}
+
+            {/* ── Notification bell ── */}
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setNotifOpen(o => !o)}
+                className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-all
+                  ${notifOpen ? 'bg-purple-600/30 border border-purple-500/40' : 'hover:bg-white/10 border border-transparent'}`}
+                title="Notifications"
+              >
+                {/* Flat bell icon */}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+                </svg>
+                {totalNotif > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-0.5 leading-none">
+                    {totalNotif > 9 ? '9+' : totalNotif}
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown panel */}
+              {notifOpen && (
+                <div className={`absolute right-0 top-11 w-80 rounded-2xl border shadow-2xl z-50 overflow-hidden
+                  ${isDark ? 'bg-[#13111f] border-white/10' : 'bg-white border-slate-200'}`}>
+
+                  {/* Header */}
+                  <div className={`flex items-center justify-between px-4 py-3 border-b ${isDark ? 'border-white/10' : 'border-slate-100'}`}>
+                    <p className="text-sm font-bold">Notifications</p>
+                    {(notifItems.length > 0 || unreadEmails > 0) && (
+                      <button
+                        onClick={() => { setNotifItems([]); setNewErrorCount(0); }}
+                        className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                      >
+                        Clear all
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Items */}
+                  <div className="max-h-80 overflow-y-auto divide-y divide-white/5">
+                    {/* Unread emails always shown at top if any */}
+                    {unreadEmails > 0 && (
+                      <button
+                        onClick={() => { setTab('messaging'); setNotifOpen(false); }}
+                        className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}
+                      >
+                        <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-purple-500/20 flex items-center justify-center mt-0.5">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                          </svg>
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-purple-300">{unreadEmails} unread {unreadEmails === 1 ? 'message' : 'messages'}</p>
+                          <p className={`text-xs mt-0.5 truncate ${isDark ? 'text-gray-500' : 'text-slate-400'}`}>Customer inbox</p>
+                        </div>
+                        <span className={`text-[10px] mt-1 flex-shrink-0 ${isDark ? 'text-gray-600' : 'text-slate-300'}`}>→</span>
+                      </button>
+                    )}
+
+                    {/* Error / event items */}
+                    {notifItems.map(n => (
+                      <button
+                        key={n.id}
+                        onClick={() => {
+                          if (n.type === 'error') {
+                            setHighlightLogId(n.id);
+                            setTab('logs');
+                            setNewErrorCount(0);
+                          } else {
+                            setTab('messaging');
+                          }
+                          setNotifOpen(false);
+                        }}
+                        className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}
+                      >
+                        <span className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center mt-0.5 ${n.type === 'error' ? 'bg-red-500/20' : 'bg-purple-500/20'}`}>
+                          {n.type === 'error' ? (
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                          ) : (
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                          )}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-xs font-semibold ${n.type === 'error' ? 'text-red-400' : 'text-purple-300'}`}>{n.title}</p>
+                          <p className={`text-xs mt-0.5 truncate ${isDark ? 'text-gray-500' : 'text-slate-400'}`}>{n.body}</p>
+                          {n.customer && (
+                            <span className={`inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md
+                              ${isDark ? 'bg-white/10 text-gray-300' : 'bg-slate-100 text-slate-600'}`}>
+                              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                              {n.customer.name || n.customer.email}
+                            </span>
+                          )}
+                          {n.time && (
+                            <p className={`text-[10px] mt-0.5 ${isDark ? 'text-gray-600' : 'text-slate-300'}`}>
+                              {new Date(n.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          )}
+                        </div>
+                        <span className={`text-[10px] mt-1 flex-shrink-0 ${isDark ? 'text-gray-600' : 'text-slate-300'}`}>→</span>
+                      </button>
+                    ))}
+
+                    {notifItems.length === 0 && unreadEmails === 0 && (
+                      <div className={`px-4 py-8 text-center ${isDark ? 'text-gray-600' : 'text-slate-400'}`}>
+                        <svg className="mx-auto mb-2 opacity-40" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+                        </svg>
+                        <p className="text-xs">All clear — no new notifications</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </header>
 
         <main className="p-6">
           {tab === 'generations' ? (
             <GenerationBankTab />
           ) : tab === 'logs' ? (
-            <LogsTab />
+            <LogsTab highlightLogId={highlightLogId} onHighlightClear={() => setHighlightLogId(null)} />
           ) : loading || !data ? (
             <div className="flex items-center justify-center py-32">
               <div className="w-10 h-10 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
@@ -2820,13 +3045,43 @@ export default function AdminPage() {
               {tab === 'customers' && <CustomersTab userList={data.userList} />}
               {tab === 'refunds'   && <RefundsTab   refundRequests={data.refundRequests} onRefresh={fetchData} />}
               {tab === 'messaging' && <MessagingTab userList={data.userList} />}
-              {tab === 'logs'      && <LogsTab />}
+              {tab === 'logs'      && <LogsTab highlightLogId={highlightLogId} onHighlightClear={() => setHighlightLogId(null)} />}
               {tab === 'settings'  && <SettingsTab />}
             </>
           )}
         </main>
       </div>
     </div>
+
+    {/* ── Error log toast ── */}
+    {errorToast && (
+      <div className="fixed bottom-6 right-6 z-50 flex items-start gap-3 bg-[#1e0f0f] border border-red-500/40 shadow-2xl rounded-xl px-4 py-3 max-w-xs">
+        <div className="flex-shrink-0 w-8 h-8 bg-red-600/30 rounded-full flex items-center justify-center mt-0.5">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-white text-sm font-semibold leading-tight">
+            {errorToast.count === 1 ? 'New error detected' : `${errorToast.count} new errors detected`}
+            {errorToast.source && <span className="ml-1.5 text-xs text-red-400 font-normal">({errorToast.source})</span>}
+          </p>
+          <p className="text-red-300 text-xs mt-0.5 truncate">{errorToast.message}</p>
+          <button
+            onClick={() => { setTab('logs'); setNewErrorCount(0); setErrorToast(null); }}
+            className="mt-2 text-xs text-red-400 hover:text-red-200 font-medium underline underline-offset-2"
+          >
+            View logs →
+          </button>
+        </div>
+        <button
+          onClick={() => setErrorToast(null)}
+          className="flex-shrink-0 text-gray-500 hover:text-gray-300 mt-0.5"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    )}
 
     {/* ── Unread email toast ── */}
     {emailToast && unreadEmails > 0 && (

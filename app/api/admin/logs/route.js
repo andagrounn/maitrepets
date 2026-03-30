@@ -26,7 +26,34 @@ export async function GET(req) {
     prisma.log.count({ where }),
   ]);
 
-  return NextResponse.json({ logs, total, page, limit });
+  // Enrich logs with customer info derived from orderId in meta
+  const orderIds = [...new Set(
+    logs.flatMap(l => {
+      try { const m = JSON.parse(l.meta || '{}'); return m.orderId ? [m.orderId] : []; }
+      catch { return []; }
+    })
+  )];
+
+  const orders = orderIds.length
+    ? await prisma.order.findMany({
+        where:   { id: { in: orderIds } },
+        select:  { id: true, user: { select: { name: true, email: true } } },
+      })
+    : [];
+
+  const orderMap = Object.fromEntries(orders.map(o => [o.id, o.user]));
+
+  const enriched = logs.map(l => {
+    try {
+      const m = JSON.parse(l.meta || '{}');
+      const user = m.orderId ? orderMap[m.orderId] : null;
+      return { ...l, customer: user || null };
+    } catch {
+      return { ...l, customer: null };
+    }
+  });
+
+  return NextResponse.json({ logs: enriched, total, page, limit });
 }
 
 export async function DELETE(req) {

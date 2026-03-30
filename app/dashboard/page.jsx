@@ -979,7 +979,6 @@ export default function DashboardPage() {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Maîtrepets</h1>
               <p className="text-gray-500 mt-0.5 text-sm truncate">{user?.email}</p>
             </div>
-            <Link href="/create" className="btn-primary flex-shrink-0 text-sm px-4 py-2">+ New Portrait</Link>
           </div>
 
           {/* Pending orders — collapsible dropdown */}
@@ -1058,11 +1057,10 @@ export default function DashboardPage() {
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
             {[
-              { label: 'Portraits',   value: images.length,  icon: '🎨' },
-              { label: 'Orders',      value: orders.filter(o => o.status !== 'pending').length, icon: '📦' },
-              { label: 'Total Spent', value: `$${orders.filter(o => o.status !== 'pending').reduce((s, o) => s + o.price, 0).toFixed(2)}`, icon: '💳' },
-            ].map((s, i, arr) => (
-              <div key={s.label} className={`card p-3 sm:p-5 flex items-center gap-2 sm:gap-4${i === arr.length - 1 && arr.length % 2 !== 0 ? ' col-span-2 sm:col-span-1' : ''}`}>
+              { label: 'Portraits', value: images.length, icon: '🎨' },
+              { label: 'Orders',    value: orders.filter(o => o.status !== 'pending').length, icon: '📦' },
+            ].map((s) => (
+              <div key={s.label} className="card p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
                 <span className="text-2xl sm:text-3xl">{s.icon}</span>
                 <div className="min-w-0">
                   <p className="text-gray-500 text-xs truncate">{s.label}</p>
@@ -1070,6 +1068,19 @@ export default function DashboardPage() {
                 </div>
               </div>
             ))}
+
+            {/* New Portrait CTA */}
+            <Link href="/create" className="card p-3 sm:p-5 flex items-center gap-2 sm:gap-4 bg-purple-600 hover:bg-purple-700 transition-colors group col-span-2 sm:col-span-1">
+              <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <p className="text-purple-200 text-xs">Ready?</p>
+                <p className="text-white font-bold text-base sm:text-lg leading-tight">New Portrait</p>
+              </div>
+            </Link>
           </div>
 
           {/* Tabs */}
