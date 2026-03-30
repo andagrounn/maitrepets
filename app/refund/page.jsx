@@ -40,7 +40,7 @@ export default function RefundPage() {
 
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">1. Physical Print Orders</h2>
-                <p className="mb-3">All physical products (framed prints, paper prints) are custom-made to order and fulfilled by our partner Printful Inc. Because each item is produced on demand, we cannot accept returns for buyer's remorse or ordering the wrong size.</p>
+                <p className="mb-3">All physical products (framed canvas prints) are custom-made to order and fulfilled by our partner Printful Inc. Because each item is produced on demand, we cannot accept returns for buyer's remorse or ordering the wrong size.</p>
 
                 <h3 className="font-semibold text-gray-800 mb-2">Eligible for Refund or Replacement:</h3>
                 <ul className="list-disc pl-5 space-y-1.5 text-sm mb-4">
@@ -64,7 +64,7 @@ export default function RefundPage() {
 
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">2. AI-Generated Artwork</h2>
-                <p className="mb-3">Each account receives <strong>1 free AI generation</strong>. The AI produces a paper print–quality portrait based on your uploaded photo. Because AI output is generated on demand and immediately accessible, we do not offer refunds or regenerations based on dissatisfaction with the style or result.</p>
+                <p className="mb-3">Each account receives <strong>1 free AI generation</strong>. The AI produces a canvas print–quality portrait based on your uploaded photo. Because AI output is generated on demand and immediately accessible, we do not offer refunds or regenerations based on dissatisfaction with the style or result.</p>
                 <p className="mb-3"><strong>Regeneration as part of a damaged return:</strong> If your physical print arrives damaged or defective, and as part of the replacement process a new AI generation is required (e.g. the original file was corrupted), we will regenerate the portrait at no charge. This regeneration is strictly part of the damaged-goods replacement process — it is not available as a standalone request for style preference.</p>
                 <p className="text-sm text-gray-500">We encourage you to preview your AI portrait carefully before placing a print order. The preview shown before checkout is the exact image that will be printed.</p>
               </section>

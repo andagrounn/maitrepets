@@ -21,19 +21,19 @@ const MARQUEE = [
   { url: `${RD}/HjDQ4mIqF9JRANgmwsAIdgSbujNejFC3fyutG3eFVajwojpsA/tmp2owxmba1.webp`,      style: 'Joker' },
   { url: `${S3}/generated/1774660430180-8754kz2iw4t.png`,                                   style: 'Rococo' },
   { url: `${RD}/wWQOJ3ELKQoTKBgBW44fmjf5ddaeAyHUHJgqRY6SfZAUm6SZB/tmporzt5vx8.webp`,     style: 'Barbie' },
-  { url: `${S3}/generated/1774622686162-jetc92ep4u.png`,                                    style: 'Lofi Art' },
+  { url: `${S3}/generated/1774622686162-jetc92ep4u.png`,                                    style: 'Vernacular Art' },
   { url: `${RD}/Copg2e3wiWwoYiHBUjXjX3DvO39XAEzPm6pfCmvXilvt7kUWA/tmpc2i7i7j3.webp`,     style: 'Cartoon' },
-  { url: `${S3}/generated/1774643764809-ln2zqseugf8.png`,                                   style: 'Kawaii' },
+  { url: `${S3}/generated/1774643764809-ln2zqseugf8.png`,                                   style: 'Cubism' },
   { url: `${RD}/MezlJ8KrKT2YJCnWJoTGUltnM5KofE6pPCxyPai99En7r7UWA/tmpk69qwu60.jpg`,       style: 'Gangster' },
-  { url: `${S3}/generated/1774629095050-xzkiul0l8fn.png`,                                   style: 'Folk Art' },
+  { url: `${S3}/generated/1774629095050-xzkiul0l8fn.png`,                                   style: 'Art Informel' },
   { url: `${RD}/NxlZaUBW6Z61GBSbV8s183ce6tfOYEcLpeDiG8LYafqlaWSZB/out-0.webp`,            style: 'Lion King' },
-  { url: `${S3}/generated/1774629942609-lcqa8ur6cwh.png`,                                   style: 'Lofi Art' },
+  { url: `${S3}/generated/1774629942609-lcqa8ur6cwh.png`,                                   style: 'Vernacular Art' },
   { url: `${RD}/8wDbroj8qBZefkvBenBN2wTYOCy1HYao1qrMdcNcqxaH02psA/tmphwtjdml5.jpg`,      style: 'Harry Potter' },
   { url: `${RD}/0e2sqFDnujTmSyeUODntfAFS7cf07KmnPf2twlbdKk7HFimyC/tmp3s01uudu.webp`,     style: 'Pirates' },
   { url: `${RD}/rUsyzZ0FQDaUHVweUQxGR4s47k5Lat7DYe11GQ2QIpUjDlUWA/out-0.webp`,           style: 'Vintage' },
   { url: `${RD}/n9Wkfk5PL3QEUSTm7wPxmHF4HRyesK8PXRkBzpbNV4WZJlUWA/out-0.webp`,          style: 'Egypt' },
   { url: `${RD}/FPe1wHE73xSSIKm2kbKbTtTeFxify14yQJsJfz49AX4UJMUZB/tmpum6q1mkm.jpg`,      style: 'Naive Art' },
-  { url: `${RD}/VzYQixW3ed1oJCb0jMIeDZSV1saHWCTll3b6Tat2kdAXn8UWA/tmpmv_w4lzz.jpg`,      style: 'Chibi' },
+  { url: `${RD}/VzYQixW3ed1oJCb0jMIeDZSV1saHWCTll3b6Tat2kdAXn8UWA/tmpmv_w4lzz.jpg`,      style: 'Gothic Art' },
   { url: `${RD}/cHfQpXb5JvwfR0lLA0s22ZR5JnZLEAgcngG1fFdTq5EcN5psA/tmpkaabssf3.jpg`,      style: 'Steampunk' },
   { url: `${RD}/UTDjSYzc9SbpGNroNE3DkLtBfGLg8n4Zs2B1KAXXkZ8YxSKLA/out-0.webp`,          style: 'Gangster' },
   { url: `${RD}/hPzgzf9QhR1rJyVWmxmWZmWRXWXUiFO73Kr2Of78ioUOH7UWA/tmp4y0am2hs.webp`,    style: 'Jurassic Park' },
@@ -41,9 +41,9 @@ const MARQUEE = [
 
 const STYLES_GRID = [
   ...GENERATED,
-  { url: `${S3}/generated/1774629095050-xzkiul0l8fn.png`,                               pet: 'Buddy', style: 'Folk Art', emoji: '🎨' },
-  { url: `${S3}/generated/1774643764809-ln2zqseugf8.png`,                               pet: 'Max',   style: 'Kawaii',   emoji: '🍡' },
-  { url: `${S3}/generated/1774622686162-jetc92ep4u.png`,                                pet: 'Mochi', style: 'Lofi Art', emoji: '🎧' },
+  { url: `${S3}/generated/1774629095050-xzkiul0l8fn.png`,                               pet: 'Buddy', style: 'Art Informel', emoji: '🌊' },
+  { url: `${S3}/generated/1774643764809-ln2zqseugf8.png`,                               pet: 'Max',   style: 'Cubism',      emoji: '🔲' },
+  { url: `${S3}/generated/1774622686162-jetc92ep4u.png`,                                pet: 'Mochi', style: 'Vernacular Art', emoji: '🏚️' },
 ];
 
 const testimonials = [
@@ -325,8 +325,6 @@ export default function Home() {
               <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mt-4">From photo to wall art<br className="hidden sm:block" /> in minutes.</h2>
             </div>
 
-            {/* Connector line — desktop only */}
-            <div className="hidden md:block absolute left-1/2 -translate-x-1/2" style={{top:'calc(50% + 20px)', width:'66%', height:'1px', background:'linear-gradient(90deg, transparent, rgba(124,58,237,0.4) 20%, rgba(236,72,153,0.4) 80%, transparent)', zIndex:0}} />
 
             <div className="grid md:grid-cols-3 gap-6 relative z-10">
               {[

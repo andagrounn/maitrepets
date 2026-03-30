@@ -12,6 +12,7 @@ import { registerWebhook, getWebhook } from '@/lib/printful';
 
 const WEBHOOK_EVENTS = [
   'package_shipped',
+  'package_delivered',
   'package_returned',
   'order_failed',
   'order_canceled',

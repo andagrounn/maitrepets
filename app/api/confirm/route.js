@@ -49,6 +49,7 @@ export async function POST(req) {
         ...(sa?.postal_code && { shippingZip:      sa.postal_code }),
         ...(sa?.country     && { shippingCountry:  sa.country }),
       },
+      include: { image: true },
     });
 
     // Send order confirmation email

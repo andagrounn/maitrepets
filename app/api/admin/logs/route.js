@@ -10,20 +10,23 @@ export async function GET(req) {
   if (!adminGuard(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const level  = searchParams.get('level');   // 'info' | 'warn' | 'error' | null (all)
-  const source = searchParams.get('source');  // optional filter
-  const limit  = Math.min(parseInt(searchParams.get('limit') || '200'), 500);
+  const level  = searchParams.get('level');
+  const source = searchParams.get('source');
+  const limit  = Math.min(parseInt(searchParams.get('limit') || '50'), 200);
+  const page   = Math.max(1, parseInt(searchParams.get('page') || '1'));
+  const skip   = (page - 1) * limit;
 
-  const logs = await prisma.log.findMany({
-    where: {
-      ...(level  && { level }),
-      ...(source && { source }),
-    },
-    orderBy: { createdAt: 'desc' },
-    take: limit,
-  });
+  const where = {
+    ...(level  && { level }),
+    ...(source && { source }),
+  };
 
-  return NextResponse.json({ logs });
+  const [logs, total] = await Promise.all([
+    prisma.log.findMany({ where, orderBy: { createdAt: 'desc' }, take: limit, skip }),
+    prisma.log.count({ where }),
+  ]);
+
+  return NextResponse.json({ logs, total, page, limit });
 }
 
 export async function DELETE(req) {

@@ -46,7 +46,7 @@ function CreatePageInner() {
   const [imageRevealed, setImageRevealed] = useState(false);
 
   // Customization state
-  const [selectedStyle, setSelectedStyle] = useState('chibi');
+  const [selectedStyle, setSelectedStyle] = useState('gothic');
   const [size, setSize] = useState('');
   const [urgency, setUrgency] = useState('standard');
   const [frameColor, setFrameColor] = useState('black');
@@ -202,9 +202,24 @@ function CreatePageInner() {
     }
   }
 
-  function handleCheckout() {
+  async function handleCheckout() {
     if (!user) { setShowAuthModal(true); return; }
     setShowShipping(true);
+    // Pre-fill shipping form with the user's most recently stored address
+    try {
+      const res = await fetch('/api/user/address', { credentials: 'include' });
+      if (res.ok) {
+        const { address } = await res.json();
+        if (address?.address1) {
+          setShipping(prev => ({
+            ...address,
+            // keep any shipping rate already selected
+            shippingMethod: prev.shippingMethod,
+            shippingRate:   prev.shippingRate,
+          }));
+        }
+      }
+    } catch (_) {}
   }
 
   const sizeConfig = SIZE_MULTIPLIERS[size] || SIZE_MULTIPLIERS.large;

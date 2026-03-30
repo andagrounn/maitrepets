@@ -59,7 +59,7 @@ function buildTemplate(type, ctx = {}) {
         subject: `Your Maîtrepets order is confirmed ✅`,
         body: base(`<h2 style="color:#111;margin:0 0 12px">Order Confirmed!</h2>
           <p style="color:#4b5563">We've received your order and it's now in our production queue.</p>
-          <p style="color:#4b5563">Your Portrait will be printed on premium enhanced matte paper and shipped within 3–5 business days.</p>
+          <p style="color:#4b5563">Your Portrait will be printed on premium artist-grade stretched canvas, professionally framed, and shipped within 3–5 business days.</p>
           <p style="color:#4b5563;margin-top:24px">Questions? Reply to this email or contact <a href="mailto:hello@maitrepets.com" style="color:#7c3aed">hello@maitrepets.com</a>.</p>`),
       };
     case 'refund_approved':
@@ -69,7 +69,7 @@ function buildTemplate(type, ctx = {}) {
           <p style="color:#4b5563">We've reviewed your request and approved your refund for the damaged/defective item.</p>
           <p style="color:#4b5563">Your refund will be processed to your original payment method within <strong>5–10 business days</strong>.</p>
           <p style="color:#4b5563">We sincerely apologize for the inconvenience and hope to make it right.</p>
-          <p style="color:#4b5563;margin-top:24px">Thank you for your patience — Team Maîtrepets 🐾</p>`),
+          <p style="color:#4b5563;margin-top:24px">Thank you for your patience — Team Maîtrepets </p>`),
       };
     case 'refund_denied':
       return {
@@ -78,7 +78,7 @@ function buildTemplate(type, ctx = {}) {
           <p style="color:#4b5563">Thank you for reaching out regarding your recent order.</p>
           <p style="color:#4b5563">After reviewing your request, we're unable to process a refund at this time as the item does not appear to meet our damaged/defective return criteria.</p>
           <p style="color:#4b5563">If you have additional information or photos you'd like us to review, please reply to this email and we'd be happy to take another look.</p>
-          <p style="color:#4b5563;margin-top:24px">We appreciate your understanding — Team Maîtrepets 🐾</p>`),
+          <p style="color:#4b5563;margin-top:24px">We appreciate your understanding — Team Maîtrepets </p>`),
       };
     case 'reprint_sent':
       return {
@@ -89,7 +89,7 @@ function buildTemplate(type, ctx = {}) {
             <p style="color:#6b7280;font-size:12px;margin:0 0 4px">Tracking Number</p>
             <p style="color:#111;font-weight:700;font-family:monospace;margin:0">${ctx.trackingNumber}</p>
           </div>` : ''}
-          <p style="color:#4b5563">We hope this one arrives in perfect condition. Thank you for your patience! 🐾</p>`),
+          <p style="color:#4b5563">We hope this one arrives in perfect condition. Thank you for your patience! </p>`),
       };
     default:
       return { subject: '', body: '' };
@@ -1357,6 +1357,8 @@ function RefundsTab({ refundRequests, onRefresh }) {
 }
 
 // ─── Messaging tab ────────────────────────────────────────────────────────────
+const QS_PAGE_SIZE = 8;
+
 function MessagingTab({ userList }) {
   const [view, setView] = useState('inbox'); // 'inbox' | 'sent' | 'compose'
 
@@ -1375,6 +1377,10 @@ function MessagingTab({ userList }) {
   const [sending, setSending]     = useState(false);
   const [result, setResult]       = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Quick Select state
+  const [qsSearch, setQsSearch]   = useState('');
+  const [qsPage, setQsPage]       = useState(0);
 
   const suggestions = to.length > 0
     ? userList.filter(u => u.email.toLowerCase().includes(to.toLowerCase()) || u.name?.toLowerCase().includes(to.toLowerCase())).slice(0, 5)
@@ -1550,91 +1556,173 @@ function MessagingTab({ userList }) {
       )}
 
       {/* Compose */}
-      {view === 'compose' && (
-        <div className="grid md:grid-cols-5 gap-6">
-          <div className="md:col-span-3 bg-gray-900 border border-white/10 rounded-2xl p-6 space-y-5">
-            <h3 className="text-white font-bold">Compose Email</h3>
+      {view === 'compose' && (() => {
+        const qsFiltered = userList.filter(u =>
+          !qsSearch ||
+          u.email.toLowerCase().includes(qsSearch.toLowerCase()) ||
+          u.name?.toLowerCase().includes(qsSearch.toLowerCase())
+        );
+        const qsTotalPages = Math.max(1, Math.ceil(qsFiltered.length / QS_PAGE_SIZE));
+        const qsSlice = qsFiltered.slice(qsPage * QS_PAGE_SIZE, (qsPage + 1) * QS_PAGE_SIZE);
 
-            <div>
-              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-2">Template</label>
-              <div className="grid grid-cols-3 gap-1.5">
-                {TMPL_OPTIONS.map(t => (
-                  <button key={t.value} onClick={() => setTemplate(t.value)}
-                    className={`text-xs px-2 py-2 rounded-lg border transition-all text-left ${template === t.value ? 'bg-purple-600/30 border-purple-500/50 text-purple-200' : 'border-white/10 text-gray-400 hover:border-white/20'}`}>
-                    {t.label}
-                  </button>
-                ))}
+        return (
+          <div className="grid md:grid-cols-5 gap-5">
+            {/* ── Compose form ── */}
+            <div className="md:col-span-3 bg-gray-900 border border-white/10 rounded-2xl overflow-hidden">
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+                <h3 className="text-white font-bold text-sm">New Email</h3>
+                {to && <span className="text-xs text-purple-400 bg-purple-500/10 border border-purple-500/20 rounded-full px-3 py-0.5 truncate max-w-[200px]">{to}</span>}
+              </div>
+
+              <div className="p-6 space-y-4">
+                {/* Template chips */}
+                <div>
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest block mb-2">Template</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {TMPL_OPTIONS.map(t => (
+                      <button key={t.value} onClick={() => setTemplate(t.value)}
+                        className={`text-xs px-3 py-1.5 rounded-full border transition-all whitespace-nowrap
+                          ${template === t.value
+                            ? 'bg-purple-600/30 border-purple-500/50 text-purple-200'
+                            : 'border-white/10 text-gray-500 hover:text-gray-300 hover:border-white/20'}`}>
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* To field */}
+                <div className="relative">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest block mb-1.5">To</label>
+                  <div className="relative">
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                    <input value={to} onChange={e => { setTo(e.target.value); setShowSuggestions(true); }}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                      placeholder="Customer email or name…"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/60 transition-colors" />
+                  </div>
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1728] border border-white/10 rounded-xl overflow-hidden z-10 shadow-2xl">
+                      {suggestions.map(u => (
+                        <button key={u.id} onMouseDown={() => { setTo(u.email); setShowSuggestions(false); }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/10 text-left transition-colors">
+                          <div className="w-7 h-7 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-300 text-xs font-bold flex-shrink-0">
+                            {(u.name || u.email)[0].toUpperCase()}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-white text-sm truncate">{u.name || u.email}</p>
+                            {u.name && <p className="text-gray-500 text-xs truncate">{u.email}</p>}
+                          </div>
+                          <span className="text-gray-600 text-xs flex-shrink-0">${u.ltv.toFixed(0)} LTV</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Subject */}
+                <div>
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest block mb-1.5">Subject</label>
+                  <input value={subject} onChange={e => setSubject(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/60 transition-colors" />
+                </div>
+
+                {/* Message */}
+                <div>
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest block mb-1.5">Message</label>
+                  <textarea value={body} onChange={e => setBody(e.target.value)} rows={9}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/60 transition-colors resize-none" />
+                </div>
+
+                {result === 'sent'  && (
+                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">
+                    <Icon.Check /> Email sent successfully!
+                  </div>
+                )}
+                {result === 'error' && (
+                  <div className="px-3 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                    Failed to send — check server logs.
+                  </div>
+                )}
+
+                <button onClick={send} disabled={!to || !subject || !body || sending}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold bg-purple-600 hover:bg-purple-500 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                  {sending
+                    ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Sending…</>
+                    : <><Icon.Mail /> Send Email</>}
+                </button>
               </div>
             </div>
 
-            <div className="relative">
-              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">To</label>
-              <input value={to} onChange={e => { setTo(e.target.value); setShowSuggestions(true); }}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                placeholder="Customer email or name…"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-white/10 rounded-xl overflow-hidden z-10 shadow-2xl">
-                  {suggestions.map(u => (
-                    <button key={u.id} onMouseDown={() => { setTo(u.email); setShowSuggestions(false); }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/10 text-left transition-colors">
-                      <div className="w-7 h-7 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-300 text-xs font-bold">
-                        {(u.name || u.email)[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-white text-sm">{u.name || u.email}</p>
-                        {u.name && <p className="text-gray-500 text-xs">{u.email}</p>}
-                      </div>
-                      <span className="ml-auto text-gray-600 text-xs">${u.ltv.toFixed(0)} LTV</span>
-                    </button>
-                  ))}
+            {/* ── Quick Select ── */}
+            <div className="md:col-span-2 bg-gray-900 border border-white/10 rounded-2xl overflow-hidden flex flex-col">
+              {/* Panel header */}
+              <div className="px-4 py-3.5 border-b border-white/10 flex items-center justify-between">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Customers</h3>
+                <span className="text-[10px] text-gray-600">{qsFiltered.length} total</span>
+              </div>
+
+              {/* Search */}
+              <div className="px-3 py-2.5 border-b border-white/5">
+                <div className="relative">
+                  <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-600" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input
+                    value={qsSearch}
+                    onChange={e => { setQsSearch(e.target.value); setQsPage(0); }}
+                    placeholder="Search name or email…"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg pl-7 pr-3 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 transition-colors"
+                  />
                 </div>
-              )}
-            </div>
+              </div>
 
-            <div>
-              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Subject</label>
-              <input value={subject} onChange={e => setSubject(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500" />
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1.5">Message</label>
-              <textarea value={body} onChange={e => setBody(e.target.value)} rows={8}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 resize-none" />
-            </div>
-
-            {result === 'sent'  && <p className="text-emerald-400 text-sm flex items-center gap-2"><Icon.Check /> Email sent!</p>}
-            {result === 'error' && <p className="text-red-400 text-sm">Failed to send — check server logs.</p>}
-
-            <button onClick={send} disabled={!to || !subject || !body || sending}
-              className="w-full py-3 rounded-xl text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white transition-all disabled:opacity-40 flex items-center justify-center gap-2">
-              {sending ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Sending…</> : <><Icon.Mail /> Send Email</>}
-            </button>
-          </div>
-
-          <div className="md:col-span-2">
-            <div className="bg-gray-900 border border-white/10 rounded-2xl p-5">
-              <h3 className="text-xs text-gray-500 uppercase tracking-wide mb-3">Quick Select Customer</h3>
-              <div className="space-y-1.5 max-h-96 overflow-y-auto">
-                {userList.slice(0, 30).map(u => (
+              {/* Customer list */}
+              <div className="flex-1 overflow-y-auto divide-y divide-white/5">
+                {qsSlice.length === 0 ? (
+                  <p className="text-gray-600 text-xs text-center py-8">No customers found</p>
+                ) : qsSlice.map(u => (
                   <button key={u.id} onClick={() => setTo(u.email)}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/5 text-left transition-colors">
-                    <div className="w-7 h-7 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-300 text-xs font-bold flex-shrink-0">
+                    className={`w-full flex items-center gap-2.5 px-4 py-3 hover:bg-white/5 text-left transition-colors
+                      ${to === u.email ? 'bg-purple-600/10 border-l-2 border-purple-500' : ''}`}>
+                    <div className="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-300 text-xs font-bold flex-shrink-0">
                       {(u.name || u.email)[0].toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-gray-300 text-xs truncate">{u.name || u.email}</p>
-                      {u.name && <p className="text-gray-600 text-xs truncate">{u.email}</p>}
+                      <p className="text-gray-200 text-xs font-medium truncate">{u.name || u.email}</p>
+                      {u.name && <p className="text-gray-600 text-[11px] truncate">{u.email}</p>}
                     </div>
-                    <span className="text-gray-600 text-xs flex-shrink-0">{u.orderCount} orders</span>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-gray-500 text-[10px]">{u.orderCount} orders</p>
+                      <p className="text-purple-400/70 text-[10px]">${u.ltv.toFixed(0)}</p>
+                    </div>
                   </button>
                 ))}
               </div>
+
+              {/* Pagination */}
+              <div className="px-4 py-3 border-t border-white/10 flex items-center justify-between">
+                <button
+                  onClick={() => setQsPage(p => Math.max(0, p - 1))}
+                  disabled={qsPage === 0}
+                  className="text-xs text-gray-500 hover:text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 transition-colors">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                  Prev
+                </button>
+                <span className="text-[10px] text-gray-600">
+                  {qsPage + 1} / {qsTotalPages}
+                </span>
+                <button
+                  onClick={() => setQsPage(p => Math.min(qsTotalPages - 1, p + 1))}
+                  disabled={qsPage >= qsTotalPages - 1}
+                  className="text-xs text-gray-500 hover:text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 transition-colors">
+                  Next
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
@@ -1649,6 +1737,8 @@ const LEVEL_STYLE = {
   error: { row: 'border-red-500/10 bg-red-500/5',   badge: 'bg-red-500/20 text-red-300 border border-red-500/30',      dot: 'bg-red-500' },
 };
 
+const LOGS_PAGE_SIZE = 50;
+
 function LogsTab() {
   const [logs,       setLogs]       = useState([]);
   const [loading,    setLoading]    = useState(true);
@@ -1656,20 +1746,27 @@ function LogsTab() {
   const [source,     setSource]     = useState('all');
   const [copied,     setCopied]     = useState(null);
   const [clearing,   setClearing]   = useState(false);
+  const [page,       setPage]       = useState(1);
+  const [total,      setTotal]      = useState(0);
 
-  async function fetchLogs() {
+  const totalPages = Math.max(1, Math.ceil(total / LOGS_PAGE_SIZE));
+
+  async function fetchLogs(p = page) {
     setLoading(true);
     const params = new URLSearchParams();
     if (level  !== 'all') params.set('level',  level);
     if (source !== 'all') params.set('source', source);
-    params.set('limit', '200');
+    params.set('limit', String(LOGS_PAGE_SIZE));
+    params.set('page',  String(p));
     const res  = await fetch(`/api/admin/logs?${params}`, { headers: HEADERS });
     const data = await res.json();
     setLogs(data.logs || []);
+    setTotal(data.total || 0);
     setLoading(false);
   }
 
-  useEffect(() => { fetchLogs(); }, [level, source]);
+  useEffect(() => { setPage(1); fetchLogs(1); }, [level, source]);
+  useEffect(() => { fetchLogs(page); }, [page]);
 
   function copyLog(log) {
     const meta = log.meta ? JSON.parse(log.meta) : null;
@@ -1717,7 +1814,7 @@ function LogsTab() {
             </button>
           ))}
         </div>
-        <button onClick={fetchLogs} className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1 ml-auto">
+        <button onClick={() => fetchLogs(page)} className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1 ml-auto">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-3.5"/></svg>
           Refresh
         </button>
@@ -1751,7 +1848,7 @@ function LogsTab() {
         <div className="text-center py-20 text-gray-600 text-sm">No logs found</div>
       ) : (
         <div className="bg-gray-900 border border-white/10 rounded-2xl overflow-hidden font-mono text-xs">
-          {logs.map((log, i) => {
+          {logs.map((log) => {
             const s    = LEVEL_STYLE[log.level] || LEVEL_STYLE.info;
             const meta = log.meta ? (() => { try { return JSON.parse(log.meta); } catch { return null; } })() : null;
             const canCopy = log.level === 'warn' || log.level === 'error';
@@ -1788,6 +1885,45 @@ function LogsTab() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {total > LOGS_PAGE_SIZE && (
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-xs text-gray-500">
+            Page {page} of {totalPages} · {total} logs
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="w-8 h-8 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs"
+            >
+              ‹
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+              .reduce((acc, p, idx, arr) => {
+                if (idx > 0 && p - arr[idx - 1] > 1) acc.push('…');
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, idx) => p === '…'
+                ? <span key={`ellipsis-${idx}`} className="w-8 h-8 flex items-center justify-center text-gray-600 text-xs">…</span>
+                : <button key={p} onClick={() => setPage(p)}
+                    className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${page === p ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                    {p}
+                  </button>
+              )}
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="w-8 h-8 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs"
+            >
+              ›
+            </button>
+          </div>
         </div>
       )}
     </div>

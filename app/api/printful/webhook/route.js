@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendEmail, shippedEmail, deliveredEmail } from '@/lib/email';
 
 /**
  * Printful webhook receiver.
@@ -31,6 +32,7 @@ export async function POST(req) {
         const externalOrderId  = data?.order?.external_id ?? null; // our DB order ID
         const trackingNumber   = data?.shipment?.tracking_number ?? null;
         const trackingUrl      = data?.shipment?.tracking_url    ?? null;
+        const carrier          = data?.shipment?.service         ?? null;
 
         if (!printfulOrderId) break;
 
@@ -41,14 +43,59 @@ export async function POST(req) {
             ? { id: externalOrderId }
             : null;
 
-        if (where) {
-          await prisma.order.updateMany({
+        if (!where) break;
+
+        await prisma.order.updateMany({
+          where,
+          data: { status: 'shipped', trackingNumber, trackingUrl, updatedAt: new Date() },
+        });
+
+        // Send tracking email from the app (Printful shipping notifications must be
+        // disabled in Printful dashboard → Settings → Notifications)
+        try {
+          const order = await prisma.order.findFirst({
             where,
-            data: { status: 'shipped', trackingNumber, trackingUrl, updatedAt: new Date() },
+            include: { image: true, user: { select: { email: true } } },
           });
+          if (order?.user?.email) {
+            const { subject, html } = shippedEmail(order, trackingNumber, trackingUrl, carrier);
+            await sendEmail({ to: order.user.email, subject, html, orderId: order.id });
+          }
+        } catch (emailErr) {
+          console.error('[Printful webhook] Tracking email failed:', emailErr.message);
         }
 
         console.log(`[Printful webhook] Shipped — Printful #${printfulOrderId}, tracking: ${trackingNumber}`);
+        break;
+      }
+
+      // ── Package delivered ────────────────────────────────────────────────
+      case 'package_delivered': {
+        const printfulOrderId = String(data?.order?.id ?? '');
+        const externalOrderId = data?.order?.external_id ?? null;
+        if (!printfulOrderId && !externalOrderId) break;
+
+        const where = printfulOrderId ? { printfulId: printfulOrderId } : { id: externalOrderId };
+
+        await prisma.order.updateMany({
+          where,
+          data: { status: 'delivered', updatedAt: new Date() },
+        });
+
+        try {
+          const order = await prisma.order.findFirst({
+            where,
+            include: { image: true, user: { select: { email: true } } },
+          });
+          if (order?.user?.email) {
+            const { subject, html } = deliveredEmail(order);
+            await sendEmail({ to: order.user.email, subject, html, orderId: order.id });
+          }
+        } catch (emailErr) {
+          console.error('[Printful webhook] Delivered email failed:', emailErr.message);
+        }
+
+        console.log(`[Printful webhook] Delivered — Printful #${printfulOrderId}`);
         break;
       }
 

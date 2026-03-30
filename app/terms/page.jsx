@@ -65,7 +65,7 @@ export default function TermsPage() {
 
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">6. Orders & Fulfillment</h2>
-                <p className="mb-2">Physical products (framed prints, paper prints) are fulfilled by Printful Inc. on our behalf. By placing an order:</p>
+                <p className="mb-2">Physical products (framed canvas prints) are fulfilled by Printful Inc. on our behalf. By placing an order:</p>
                 <ul className="list-disc pl-5 space-y-1.5 text-sm">
                   <li>You agree that your order data (name, shipping address) will be shared with Printful for fulfillment</li>
                   <li>Standard production time is 3–5 business days; delivery is 7–10 business days for US orders</li>

@@ -9,7 +9,7 @@ export default function CancelPage() {
         <p className="text-gray-500 mb-8">No worries! Your portrait is saved. Come back any time to complete your order.</p>
         <div className="flex gap-3 justify-center">
           <Link href="/create" className="btn-primary px-8 py-3">Back to Create</Link>
-          <Link href="/" className="btn-secondary px-8 py-3">Go Home</Link>
+          <Link href="/dashboard" className="btn-secondary px-8 py-3">Dashboard</Link>
         </div>
       </div>
     </div>

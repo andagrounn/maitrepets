@@ -494,26 +494,85 @@ function OrderErrorAlert() {
 }
 
 // ─── Order progress stepper ────────────────────────────────────────────────────
-function ProgressStepper({ status }) {
+function ProgressStepper({ status, trackingNumber, trackingUrl }) {
   const sc = STATUS_CONFIG[status];
   const currentStep = sc?.step ?? 0;
   if (currentStep < 0) return null;
 
+  const [showPopup, setShowPopup] = useState(false);
+  const [copied,    setCopied]    = useState(false);
+  const shippedIdx  = 2;
+  const hasTracking = !!trackingNumber;
+
+  function copyTracking() {
+    navigator.clipboard.writeText(trackingNumber).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  const carrier = hasTracking ? detectCarrier(trackingNumber) : null;
+
   return (
     <div className="flex items-center gap-0 mt-3 mb-1">
       {STEPS.map((label, i) => {
-        const StepIcon = STEP_ICONS[i];
-        const done   = i < currentStep;
-        const active = i === currentStep;
+        const StepIcon  = STEP_ICONS[i];
+        const done      = i < currentStep;
+        const active    = i === currentStep;
+        const isPulsing = hasTracking && i === shippedIdx;
+        const isShipped = i === shippedIdx;
+
         return (
           <div key={label} className="flex items-center flex-1 last:flex-none">
             <div className="flex flex-col items-center gap-1">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all
-                ${done   ? 'bg-purple-600 text-white' :
-                  active ? 'bg-purple-100 text-purple-600 ring-2 ring-purple-400 ring-offset-1' :
-                           'bg-gray-100 text-gray-300'}`}>
-                <StepIcon size={11} />
+              <div className="relative">
+                {/* Pulse rings */}
+                {isPulsing && (
+                  <>
+                    <span className="absolute -inset-1 rounded-full bg-purple-400 opacity-30 animate-ping" />
+                    <span className="absolute -inset-1 rounded-full bg-purple-300 opacity-20 animate-ping [animation-delay:0.4s]" />
+                  </>
+                )}
+
+                {/* Icon button */}
+                <button
+                  onClick={() => isShipped && hasTracking && setShowPopup(v => !v)}
+                  className={`relative w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all
+                    ${done   ? 'bg-purple-600 text-white' :
+                      active ? 'bg-purple-100 text-purple-600 ring-2 ring-purple-400 ring-offset-1' :
+                               'bg-gray-100 text-gray-300'}
+                    ${isPulsing ? 'cursor-pointer hover:scale-110' : 'cursor-default'}`}>
+                  <StepIcon size={11} />
+                </button>
+
+                {/* Tracking popup */}
+                {isShipped && showPopup && hasTracking && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-52 bg-gray-900 border border-white/10 rounded-xl shadow-2xl p-3 text-left"
+                    onClick={e => e.stopPropagation()}>
+                    {/* Arrow */}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+
+                    <p className="text-[9px] font-bold text-purple-400 uppercase tracking-widest mb-1">{carrier?.name} Tracking</p>
+                    <p className="font-mono text-xs text-white font-semibold truncate mb-2">{trackingNumber}</p>
+
+                    <div className="flex gap-1.5">
+                      <button onClick={copyTracking}
+                        className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 text-[10px] font-medium transition-all">
+                        {copied
+                          ? <><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied</>
+                          : <><IconCopy size={10} /> Copy</>}
+                      </button>
+                      {trackingUrl && (
+                        <a href={trackingUrl} target="_blank" rel="noopener noreferrer"
+                          className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-gradient-to-r ${carrier?.color} text-white text-[10px] font-bold transition-all hover:opacity-90`}>
+                          Track <IconExternalLink size={10} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
+
               <span className={`text-[9px] font-medium whitespace-nowrap
                 ${done ? 'text-purple-600' : active ? 'text-purple-500' : 'text-gray-300'}`}>
                 {label}
@@ -530,32 +589,59 @@ function ProgressStepper({ status }) {
   );
 }
 
+// ─── Carrier detection ────────────────────────────────────────────────────────
+function detectCarrier(trackingNumber) {
+  if (!trackingNumber) return null;
+  const t = trackingNumber.trim().toUpperCase();
+  if (t.startsWith('1Z'))                        return { name: 'UPS',   color: 'from-amber-500 to-yellow-400',   text: 'text-amber-700',  bg: 'bg-amber-50',  border: 'border-amber-200' };
+  if (/^(94|93|92|9400|9205|9407)/.test(t) || /^\d{20,22}$/.test(t)) return { name: 'USPS',  color: 'from-blue-600 to-blue-400',    text: 'text-blue-700',   bg: 'bg-blue-50',   border: 'border-blue-200'  };
+  if (/^\d{12}$/.test(t) || /^\d{15}$/.test(t)) return { name: 'FedEx', color: 'from-violet-600 to-orange-400', text: 'text-violet-700', bg: 'bg-violet-50', border: 'border-violet-200' };
+  return { name: 'Carrier', color: 'from-purple-600 to-purple-400', text: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200' };
+}
+
 // ─── Tracking section ──────────────────────────────────────────────────────────
 function TrackingSection({ order, addToast }) {
+  const [copied, setCopied] = useState(false);
   if (!order.trackingNumber) return null;
 
+  const carrier = detectCarrier(order.trackingNumber);
+
   function copyTracking() {
-    navigator.clipboard.writeText(order.trackingNumber).then(() => addToast('Tracking number copied!', 'success'));
+    navigator.clipboard.writeText(order.trackingNumber).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      addToast('Tracking number copied!', 'success');
+    });
   }
 
   return (
-    <div className="mt-3 bg-purple-50 border border-purple-100 rounded-xl px-3 py-2.5 flex items-center gap-3">
-      <div className="text-purple-400 flex-shrink-0"><IconTruck size={16} /></div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[10px] text-purple-400 font-medium uppercase tracking-wide mb-0.5">Tracking Number</p>
-        <p className="text-xs font-mono font-semibold text-purple-800 truncate">{order.trackingNumber}</p>
+    <div className={`mt-3 ${carrier.bg} ${carrier.border} border rounded-xl overflow-hidden`}>
+      {/* Carrier header bar */}
+      <div className={`bg-gradient-to-r ${carrier.color} px-3 py-1.5 flex items-center gap-2`}>
+        <IconTruck size={12} className="text-white opacity-90" />
+        <span className="text-white text-[10px] font-bold uppercase tracking-widest">{carrier.name} Tracking</span>
       </div>
-      <div className="flex gap-1.5 flex-shrink-0">
-        <button onClick={copyTracking} title="Copy tracking number"
-          className="w-7 h-7 flex items-center justify-center rounded-lg bg-white text-purple-400 hover:text-purple-600 border border-purple-200 hover:border-purple-400 transition-all shadow-sm">
-          <IconCopy size={13} />
-        </button>
-        {order.trackingUrl && (
-          <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" title="Track package"
-            className="w-7 h-7 flex items-center justify-center rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all shadow-sm">
-            <IconExternalLink size={13} />
-          </a>
-        )}
+
+      {/* Tracking number + actions */}
+      <div className="px-3 py-2.5 flex items-center gap-3">
+        <p className={`flex-1 font-mono text-xs font-semibold ${carrier.text} truncate`}>{order.trackingNumber}</p>
+        <div className="flex gap-1.5 flex-shrink-0">
+          <button onClick={copyTracking} title="Copy tracking number"
+            className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-400 hover:text-gray-700 hover:border-gray-400 transition-all shadow-sm">
+            {copied
+              ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              : <IconCopy size={12} />
+            }
+          </button>
+          {order.trackingUrl && (
+            <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer"
+              title={`Track on ${carrier.name}`}
+              className={`h-7 px-2.5 flex items-center gap-1.5 rounded-lg bg-gradient-to-r ${carrier.color} text-white text-[10px] font-bold transition-all shadow-sm hover:opacity-90`}>
+              Track
+              <IconExternalLink size={10} />
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -804,7 +890,7 @@ const PAGE_SIZE         = 5;
 const PORTRAIT_PAGE_SIZE = 15;
 
 export default function DashboardPage() {
-  const { user } = useStore();
+  const { user, _hasHydrated } = useStore();
   const router   = useRouter();
   const [orders, setOrders] = useState([]);
   const [images, setImages] = useState([]);
@@ -819,12 +905,13 @@ export default function DashboardPage() {
   const { toasts, addToast }    = useToast();
 
   useEffect(() => {
+    if (!_hasHydrated) return;        // wait for localStorage to rehydrate
     if (!user) { router.push('/login'); return; }
     Promise.all([api.getOrders(), api.getImages()])
       .then(([o, i]) => { setOrders(o.orders); setImages(i.images); })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [_hasHydrated, user]);
 
   function handleRefundRequested(orderId) {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'refund_requested' } : o));
@@ -1123,10 +1210,7 @@ export default function DashboardPage() {
                             </p>
 
                             {/* Progress stepper — only for paid+ orders */}
-                            {!isPending && <ProgressStepper status={order.status} />}
-
-                            {/* Tracking */}
-                            {!isPending && <TrackingSection order={order} addToast={addToast} />}
+                            {!isPending && <ProgressStepper status={order.status} trackingNumber={order.trackingNumber} trackingUrl={order.trackingUrl} />}
 
                             {/* Pending: prompt to complete */}
                             {isPending && (

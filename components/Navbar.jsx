@@ -26,7 +26,7 @@ export default function Navbar() {
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   useEffect(() => {
-    api.me().then((d) => setUser(d.user)).catch(() => {});
+    api.me().then((d) => setUser(d.user)).catch(() => clearUser());
   }, []);
 
   useEffect(() => {
