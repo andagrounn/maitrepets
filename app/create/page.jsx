@@ -42,6 +42,8 @@ function CreatePageInner() {
   const [uploadedUrl, setUploadedUrl] = useState(null);
   const [imageId, setImageId] = useState(null);
   const [generatedUrl, setGeneratedUrl] = useState(null);
+  // Proxy URL hides the real S3 URL from the browser network tab
+  const proxyUrl = imageId ? `/api/img?id=${imageId}` : null;
   const [genHash, setGenHash] = useState(null);
   const [imageRevealed, setImageRevealed] = useState(false);
 
@@ -466,7 +468,7 @@ function CreatePageInner() {
                     </p>
                     <div className="relative group">
                       <img
-                        src={generatedUrl}
+                        src={proxyUrl}
                         alt="Generated Portrait"
                         className={`w-full aspect-[2/3] object-cover rounded-2xl shadow-xl ring-2 ring-purple-200 ${freeLimitReached || guestLimitReached ? 'brightness-75' : ''}`}
                         onContextMenu={e => e.preventDefault()}
