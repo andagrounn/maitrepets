@@ -9,9 +9,22 @@ export async function GET() {
   const superadminEmails = (process.env.SUPERADMIN_EMAILS || '').split(',').map(e => e.trim());
   const isSuperAdmin = superadminEmails.includes(session.email);
 
+  const imageSelect = { select: { id: true, style: true, status: true, createdAt: true } };
+
   const orders = await prisma.order.findMany({
     where: isSuperAdmin ? {} : { userId: session.id },
-    include: { image: true, ...(isSuperAdmin ? { user: { select: { name: true, email: true } } } : {}) },
+    select: {
+      id: true, productType: true, size: true, price: true, status: true,
+      frameColor: true, digitalCopy: true, extraCopy: true,
+      trackingNumber: true, trackingUrl: true,
+      shippingName: true, shippingAddress: true, shippingAddress2: true,
+      shippingCity: true, shippingState: true, shippingZip: true, shippingCountry: true,
+      refundReason: true, refundRequestedAt: true,
+      createdAt: true, updatedAt: true,
+      imageId: true,
+      image: imageSelect,
+      ...(isSuperAdmin ? { user: { select: { name: true, email: true } } } : {}),
+    },
     orderBy: { createdAt: 'desc' },
   });
   return NextResponse.json({ orders });

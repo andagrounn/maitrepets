@@ -175,8 +175,8 @@ function DamageReportModal({ order, onClose, onSuccess, addToast }) {
         </div>
 
         <div className="bg-gray-50 rounded-xl px-3 py-2 mb-4 flex items-center gap-3">
-          {order.image?.generatedUrl && (
-            <img src={order.image.generatedUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+          {order.image?.id && (
+            <img src={`/api/img?id=${order.image.id}`} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
           )}
           <div className="min-w-0">
             <p className="text-xs font-semibold text-gray-700 truncate">
@@ -274,8 +274,8 @@ function ClaimRefundModal({ order, onClose, onClaimed, addToast }) {
         </div>
 
         <div className="bg-gray-50 rounded-xl px-3 py-2 mb-4 flex items-center gap-3">
-          {order.image?.generatedUrl && (
-            <img src={order.image.generatedUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+          {order.image?.id && (
+            <img src={`/api/img?id=${order.image.id}`} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
           )}
           <div className="min-w-0">
             <p className="text-xs font-semibold text-gray-700 truncate">
@@ -674,7 +674,7 @@ function QuickOrderBtn({ img }) {
         credentials: 'include',
         body: JSON.stringify({
           imageId:      img.id,
-          generatedUrl: img.generatedUrl,
+          generatedUrl: null,
           productKey:   'poster-16x20',
           price:        119.99,
           extras:       {},
@@ -952,7 +952,7 @@ export default function DashboardPage() {
   }
 
   const pendingOrders = orders.filter(o => o.status === 'pending');
-  const recentUploads = [...new Map(images.filter(i => i.originalUrl).map(i => [i.originalUrl, i])).values()].slice(0, 8);
+  const recentUploads = images.slice(0, 8);
   const printCounts   = orders.reduce((acc, o) => { if (o.imageId) acc[o.imageId] = (acc[o.imageId] || 0) + 1; return acc; }, {});
 
   const totalPages  = Math.ceil(orders.length / PAGE_SIZE);
@@ -1017,8 +1017,8 @@ export default function DashboardPage() {
                 <div className="border-t border-amber-200 divide-y divide-amber-100">
                   {pendingOrders.map(order => (
                     <div key={order.id} className="px-5 py-3 flex items-center gap-3">
-                      {order.image?.generatedUrl ? (
-                        <img src={order.image.generatedUrl} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+                      {order.image?.id ? (
+                        <img src={`/api/img?id=${order.image.id}`} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
                       ) : (
                         <ImgPlaceholder className="w-10 h-10 rounded-xl flex-shrink-0" />
                       )}
@@ -1159,7 +1159,7 @@ export default function DashboardPage() {
                   {pagedImages.map(img => (
                     <div key={img.id} className="card overflow-hidden group">
                       <div className="relative">
-                        {img.generatedUrl ? (
+                        {img.id ? (
                           <img
                             src={`/api/img?id=${img.id}`}
                             alt="Portrait"
@@ -1171,7 +1171,7 @@ export default function DashboardPage() {
                         ) : (
                           <ImgPlaceholder className={`w-full ${user?.isSuperAdmin ? 'aspect-[3/4]' : 'aspect-square'}`} />
                         )}
-                        {img.generatedUrl && (
+                        {img.id && (
                           <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             {!user?.isSuperAdmin && <PaperPrintIcon imageId={img.id} />}
                             <DownloadBtn imageId={img.id} isSuperAdmin={user?.isSuperAdmin} />
@@ -1183,9 +1183,9 @@ export default function DashboardPage() {
                           <p className="text-xs text-gray-400">
                             {new Date(img.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </p>
-                          {img.generatedUrl && !user?.isSuperAdmin && <QuickOrderBtn img={img} />}
+                          {img.id && !user?.isSuperAdmin && <QuickOrderBtn img={img} />}
                         </div>
-                        {img.generatedUrl && (
+                        {img.id && (
                           <p className="text-[10px] font-mono text-purple-400/70 tracking-wider">
                             #{img.id.replace(/-/g, '').slice(0, 8).toUpperCase()}
                           </p>
@@ -1254,8 +1254,8 @@ export default function DashboardPage() {
                         <div className="flex items-start gap-4">
                           {/* Thumbnail */}
                           <div className="relative flex-shrink-0">
-                            {order.image?.generatedUrl ? (
-                              <img src={order.image.generatedUrl} alt="Portrait" className="w-16 h-16 rounded-xl object-cover" />
+                            {order.image?.id ? (
+                              <img src={`/api/img?id=${order.image.id}`} alt="Portrait" className="w-16 h-16 rounded-xl object-cover" />
                             ) : (
                               <ImgPlaceholder className="w-16 h-16 rounded-xl" />
                             )}

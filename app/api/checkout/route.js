@@ -13,7 +13,10 @@ export async function POST(req) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const { imageId, generatedUrl, productKey, price, shipping, extras, frameColor } = await req.json();
+    const { imageId, generatedUrl: clientUrl, productKey, price, shipping, extras, frameColor } = await req.json();
+    // Always fetch generatedUrl server-side so it's never needed from the client
+    const imageRecord = imageId ? await prisma.image.findUnique({ where: { id: imageId }, select: { generatedUrl: true } }) : null;
+    const generatedUrl = imageRecord?.generatedUrl || clientUrl || '';
 
     if (!imageId || !price) {
       return NextResponse.json({ error: 'imageId and price required' }, { status: 400 });
