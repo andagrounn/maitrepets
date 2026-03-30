@@ -46,7 +46,7 @@ function CreatePageInner() {
   const [imageRevealed, setImageRevealed] = useState(false);
 
   // Customization state
-  const [selectedStyle, setSelectedStyle] = useState('gothic');
+  const [selectedStyle, setSelectedStyle] = useState('enhanced');
   const [size, setSize] = useState('');
   const [urgency, setUrgency] = useState('standard');
   const [frameColor, setFrameColor] = useState('black');

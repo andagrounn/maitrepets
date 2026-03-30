@@ -711,20 +711,29 @@ function ReorderBtn({ order }) {
 }
 
 // ─── Download button + modal ───────────────────────────────────────────────────
-function DownloadBtn({ imageId }) {
+function DownloadBtn({ imageId, isSuperAdmin = false }) {
   const [show, setShow]       = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handlePurchase() {
     setLoading(true);
     try {
-      const res  = await fetch('/api/download-purchase', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageId }) });
+      const res  = await fetch('/api/download-purchase', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ imageId }) });
       const data = await res.json();
       if (data.url) {
         if (data.free) { window.open(data.url, '_blank'); setShow(false); }
         else window.location.href = data.url;
       }
     } catch { setLoading(false); }
+  }
+
+  // Superadmin: instant free download, no modal
+  if (isSuperAdmin) {
+    return (
+      <IconBtn onClick={handlePurchase} disabled={loading} title="Download HD image (free)">
+        {loading ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <IconDownload size={13} />}
+      </IconBtn>
+    );
   }
 
   return (
@@ -890,7 +899,7 @@ const PAGE_SIZE         = 5;
 const PORTRAIT_PAGE_SIZE = 15;
 
 export default function DashboardPage() {
-  const { user, _hasHydrated } = useStore();
+  const { user, _hasHydrated, setUser } = useStore();
   const router   = useRouter();
   const [orders, setOrders] = useState([]);
   const [images, setImages] = useState([]);
@@ -901,6 +910,7 @@ export default function DashboardPage() {
   const [portraitPage, setPortraitPage] = useState(1);
   const [dismissedBanner, setDismissedBanner] = useState(false);
   const [showPendingList, setShowPendingList] = useState(true);
+  const [lightboxImg, setLightboxImg] = useState(null);
   const { toasts, addToast }    = useToast();
 
   useEffect(() => {
@@ -909,6 +919,8 @@ export default function DashboardPage() {
     // Reset dismissed state so the banner always shows on fresh login
     setDismissedBanner(false);
     setShowPendingList(true);
+    // Refresh user from API to pick up isSuperAdmin flag
+    api.me().then(d => { if (d.user) setUser(d.user); }).catch(() => {});
     Promise.all([api.getOrders(), api.getImages()])
       .then(([o, i]) => { setOrders(o.orders); setImages(i.images); })
       .catch(console.error)
@@ -961,13 +973,15 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3">
             <div className="min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Maîtrepets</h1>
-              <p className="text-gray-500 mt-0.5 text-sm truncate">{user?.email}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{user?.isSuperAdmin ? "Xia Brown's" : 'My'} Maîtrepets</h1>
+              <p className="text-gray-500 mt-0.5 text-sm truncate">
+                {user?.isSuperAdmin ? 'CEO of Maîtrepets' : user?.email}
+              </p>
             </div>
           </div>
 
           {/* Pending orders — collapsible dropdown */}
-          {!loading && pendingOrders.length > 0 && !dismissedBanner && (
+          {!loading && !user?.isSuperAdmin && pendingOrders.length > 0 && !dismissedBanner && (
             <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden">
               {/* Header — click to toggle */}
               <button
@@ -1039,8 +1053,7 @@ export default function DashboardPage() {
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
             {[
-              { label: 'Portraits', value: images.length, icon: '🎨' },
-              { label: 'Orders',    value: orders.filter(o => o.status !== 'pending').length, icon: '📦' },
+              { label: user?.isSuperAdmin ? 'My Portraits' : 'Portraits', value: images.length, icon: '🎨' },
             ].map((s) => (
               <div key={s.label} className="card p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
                 <span className="text-2xl sm:text-3xl">{s.icon}</span>
@@ -1050,6 +1063,38 @@ export default function DashboardPage() {
                 </div>
               </div>
             ))}
+
+            {/* Orders stat (regular users) / Daily overview (superadmin) */}
+            {user?.isSuperAdmin ? (() => {
+              const today = new Date(); today.setHours(0,0,0,0);
+              const todayOrders = orders.filter(o => o.status !== 'pending' && new Date(o.createdAt) >= today);
+              const dailyProfit = todayOrders.reduce((sum, o) => sum + (o.price || 0), 0);
+              const soldToday   = todayOrders.length;
+              return (
+                <div className="card p-3 sm:p-5 col-span-1">
+                  <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mb-2">Today</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-[10px] text-gray-400">Revenue</p>
+                      <p className="text-lg font-black text-purple-600">${dailyProfit.toFixed(2)}</p>
+                    </div>
+                    <div className="w-px h-8 bg-gray-100" />
+                    <div>
+                      <p className="text-[10px] text-gray-400">Sold</p>
+                      <p className="text-lg font-black text-gray-900">{soldToday}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })() : (
+              <div className="card p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
+                <span className="text-2xl sm:text-3xl">📦</span>
+                <div className="min-w-0">
+                  <p className="text-gray-500 text-xs truncate">Orders</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{orders.filter(o => o.status !== 'pending').length}</p>
+                </div>
+              </div>
+            )}
 
             {/* New Portrait CTA */}
             <Link href="/create" className="card p-3 sm:p-5 flex items-center gap-2 sm:gap-4 bg-purple-600 hover:bg-purple-700 transition-colors group col-span-2 sm:col-span-1">
@@ -1095,19 +1140,41 @@ export default function DashboardPage() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                {/* Lightbox */}
+                {lightboxImg && (
+                  <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setLightboxImg(null)}>
+                    <button className="absolute top-4 right-4 text-white/60 hover:text-white text-2xl leading-none">✕</button>
+                    <img
+                      src={lightboxImg}
+                      alt="Portrait"
+                      className="max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain"
+                      onClick={e => e.stopPropagation()}
+                      onContextMenu={e => e.preventDefault()}
+                      draggable={false}
+                    />
+                  </div>
+                )}
+
+                <div className={user?.isSuperAdmin ? 'grid grid-cols-2 sm:grid-cols-3 gap-4' : 'grid grid-cols-3 md:grid-cols-5 gap-3'}>
                   {pagedImages.map(img => (
                     <div key={img.id} className="card overflow-hidden group">
                       <div className="relative">
                         {img.generatedUrl ? (
-                          <img src={img.generatedUrl} alt="Portrait" className="w-full aspect-square object-cover" onContextMenu={e => e.preventDefault()} draggable={false} />
+                          <img
+                            src={img.generatedUrl}
+                            alt="Portrait"
+                            className={`w-full object-cover cursor-zoom-in ${user?.isSuperAdmin ? 'aspect-[3/4]' : 'aspect-square'}`}
+                            onClick={() => setLightboxImg(img.generatedUrl)}
+                            onContextMenu={e => e.preventDefault()}
+                            draggable={false}
+                          />
                         ) : (
-                          <ImgPlaceholder className="w-full aspect-square" />
+                          <ImgPlaceholder className={`w-full ${user?.isSuperAdmin ? 'aspect-[3/4]' : 'aspect-square'}`} />
                         )}
                         {img.generatedUrl && (
                           <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <PaperPrintIcon imageId={img.id} />
-                            <DownloadBtn imageId={img.id} />
+                            {!user?.isSuperAdmin && <PaperPrintIcon imageId={img.id} />}
+                            <DownloadBtn imageId={img.id} isSuperAdmin={user?.isSuperAdmin} />
                           </div>
                         )}
                       </div>
@@ -1116,7 +1183,7 @@ export default function DashboardPage() {
                           <p className="text-xs text-gray-400">
                             {new Date(img.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </p>
-                          {img.generatedUrl && <QuickOrderBtn img={img} />}
+                          {img.generatedUrl && !user?.isSuperAdmin && <QuickOrderBtn img={img} />}
                         </div>
                         {img.generatedUrl && (
                           <p className="text-[10px] font-mono text-purple-400/70 tracking-wider">
@@ -1157,10 +1224,20 @@ export default function DashboardPage() {
           ) : (
             orders.length === 0 ? (
               <div className="card p-16 text-center">
-                <div className="text-6xl mb-4">📦</div>
-                <h3 className="font-bold text-gray-900 text-xl mb-2">No orders yet</h3>
-                <p className="text-gray-500 mb-6">Order a framed print of your portrait</p>
-                <Link href="/create" className="btn-primary px-8 py-3">Create & Order →</Link>
+                {user?.isSuperAdmin ? (
+                  <>
+                    <div className="text-6xl mb-4">📊</div>
+                    <h3 className="font-bold text-gray-900 text-xl mb-2">No customer orders yet</h3>
+                    <p className="text-gray-500">Orders will appear here once customers start purchasing.</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-6xl mb-4">📦</div>
+                    <h3 className="font-bold text-gray-900 text-xl mb-2">No orders yet</h3>
+                    <p className="text-gray-500 mb-6">Order a framed print of your portrait</p>
+                    <Link href="/create" className="btn-primary px-8 py-3">Create & Order →</Link>
+                  </>
+                )}
               </div>
             ) : (
               <>
@@ -1201,9 +1278,12 @@ export default function DashboardPage() {
                               {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                               {' · '}<span className="font-medium text-gray-600">${order.price.toFixed(2)}</span>
                             </p>
+                            {user?.isSuperAdmin && order.user && (
+                              <p className="text-xs text-purple-500 mt-0.5 truncate">{order.user.name || order.user.email}</p>
+                            )}
 
-                            {/* Progress stepper — only for paid+ orders */}
-                            {!isPending && <ProgressStepper status={order.status} trackingNumber={order.trackingNumber} trackingUrl={order.trackingUrl} />}
+                            {/* Progress stepper — only for paid+ orders, hidden for superadmin */}
+                            {!isPending && !user?.isSuperAdmin && <ProgressStepper status={order.status} trackingNumber={order.trackingNumber} trackingUrl={order.trackingUrl} />}
 
                             {/* Pending: prompt to reorder */}
                             {isPending && (
@@ -1214,8 +1294,8 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        {/* Actions row */}
-                        {!isPending && (
+                        {/* Actions row — hidden for superadmin */}
+                        {!user?.isSuperAdmin && !isPending && (
                           <div className="flex justify-end items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 flex-wrap">
                             {isAddrFail && <OrderErrorAlert />}
                             {order.imageId && <DownloadBtn imageId={order.imageId} />}
@@ -1224,7 +1304,7 @@ export default function DashboardPage() {
                           </div>
                         )}
 
-                        {isPending && (
+                        {!user?.isSuperAdmin && isPending && (
                           <div className="flex justify-end mt-3 pt-3 border-t border-gray-100">
                             <Link
                               href="/create"

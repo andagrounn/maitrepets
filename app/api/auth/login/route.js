@@ -11,8 +11,10 @@ export async function POST(req) {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
+    const superadminEmails = (process.env.SUPERADMIN_EMAILS || '').split(',').map(e => e.trim());
+    const isSuperAdmin = superadminEmails.includes(user.email);
     const token = signToken({ id: user.id, email: user.email, name: user.name });
-    const res = NextResponse.json({ user: { id: user.id, email: user.email, name: user.name } });
+    const res = NextResponse.json({ user: { id: user.id, email: user.email, name: user.name, isSuperAdmin } });
     res.cookies.set('maitrepets_token', token, { httpOnly: true, path: '/', maxAge: 60 * 60 * 24 * 30 });
     return res;
   } catch (err) {

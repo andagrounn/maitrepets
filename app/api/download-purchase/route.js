@@ -14,10 +14,25 @@ export async function POST(req) {
     const { imageId } = await req.json();
     if (!imageId) return NextResponse.json({ error: 'imageId required' }, { status: 400 });
 
+    const superadminEmails = (process.env.SUPERADMIN_EMAILS || '').split(',').map(e => e.trim());
+    const isSuperAdmin = superadminEmails.includes(session.email);
+
     const image = await prisma.image.findUnique({ where: { id: imageId } });
     if (!image) return NextResponse.json({ error: 'Image not found' }, { status: 404 });
-    if (image.userId !== session.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!isSuperAdmin && image.userId !== session.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     if (!image.generatedUrl) return NextResponse.json({ error: 'Image not generated yet' }, { status: 400 });
+
+    // Superadmin gets free instant download
+    if (isSuperAdmin) {
+      const s3Bucket = process.env.S3_BUCKET;
+      const isS3     = s3Bucket && image.generatedUrl.includes(s3Bucket);
+      if (isS3) {
+        const key       = image.generatedUrl.split('.amazonaws.com/')[1];
+        const signedUrl = await getSignedDownloadUrl(key, 3600);
+        return NextResponse.json({ url: signedUrl, free: true });
+      }
+      return NextResponse.json({ url: image.generatedUrl, free: true });
+    }
 
     // Check if user already has a paid digital copy for this image — give free download
     const existing = await prisma.order.findFirst({
