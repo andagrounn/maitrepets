@@ -1,5 +1,6 @@
 import './globals.css';
 import Footer from '@/components/Footer';
+import DisableImageActions from '@/components/DisableImageActions';
 
 export const metadata = {
   title: 'Maîtrepets — Turn Your Pet Into a Work of Art',
@@ -14,6 +15,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="bg-cream min-h-screen antialiased flex flex-col">
+        <DisableImageActions />
         <div className="flex-1">{children}</div>
         <Footer />
       </body>

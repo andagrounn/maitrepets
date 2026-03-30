@@ -469,6 +469,8 @@ function CreatePageInner() {
                         src={generatedUrl}
                         alt="Generated Portrait"
                         className={`w-full aspect-[2/3] object-cover rounded-2xl shadow-xl ring-2 ring-purple-200 ${freeLimitReached || guestLimitReached ? 'brightness-75' : ''}`}
+                        onContextMenu={e => e.preventDefault()}
+                        draggable={false}
                       />
                       {/* Brand tag — bottom right */}
                       <div className="absolute bottom-3 right-3 pointer-events-none select-none">

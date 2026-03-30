@@ -661,7 +661,7 @@ function PaperPrintIcon({ imageId }) {
   return <IconBtn onClick={handle} disabled={loading} title="Order thin canvas print ($29.99)"><IconPrinter size={13} /></IconBtn>;
 }
 
-// ─── Quick order button — goes straight to Stripe checkout ────────────────────
+// ─── Quick order button — goes straight to checkout with this generated image ──
 function QuickOrderBtn({ img }) {
   const [loading, setLoading] = useState(false);
 
@@ -1100,7 +1100,7 @@ export default function DashboardPage() {
                     <div key={img.id} className="card overflow-hidden group">
                       <div className="relative">
                         {img.generatedUrl ? (
-                          <img src={img.generatedUrl} alt="Portrait" className="w-full aspect-square object-cover" />
+                          <img src={img.generatedUrl} alt="Portrait" className="w-full aspect-square object-cover" onContextMenu={e => e.preventDefault()} draggable={false} />
                         ) : (
                           <ImgPlaceholder className="w-full aspect-square" />
                         )}
