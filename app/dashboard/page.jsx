@@ -1163,8 +1163,8 @@ export default function DashboardPage() {
                           <img
                             src={img.generatedUrl}
                             alt="Portrait"
-                            className={`w-full object-cover cursor-zoom-in ${user?.isSuperAdmin ? 'aspect-[3/4]' : 'aspect-square'}`}
-                            onClick={() => setLightboxImg(img.generatedUrl)}
+                            className={`w-full object-cover ${user?.isSuperAdmin ? 'aspect-[3/4] cursor-zoom-in' : 'aspect-square'}`}
+                            onClick={user?.isSuperAdmin ? () => setLightboxImg(img.generatedUrl) : undefined}
                             onContextMenu={e => e.preventDefault()}
                             draggable={false}
                           />
