@@ -563,7 +563,16 @@ function CustomerPanel({ customer, onClose, onEmail }) {
 
             {/* Saved / default address */}
             <div className="mt-4 bg-white/5 rounded-xl p-3">
-              <p className="text-gray-500 text-[10px] uppercase tracking-wide mb-1.5">Default Shipping Address</p>
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-gray-500 text-[10px] uppercase tracking-wide">Default Shipping Address</p>
+                {savedAddress && (
+                  <button
+                    onClick={() => setEditingOrder(savedAddress)}
+                    className="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-white/10 hover:bg-white/20 text-gray-300 transition-colors">
+                    Edit
+                  </button>
+                )}
+              </div>
               {savedAddress ? (
                 <div className="text-xs text-gray-300 leading-relaxed space-y-0.5">
                   {savedAddress.shippingName && <p className="font-medium text-white">{savedAddress.shippingName}</p>}
