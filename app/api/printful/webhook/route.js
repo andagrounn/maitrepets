@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createHmac } from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { sendEmail, shippedEmail, deliveredEmail } from '@/lib/email';
 
@@ -13,10 +14,27 @@ import { sendEmail, shippedEmail, deliveredEmail } from '@/lib/email';
  * Printful retries failed deliveries at: 1, 4, 16, 64, 256, 1024 minutes.
  * Always return HTTP 200 — even on errors — to stop unnecessary retries.
  */
+
+function verifyPrintfulSignature(rawBody, signature) {
+  const secret = process.env.PRINTFUL_API_KEY;
+  if (!secret) return false;
+  const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
+  return signature === expected;
+}
+
 export async function POST(req) {
+  const rawBody  = await req.text();
+  const signature = req.headers.get('x-printful-signature') ?? '';
+
+  if (!verifyPrintfulSignature(rawBody, signature)) {
+    console.warn('[Printful webhook] Signature verification failed — rejecting request');
+    // Return 200 so Printful doesn't keep retrying an invalid request
+    return NextResponse.json({ received: false, error: 'invalid_signature' }, { status: 200 });
+  }
+
   let body;
   try {
-    body = await req.json();
+    body = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
