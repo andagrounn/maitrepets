@@ -30,9 +30,26 @@ export async function GET(req) {
     // Capture the payment
     const capture = await capturePayPalOrder(paypalToken);
     const captureStatus = capture?.status;
-    const captureId = capture?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+    const captureData   = capture?.purchase_units?.[0]?.payments?.captures?.[0];
+    const captureId     = captureData?.id;
 
     if (captureStatus === 'COMPLETED') {
+      // ── Amount verification ──────────────────────────────────────────────
+      const capturedAmount = parseFloat(captureData?.amount?.value ?? 0);
+      const expectedAmount = parseFloat(order.price ?? 0);
+
+      if (Math.abs(capturedAmount - expectedAmount) > 0.01) {
+        console.error(
+          `[PayPal capture] Amount mismatch — expected $${expectedAmount}, got $${capturedAmount}`,
+          { orderId: order.id, paypalToken }
+        );
+        await prisma.order.update({
+          where: { id: order.id },
+          data:  { status: 'fraud_suspected', updatedAt: new Date() },
+        });
+        return NextResponse.redirect(`${baseUrl}/cancel?reason=amount_mismatch`);
+      }
+
       // Pull shipping address from PayPal capture response
       const ppShipping = capture?.purchase_units?.[0]?.shipping;
       const ppAddress  = ppShipping?.address;
