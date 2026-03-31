@@ -480,8 +480,8 @@ function CreatePageInner() {
                           style={{
                             color: 'rgba(255,255,255,0.20)',
                             fontSize: '13px',
-                            fontWeight: 700,
-                            letterSpacing: '0.25em',
+                            fontWeight: 900,
+                            letterSpacing: '0.02em',
                             textTransform: 'uppercase',
                             textAlign: 'center',
                             userSelect: 'none',
