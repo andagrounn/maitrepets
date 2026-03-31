@@ -647,18 +647,76 @@ function TrackingSection({ order, addToast }) {
   );
 }
 
+const PAPER_SIZE_OPTIONS = [
+  { key: 'paper-8x10',  label: '8×10"',  price: '$44.99',  tag: null },
+  { key: 'paper-11x14', label: '11×14"', price: '$49.99',  tag: null },
+  { key: 'paper-16x20', label: '16×20"', price: '$64.99',  tag: 'Most Popular' },
+  { key: 'paper-18x24', label: '18×24"', price: '$74.99',  tag: null },
+  { key: 'paper-24x36', label: '24×36"', price: '$109.99', tag: 'Best Value' },
+];
+
 // ─── Paper print button ────────────────────────────────────────────────────────
 function PaperPrintIcon({ imageId }) {
-  const [loading, setLoading] = useState(false);
-  async function handle() {
+  const [loading, setLoading]       = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickedSize, setPickedSize] = useState('paper-16x20');
+
+  async function handle(productKey) {
     setLoading(true);
+    setShowPicker(false);
     try {
-      const res  = await fetch('/api/order-paper', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageId }) });
+      const res  = await fetch('/api/order-paper', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageId, productKey }) });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
     } catch { setLoading(false); }
   }
-  return <IconBtn onClick={handle} disabled={loading} title="Order thin canvas print ($29.99)"><IconPrinter size={13} /></IconBtn>;
+
+  return (
+    <>
+      <IconBtn onClick={() => setShowPicker(true)} disabled={loading} title="Order thin canvas print">
+        <IconPrinter size={13} />
+      </IconBtn>
+
+      {showPicker && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm px-4 pb-4 sm:pb-0"
+          onClick={() => setShowPicker(false)}>
+          <div
+            className="bg-[#1a1a2e] border border-white/10 rounded-2xl w-full max-w-sm p-6 shadow-2xl"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-white font-bold text-lg">Choose Your Size</h2>
+                <p className="text-gray-500 text-xs mt-0.5">Thin canvas print — unframed</p>
+              </div>
+              <button onClick={() => setShowPicker(false)} className="text-gray-600 hover:text-white transition-colors text-xl leading-none">✕</button>
+            </div>
+            <div className="flex flex-col gap-2 mb-5">
+              {PAPER_SIZE_OPTIONS.map(opt => (
+                <button key={opt.key} onClick={() => setPickedSize(opt.key)}
+                  className={`relative flex items-center justify-between px-4 py-3 rounded-xl border transition-all text-left ${
+                    pickedSize === opt.key ? 'border-amber-500 bg-amber-500/10' : 'border-white/10 bg-white/5 hover:border-white/25'
+                  }`}>
+                  <div className="flex items-center gap-3">
+                    <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-colors ${pickedSize === opt.key ? 'border-amber-500 bg-amber-500' : 'border-gray-600'}`} />
+                    <span className={`font-semibold text-sm ${pickedSize === opt.key ? 'text-white' : 'text-gray-300'}`}>{opt.label}</span>
+                    {opt.tag && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">{opt.tag}</span>}
+                  </div>
+                  <span className={`text-sm font-bold ${pickedSize === opt.key ? 'text-amber-400' : 'text-gray-400'}`}>{opt.price}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => handle(pickedSize)}
+              disabled={loading}
+              className="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
+              {loading ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing…</> : 'Continue to Payment →'}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 const QUICK_SIZE_OPTIONS = [
