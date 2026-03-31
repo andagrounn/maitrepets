@@ -513,6 +513,9 @@ function CustomerPanel({ customer, onClose, onEmail }) {
   const [editingOrder, setEditingOrder] = useState(null);
   const [toast, setToast] = useState('');
 
+  // Most recent saved address across all orders
+  const savedAddress = customer.orders?.find(o => o.shippingAddress);
+
   function showToast(msg) {
     setToast(msg);
     setTimeout(() => setToast(''), 3000);
@@ -556,6 +559,22 @@ function CustomerPanel({ customer, onClose, onEmail }) {
                 <p className="text-gray-500 text-xs">Lifetime Value</p>
                 <p className="text-emerald-400 font-bold text-xl">${customer.ltv.toFixed(2)}</p>
               </div>
+            </div>
+
+            {/* Saved / default address */}
+            <div className="mt-4 bg-white/5 rounded-xl p-3">
+              <p className="text-gray-500 text-[10px] uppercase tracking-wide mb-1.5">Default Shipping Address</p>
+              {savedAddress ? (
+                <div className="text-xs text-gray-300 leading-relaxed space-y-0.5">
+                  {savedAddress.shippingName && <p className="font-medium text-white">{savedAddress.shippingName}</p>}
+                  <p>{savedAddress.shippingAddress}{savedAddress.shippingAddress2 ? `, ${savedAddress.shippingAddress2}` : ''}</p>
+                  <p>{savedAddress.shippingCity}, {savedAddress.shippingState} {savedAddress.shippingZip}</p>
+                  <p>{savedAddress.shippingCountry}</p>
+                  {savedAddress.shippingPhone && <p className="text-gray-500">{savedAddress.shippingPhone}</p>}
+                </div>
+              ) : (
+                <p className="text-orange-400 text-xs">No address on file</p>
+              )}
             </div>
           </div>
 
