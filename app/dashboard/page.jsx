@@ -661,23 +661,33 @@ function PaperPrintIcon({ imageId }) {
   return <IconBtn onClick={handle} disabled={loading} title="Order thin canvas print ($29.99)"><IconPrinter size={13} /></IconBtn>;
 }
 
+const QUICK_SIZE_OPTIONS = [
+  { key: 'poster-8x10',  label: '8×10"',  price: '$69.99',  tag: null },
+  { key: 'poster-11x14', label: '11×14"', price: '$84.99',  tag: null },
+  { key: 'poster-16x20', label: '16×20"', price: '$119.99', tag: 'Most Popular' },
+  { key: 'poster-18x24', label: '18×24"', price: '$139.99', tag: null },
+  { key: 'poster-24x36', label: '24×36"', price: '$189.99', tag: 'Best Value' },
+];
+
 // ─── Quick order button — goes straight to checkout with this generated image ──
 function QuickOrderBtn({ img }) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]   = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickedSize, setPickedSize] = useState('poster-16x20');
 
-  async function checkout() {
+  async function checkout(productKey) {
     setLoading(true);
+    setShowPicker(false);
     try {
       const res  = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          imageId:      img.id,
-          generatedUrl: null,
-          productKey:   'poster-16x20',
-          price:        119.99,
-          extras:       {},
+          imageId:    img.id,
+          productKey,
+          price:      1,   // server computes authoritative price from productKey
+          extras:     {},
         }),
       });
       const data = await res.json();
@@ -689,10 +699,51 @@ function QuickOrderBtn({ img }) {
   }
 
   return (
-    <button onClick={checkout} disabled={loading}
-      className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors flex items-center gap-1 disabled:opacity-50">
-      {loading ? '…' : 'Order →'}
-    </button>
+    <>
+      <button onClick={() => setShowPicker(true)} disabled={loading}
+        className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors flex items-center gap-1 disabled:opacity-50">
+        {loading ? '…' : 'Order →'}
+      </button>
+
+      {showPicker && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm px-4 pb-4 sm:pb-0"
+          onClick={() => setShowPicker(false)}>
+          <div
+            className="bg-[#1a1a2e] border border-white/10 rounded-2xl w-full max-w-sm p-6 shadow-2xl"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-white font-bold text-lg">Choose Your Size</h2>
+                <p className="text-gray-500 text-xs mt-0.5">Select the frame size for your portrait</p>
+              </div>
+              <button onClick={() => setShowPicker(false)} className="text-gray-600 hover:text-white transition-colors text-xl leading-none">✕</button>
+            </div>
+            <div className="flex flex-col gap-2 mb-5">
+              {QUICK_SIZE_OPTIONS.map(opt => (
+                <button key={opt.key} onClick={() => setPickedSize(opt.key)}
+                  className={`relative flex items-center justify-between px-4 py-3 rounded-xl border transition-all text-left ${
+                    pickedSize === opt.key ? 'border-amber-500 bg-amber-500/10' : 'border-white/10 bg-white/5 hover:border-white/25'
+                  }`}>
+                  <div className="flex items-center gap-3">
+                    <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-colors ${pickedSize === opt.key ? 'border-amber-500 bg-amber-500' : 'border-gray-600'}`} />
+                    <span className={`font-semibold text-sm ${pickedSize === opt.key ? 'text-white' : 'text-gray-300'}`}>{opt.label}</span>
+                    {opt.tag && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">{opt.tag}</span>}
+                  </div>
+                  <span className={`text-sm font-bold ${pickedSize === opt.key ? 'text-amber-400' : 'text-gray-400'}`}>{opt.price}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => checkout(pickedSize)}
+              disabled={loading}
+              className="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
+              {loading ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing…</> : 'Continue to Payment →'}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -915,13 +966,7 @@ export default function DashboardPage() {
   const [sizePickerOrderId, setSizePicker] = useState(null);
   const [pickedSize, setPickedSize]        = useState('poster-16x20');
 
-  const SIZE_OPTIONS = [
-    { key: 'poster-8x10',  label: '8×10"',  price: '$69.99',  tag: null },
-    { key: 'poster-11x14', label: '11×14"', price: '$84.99',  tag: null },
-    { key: 'poster-16x20', label: '16×20"', price: '$119.99', tag: 'Most Popular' },
-    { key: 'poster-18x24', label: '18×24"', price: '$139.99', tag: null },
-    { key: 'poster-24x36', label: '24×36"', price: '$189.99', tag: 'Best Value' },
-  ];
+  const SIZE_OPTIONS = QUICK_SIZE_OPTIONS;
 
   function openSizePicker(orderId, currentProductType) {
     setPickedSize(currentProductType || 'poster-16x20');
