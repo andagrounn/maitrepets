@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { fulfillOrder } from '@/lib/fulfillment';
 import { createPayPalOrder } from '@/lib/paypal';
+import { PRODUCT_VARIANTS } from '@/lib/printful';
 
 // ─── Switch between "paypal" and "stripe" via PAYMENT_PROVIDER env var ───────
 const PAYMENT_PROVIDER = process.env.PAYMENT_PROVIDER || 'stripe';
@@ -26,6 +27,15 @@ export async function POST(req) {
     const size = sizeMatch ? sizeMatch[1] : '16x20';
     // Normalize legacy canvas keys to poster keys
     const normalizedProductKey = (productKey || 'poster-16x20').replace('canvas-', 'poster-');
+
+    // ── Server-side authoritative price ──────────────────────────────────────
+    const product = PRODUCT_VARIANTS[normalizedProductKey] ?? PRODUCT_VARIANTS['poster-16x20'];
+    const baseProductPrice = product.price;
+    const digitalCopyPrice     = extras?.digitalCopy        ? 12   : 0;
+    const extraCopyPrice       = extras?.extraCopy          ? 19   : 0;
+    const priorityPrice        = extras?.priorityProcessing ?  9   : 0;
+    const shippingRate         = shipping?.shippingRate     ? parseFloat(shipping.shippingRate) : 0;
+    const authorizedTotal      = +(baseProductPrice + digitalCopyPrice + extraCopyPrice + priorityPrice + shippingRate).toFixed(2);
 
     // Fall back to most recently saved address if none provided
     let effectiveShipping = shipping;
@@ -61,7 +71,7 @@ export async function POST(req) {
         imageId,
         productType:      normalizedProductKey,
         size,
-        price:            Number(price),
+        price:            authorizedTotal,
         status:           'pending',
         shippingName:     effectiveShipping?.name           || null,
         shippingAddress:  effectiveShipping?.address1       || null,
@@ -85,7 +95,7 @@ export async function POST(req) {
       const description = `Maîtrepets Framed Canvas — ${size}`;
       const { id: paypalOrderId, approveUrl } = await createPayPalOrder({
         orderId: order.id,
-        amount: Number(price),
+        amount: authorizedTotal,
         description,
         shipping: effectiveShipping,
       });
@@ -98,17 +108,13 @@ export async function POST(req) {
     const isDemo = !process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_demo';
 
     if (isDemo) {
-      await prisma.order.update({ where: { id: order.id }, data: { status: 'paid' } });
+      await prisma.order.update({ where: { id: order.id }, data: { status: 'paid', price: authorizedTotal } });
       fulfillOrder(order.id).catch((e) => console.error('[Demo fulfillment]', e.message));
       return NextResponse.json({ url: `${baseUrl}/success?order=${order.id}&tx=DEMO-${Date.now()}` });
     }
 
     // Build line items — base print + any selected upsells
-    const basePrice = Number(price) -
-      (extras?.digitalCopy              ? 12 : 0) -
-      (extras?.extraCopy                ? 19 : 0) -
-      (extras?.priorityProcessing       ?  9 : 0) -
-      (effectiveShipping?.shippingRate  ? parseFloat(effectiveShipping.shippingRate) : 0);
+    const basePrice = baseProductPrice;
 
     const lineItems = [
       {
