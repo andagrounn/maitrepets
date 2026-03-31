@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
 import { sendEmail } from '@/lib/email';
-
-function adminGuard(req) {
-  const key = req.headers.get('x-admin-key');
-  return !!key && key === process.env.ADMIN_SECRET;
-}
+import { isAdmin } from '@/lib/adminGuard';
 
 export async function POST(req) {
-  if (!adminGuard(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
     const { to, subject, body } = await req.json();

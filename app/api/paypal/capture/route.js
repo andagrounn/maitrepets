@@ -27,6 +27,11 @@ export async function GET(req) {
       return NextResponse.redirect(`${baseUrl}/cancel?reason=order_not_found`);
     }
 
+    // Idempotency: if already processed, redirect to success without re-capturing
+    if (['paid', 'fulfilling', 'fulfilled', 'shipped', 'delivered'].includes(order.status)) {
+      return NextResponse.redirect(`${baseUrl}/success?order=${order.id}&tx=${order.stripeId || paypalToken}`);
+    }
+
     // Capture the payment
     const capture = await capturePayPalOrder(paypalToken);
     const captureStatus = capture?.status;

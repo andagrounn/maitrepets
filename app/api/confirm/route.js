@@ -27,6 +27,14 @@ export async function POST(req) {
     const order = await prisma.order.findUnique({ where: { id: orderId }, include: { image: true } });
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
 
+    // Verify the amount Stripe charged matches what we expect
+    const paidAmount     = (session.amount_total ?? 0) / 100;
+    const expectedAmount = parseFloat(order.price ?? 0);
+    if (Math.abs(paidAmount - expectedAmount) > 0.01) {
+      await logger.error('confirm', `Amount mismatch: paid $${paidAmount}, expected $${expectedAmount}`, { orderId });
+      return NextResponse.json({ error: 'Payment amount mismatch' }, { status: 402 });
+    }
+
     // Already sent to Printful — just return
     if (order.status === 'fulfilling' || order.printfulId) {
       return NextResponse.json({ ok: true, already: true, digitalCopy: order.digitalCopy });

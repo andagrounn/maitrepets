@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
-function adminGuard(req) {
-  const key = req.headers.get('x-admin-key');
-  return !!key && key === process.env.ADMIN_SECRET;
-}
+import { isAdmin } from '@/lib/adminGuard';
 
 // Update order status, tracking, or items
 export async function PATCH(req) {
-  if (!adminGuard(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { orderId, status, trackingNumber, trackingUrl, digitalCopy, extraCopy, frameColor, size, price } = await req.json();
   if (!orderId) return NextResponse.json({ error: 'orderId required' }, { status: 400 });

@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
-function auth(req) {
-  const key = req.headers.get('x-admin-key');
-  return !!key && key === process.env.ADMIN_SECRET;
-}
+import { isAdmin } from '@/lib/adminGuard';
 
 export async function GET(req) {
-  if (!auth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const images = await prisma.image.findMany({
     where: { generatedUrl: { not: null } },
@@ -19,7 +15,7 @@ export async function GET(req) {
 }
 
 export async function DELETE(req) {
-  if (!auth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });

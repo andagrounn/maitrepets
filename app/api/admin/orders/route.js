@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
-function adminGuard(req) {
-  const key = req.headers.get('x-admin-key');
-  return !!key && key === process.env.ADMIN_SECRET;
-}
+import { isAdmin } from '@/lib/adminGuard';
 
 // DELETE /api/admin/orders  { ids: ['id1', 'id2'] }
 export async function DELETE(req) {
-  if (!adminGuard(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { ids } = await req.json();
   if (!Array.isArray(ids) || ids.length === 0)

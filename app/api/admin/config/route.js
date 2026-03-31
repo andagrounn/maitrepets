@@ -1,20 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
-function adminGuard(req) {
-  const key = req.headers.get('x-admin-key');
-  return !!key && key === process.env.ADMIN_SECRET;
-}
+import { isAdmin } from '@/lib/adminGuard';
 
 export async function GET(req) {
-  if (!adminGuard(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const rows = await prisma.config.findMany();
   const config = Object.fromEntries(rows.map(r => [r.key, r.value]));
   return NextResponse.json({ config });
 }
 
 export async function POST(req) {
-  if (!adminGuard(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json();
   for (const [key, value] of Object.entries(body)) {
     await prisma.config.upsert({

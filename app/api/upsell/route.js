@@ -2,8 +2,18 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req) {
+  const ip = getClientIp(req);
+  const { allowed, resetMs } = rateLimit(`upsell:${ip}`, 10, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(resetMs / 1000)) } }
+    );
+  }
+
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

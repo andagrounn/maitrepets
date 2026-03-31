@@ -3,10 +3,20 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { getSignedDownloadUrl } from '@/lib/s3';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 const DOWNLOAD_PRICE = 12;
 
 export async function POST(req) {
+  const ip = getClientIp(req);
+  const { allowed, resetMs } = rateLimit(`dl-purchase:${ip}`, 10, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(resetMs / 1000)) } }
+    );
+  }
+
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

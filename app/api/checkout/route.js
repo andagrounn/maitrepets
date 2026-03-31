@@ -5,11 +5,21 @@ import { stripe } from '@/lib/stripe';
 import { fulfillOrder } from '@/lib/fulfillment';
 import { createPayPalOrder } from '@/lib/paypal';
 import { PRODUCT_VARIANTS } from '@/lib/printful';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 // ─── Switch between "paypal" and "stripe" via PAYMENT_PROVIDER env var ───────
 const PAYMENT_PROVIDER = process.env.PAYMENT_PROVIDER || 'stripe';
 
 export async function POST(req) {
+  const ip = getClientIp(req);
+  const { allowed, resetMs } = rateLimit(`checkout:${ip}`, 10, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many checkout attempts. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(resetMs / 1000)) } }
+    );
+  }
+
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
