@@ -911,6 +911,21 @@ export default function DashboardPage() {
   const [dismissedBanner, setDismissedBanner] = useState(false);
   const [showPendingList, setShowPendingList] = useState(true);
   const [lightboxImg, setLightboxImg] = useState(null);
+  const [reprinting, setReprinting] = useState(null);
+
+  async function initiateReorder(orderId) {
+    setReprinting(orderId);
+    try {
+      const res  = await fetch('/api/reprint', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ orderId }) });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else throw new Error(data.error || 'Could not start checkout');
+    } catch (err) {
+      addToast(err.message || 'Failed to start order. Please try again.', 'error');
+    } finally {
+      setReprinting(null);
+    }
+  }
   const { toasts, addToast }    = useToast();
 
   useEffect(() => {
@@ -944,7 +959,7 @@ export default function DashboardPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not remove order');
-      setOrders(prev => prev.filter(o => o.id !== orderId));
+      setOrders(prev => prev.filter(o => o.status !== 'pending'));
       addToast('Incomplete order removed.', 'success');
     } catch (err) {
       addToast(err.message, 'error');
@@ -967,7 +982,7 @@ export default function DashboardPage() {
       {preview && <PreviewModal src={preview} onClose={() => setPreview(null)} />}
       <ToastContainer toasts={toasts} />
 
-      <main className="min-h-screen bg-[#F8F5F2] pt-20">
+      <main className="min-h-screen bg-[#F8F5F2] pt-20" onContextMenu={e => e.preventDefault()}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 
           {/* Header */}
@@ -1037,11 +1052,12 @@ export default function DashboardPage() {
                           className="w-7 h-7 flex items-center justify-center rounded-lg text-amber-400 hover:text-red-500 hover:bg-red-50 border border-amber-200 hover:border-red-200 transition-all">
                           <IconTrash size={13} />
                         </button>
-                        <Link
-                          href="/create"
-                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors whitespace-nowrap">
-                          New Order →
-                        </Link>
+                        <button
+                          onClick={() => initiateReorder(order.id)}
+                          disabled={reprinting === order.id}
+                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors whitespace-nowrap disabled:opacity-60 flex items-center gap-1.5">
+                          {reprinting === order.id ? <><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading…</> : 'Complete Order →'}
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -1306,11 +1322,12 @@ export default function DashboardPage() {
 
                         {!user?.isSuperAdmin && isPending && (
                           <div className="flex justify-end mt-3 pt-3 border-t border-gray-100">
-                            <Link
-                              href="/create"
-                              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors">
-                              New Order →
-                            </Link>
+                            <button
+                              onClick={() => initiateReorder(order.id)}
+                              disabled={reprinting === order.id}
+                              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-60 flex items-center gap-1.5">
+                              {reprinting === order.id ? <><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading…</> : 'Complete Order →'}
+                            </button>
                           </div>
                         )}
                       </div>

@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { fulfillOrder } from '@/lib/fulfillment';
 import { PRODUCT_VARIANTS } from '@/lib/printful';
+import { createPayPalOrder } from '@/lib/paypal';
+
+const PAYMENT_PROVIDER = process.env.PAYMENT_PROVIDER || 'stripe';
 
 export async function POST(req) {
   const session = await getSession();
@@ -51,6 +54,11 @@ export async function POST(req) {
       return NextResponse.json({ url: `${baseUrl}/success?order=${newOrder.id}&tx=REPRINT-${Date.now()}` });
     }
 
+    // Delete all stale pending orders for this user before creating the new one
+    await prisma.order.deleteMany({
+      where: { userId: session.id, status: 'pending' },
+    }).catch((e) => console.error('[Reprint] cleanup error:', e.message));
+
     // Create a pending reprint order
     const newOrder = await prisma.order.create({
       data: {
@@ -60,6 +68,9 @@ export async function POST(req) {
         size:            original.size,
         price:           product.price,
         status:          'pending',
+        frameColor:      original.frameColor,
+        digitalCopy:     original.digitalCopy,
+        extraCopy:       original.extraCopy,
         shippingName:    original.shippingName,
         shippingAddress: original.shippingAddress,
         shippingAddress2:original.shippingAddress2,
@@ -72,15 +83,32 @@ export async function POST(req) {
       },
     });
 
+    // ── PayPal ──────────────────────────────────────────────────────────────
+    if (PAYMENT_PROVIDER === 'paypal') {
+      const { id: paypalOrderId, approveUrl } = await createPayPalOrder({
+        orderId:     newOrder.id,
+        amount:      product.price,
+        description: `Maîtrepets — ${product.name}`,
+        shipping:    {
+          name: original.shippingName, address1: original.shippingAddress,
+          address2: original.shippingAddress2, city: original.shippingCity,
+          state: original.shippingState, zip: original.shippingZip,
+          country: original.shippingCountry || 'US',
+        },
+      });
+      await prisma.order.update({ where: { id: newOrder.id }, data: { stripeId: paypalOrderId } });
+      return NextResponse.json({ url: approveUrl });
+    }
+
+    // ── Stripe ───────────────────────────────────────────────────────────────
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `Maîtrepets Reprint — ${product.name}`,
-            description: 'Reprint of your custom AI pet portrait',
-            images: original.image?.generatedUrl ? [original.image.generatedUrl] : [],
+            name: `Maîtrepets — ${product.name}`,
+            description: 'Custom AI pet portrait',
           },
           unit_amount: Math.round(product.price * 100),
         },
@@ -90,13 +118,10 @@ export async function POST(req) {
       success_url: `${baseUrl}/success?order=${newOrder.id}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${baseUrl}/dashboard`,
       metadata: { orderId: newOrder.id, type: 'reprint' },
+      shipping_address_collection: { allowed_countries: ['US', 'CA', 'GB', 'AU', 'JM'] },
     });
 
-    await prisma.order.update({
-      where: { id: newOrder.id },
-      data: { stripeId: checkoutSession.id },
-    });
-
+    await prisma.order.update({ where: { id: newOrder.id }, data: { stripeId: checkoutSession.id } });
     return NextResponse.json({ url: checkoutSession.url });
   } catch (err) {
     console.error('[reprint] error:', err);

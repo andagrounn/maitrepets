@@ -17,8 +17,9 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Only unpaid orders can be removed' }, { status: 400 });
     }
 
-    await prisma.order.delete({ where: { id: orderId } });
-    console.log(`[Cancel Order] ${orderId} removed by ${session.email}`);
+    // Delete the specific order and any other stale pending orders for this user
+    await prisma.order.deleteMany({ where: { userId: session.id, status: 'pending' } });
+    console.log(`[Cancel Order] all pending orders removed for ${session.email}`);
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('[cancel-order] error:', err);
