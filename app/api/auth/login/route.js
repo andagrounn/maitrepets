@@ -20,6 +20,7 @@ export async function POST(req) {
   try {
     const { email, password } = await req.json();
     if (!email || !password) return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });

@@ -12,7 +12,7 @@ export async function POST(req) {
   try {
     const { to, subject, body } = await req.json();
     if (!to || !subject || !body) return NextResponse.json({ error: 'to, subject, and body are required' }, { status: 400 });
-    if (!to.includes('@')) return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(to))) return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
 
     const html = body.includes('<') ? body : body.replace(/\n/g, '<br>');
     const id = await sendEmail({ to, subject, html });
