@@ -421,7 +421,7 @@ function CreatePageInner() {
                 {isUploading
                   ? 'Securely transferring your image'
                   : genProgress < 40 ? 'Removing background & analyzing your pet'
-                  : genProgress < 75 ? `Applying ${STYLE_PROMPTS[selectedStyle]?.label} style`
+                  : genProgress < 75 ? `Applying ${STYLE_PROMPTS[selectedStyle]?.label || 'selected'} style`
                   : 'Upscaling to high resolution'}
               </p>
               <p className="text-purple-500 font-semibold text-sm mb-6">{genProgress}% complete</p>

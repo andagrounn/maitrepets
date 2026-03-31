@@ -1013,6 +1013,7 @@ export default function DashboardPage() {
   const [orders, setOrders] = useState([]);
   const [images, setImages] = useState([]);
   const [loading, setLoading]   = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [tab, setTab]           = useState('portraits');
   const [preview, setPreview]   = useState(null);
   const [page, setPage]         = useState(1);
@@ -1057,7 +1058,7 @@ export default function DashboardPage() {
     api.me().then(d => { if (d.user) setUser(d.user); }).catch(() => {});
     Promise.all([api.getOrders(), api.getImages()])
       .then(([o, i]) => { setOrders(o.orders); setImages(i.images); })
-      .catch(console.error)
+      .catch(() => setFetchError('Could not load your dashboard. Please refresh the page.'))
       .finally(() => setLoading(false));
   }, [_hasHydrated, user?.id]);
 
@@ -1259,6 +1260,13 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Content ── */}
+          {fetchError && (
+            <div className="mb-6 bg-red-50 border border-red-200 rounded-2xl px-5 py-4 flex items-center gap-3 text-red-700 text-sm">
+              <IconAlertTriangle size={16} />
+              <span>{fetchError}</span>
+              <button onClick={() => window.location.reload()} className="ml-auto text-red-600 font-semibold underline hover:text-red-800">Refresh</button>
+            </div>
+          )}
           {loading ? (
             <div className="text-center py-16 text-gray-400">
               <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
