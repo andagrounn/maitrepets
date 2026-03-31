@@ -6,12 +6,20 @@ import { signToken } from '@/lib/auth';
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const code    = searchParams.get('code');
+  const state   = searchParams.get('state');
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   const cookieStore = cookies();
-  const guestImageId = cookieStore.get('_guest_img')?.value || null;
+  const storedState  = cookieStore.get('_oauth_state')?.value || null;
+  const guestImageId = cookieStore.get('_guest_img')?.value   || null;
 
   if (!code) {
     return NextResponse.redirect(`${baseUrl}/login?error=oauth_cancelled`);
+  }
+
+  // CSRF check — state must match what we issued
+  if (!state || !storedState || state !== storedState) {
+    console.warn('[Google OAuth] State mismatch — possible CSRF attack');
+    return NextResponse.redirect(`${baseUrl}/login?error=oauth_state_mismatch`);
   }
 
   try {
@@ -76,8 +84,9 @@ export async function GET(req) {
       path:     '/',
       sameSite: 'lax',
     });
-    // Clear the guest image carry cookie
+    // Clear carry cookies
     response.cookies.delete('_guest_img');
+    response.cookies.delete('_oauth_state');
 
     return response;
   } catch (err) {
