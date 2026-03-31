@@ -448,7 +448,7 @@ function CreatePageInner() {
 
           {/* ── RESULT ── */}
           {generatedUrl && !isLoading && (
-            <div className="grid md:grid-cols-5 gap-8">
+            <div className="grid lg:grid-cols-5 gap-8">
 
               {/* Image reveal — 3 cols */}
               <div className="md:col-span-3 space-y-4">

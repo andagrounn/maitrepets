@@ -76,8 +76,9 @@ function OAuthError({ setError }) {
   const searchParams = useSearchParams();
   useEffect(() => {
     const err = searchParams.get('error');
-    if (err === 'oauth_failed')    setError('Google sign-in failed. Please try again.');
-    if (err === 'oauth_cancelled') setError('Google sign-in was cancelled.');
+    if (err === 'oauth_failed')         setError('Google sign-in failed. Please try again.');
+    if (err === 'oauth_cancelled')      setError('Google sign-in was cancelled.');
+    if (err === 'oauth_state_mismatch') setError('Sign-in session expired. Please try again.');
   }, [searchParams]);
   return null;
 }
