@@ -1295,14 +1295,21 @@ export default function DashboardPage() {
                     <div key={img.id} className="card overflow-hidden group">
                       <div className="relative">
                         {img.id ? (
-                          <img
-                            src={`/api/img?id=${img.id}`}
-                            alt="Portrait"
-                            className={`w-full object-cover ${user?.isSuperAdmin ? 'aspect-[3/4] cursor-zoom-in' : 'aspect-square'}`}
-                            onClick={user?.isSuperAdmin ? () => setLightboxImg(`/api/img?id=${img.id}`) : undefined}
-                            onContextMenu={e => e.preventDefault()}
-                            draggable={false}
-                          />
+                          <>
+                            <img
+                              src={`/api/img?id=${img.id}`}
+                              alt="Portrait"
+                              className={`w-full object-cover ${user?.isSuperAdmin ? 'aspect-[3/4] cursor-zoom-in' : 'aspect-square'}`}
+                              onClick={user?.isSuperAdmin ? () => setLightboxImg(`/api/img?id=${img.id}`) : undefined}
+                              onContextMenu={e => e.preventDefault()}
+                              draggable={false}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+                              <span style={{ color: 'rgba(255,255,255,0.20)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,0.4)', userSelect: 'none' }}>
+                                maitrepets.com
+                              </span>
+                            </div>
+                          </>
                         ) : (
                           <ImgPlaceholder className={`w-full ${user?.isSuperAdmin ? 'aspect-[3/4]' : 'aspect-square'}`} />
                         )}
