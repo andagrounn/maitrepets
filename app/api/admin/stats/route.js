@@ -9,9 +9,10 @@ function adminGuard(req) {
 export async function GET(req) {
   if (!adminGuard(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const [orders, usersRaw, images] = await Promise.all([
+  const [orders, usersRaw, images, totalOrderCount] = await Promise.all([
     prisma.order.findMany({
       orderBy: { createdAt: 'desc' },
+      take: 500,
       include: {
         user:  { select: { id: true, name: true, email: true, createdAt: true } },
         image: { select: { generatedUrl: true, style: true } },
@@ -19,20 +20,23 @@ export async function GET(req) {
     }),
     prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
+      take: 500,
       include: {
         orders: {
           orderBy: { createdAt: 'desc' },
+          take: 50,
           include: { image: { select: { generatedUrl: true, style: true } } },
         },
       },
     }),
     prisma.image.count(),
+    prisma.order.count(),
   ]);
 
   // ── Stats ────────────────────────────────────────────────────────────────────
   const paidStatuses   = ['paid', 'fulfilling', 'shipped', 'delivered'];
   const totalRevenue   = orders.filter(o => paidStatuses.includes(o.status)).reduce((s, o) => s + o.price, 0);
-  const totalOrders    = orders.length;
+  const totalOrders    = totalOrderCount;
   const paidOrders     = orders.filter(o => paidStatuses.includes(o.status)).length;
   const failedOrders   = orders.filter(o => ['paid_fulfillment_failed', 'failed'].includes(o.status)).length;
   const fulfillingOrders = orders.filter(o => o.status === 'fulfilling').length;
