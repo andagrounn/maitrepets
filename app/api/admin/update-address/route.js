@@ -4,7 +4,7 @@ import { fulfillOrder } from '@/lib/fulfillment';
 
 function adminGuard(req) {
   const key = req.headers.get('x-admin-key');
-  return key === process.env.ADMIN_SECRET || key === 'maitrepets-admin-2025';
+  return !!key && key === process.env.ADMIN_SECRET;
 }
 
 export async function POST(req) {
