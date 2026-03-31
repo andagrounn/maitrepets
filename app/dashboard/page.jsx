@@ -1305,7 +1305,7 @@ export default function DashboardPage() {
                               draggable={false}
                             />
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-                              <span style={{ color: 'rgba(255,255,255,0.20)', fontSize: '10px', fontWeight: 900, letterSpacing: '0.02em', textTransform: 'uppercase', whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,0.4)', userSelect: 'none' }}>
+                              <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '10px', fontWeight: 900, letterSpacing: '0.02em', textTransform: 'uppercase', whiteSpace: 'nowrap', userSelect: 'none' }}>
                                 maitrepets.com
                               </span>
                             </div>

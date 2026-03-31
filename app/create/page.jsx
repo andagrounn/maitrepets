@@ -478,7 +478,7 @@ function CreatePageInner() {
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none rounded-2xl overflow-hidden">
                         <span
                           style={{
-                            color: 'rgba(255,255,255,0.20)',
+                            color: 'rgba(255,255,255,0.25)',
                             fontSize: '13px',
                             fontWeight: 900,
                             letterSpacing: '0.02em',
@@ -486,7 +486,6 @@ function CreatePageInner() {
                             textAlign: 'center',
                             userSelect: 'none',
                             whiteSpace: 'nowrap',
-                            textShadow: '0 1px 4px rgba(0,0,0,0.4)',
                           }}>
                           maitrepets.com
                         </span>
