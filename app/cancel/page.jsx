@@ -1,6 +1,7 @@
 'use client';
+import { Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams, Suspense } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 const REASON_COPY = {
   paypal_cancelled:    { title: 'Payment Cancelled', body: 'You cancelled the PayPal checkout. No charge was made. Your portrait is saved — come back any time.' },
