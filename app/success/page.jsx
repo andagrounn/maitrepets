@@ -218,10 +218,15 @@ function SuccessInner() {
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
             <h1 className="text-3xl font-black text-gray-900 mb-4">Payment received</h1>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-4">
               Your payment was successful but we had trouble confirming your order automatically.
               Our team will process it manually within 24 hours.
             </p>
+            {orderId && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-5 py-3 mb-6 text-xs text-yellow-800 font-mono break-all">
+                Order ref: {orderId}
+              </div>
+            )}
             <Link href="/dashboard" className="btn-primary px-8 py-3">View Orders</Link>
           </>
         )}

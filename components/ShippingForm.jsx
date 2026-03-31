@@ -18,6 +18,7 @@ export default function ShippingForm({ data, onChange, onSubmit, onBack, loading
   const [ratesLoading, setRatesLoading] = useState(false);
   const [ratesError, setRatesError] = useState(null);
   const [selectedRate, setSelectedRate] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
   const debounceRef = useRef(null);
 
   // Address is complete enough to fetch rates
@@ -55,7 +56,7 @@ export default function ShippingForm({ data, onChange, onSubmit, onBack, loading
     }, 700);
 
     return () => clearTimeout(debounceRef.current);
-  }, [data.country, data.zip, data.city, data.state, productKey]);
+  }, [data.country, data.zip, data.city, data.state, productKey, retryCount]);
 
   function pickRate(rate) {
     setSelectedRate(rate);
@@ -141,7 +142,12 @@ export default function ShippingForm({ data, onChange, onSubmit, onBack, loading
         )}
 
         {canFetchRates && ratesError && (
-          <p className="text-xs text-red-500 bg-red-50 rounded-xl px-4 py-3">{ratesError}</p>
+          <div className="flex items-center justify-between gap-3 text-xs text-red-500 bg-red-50 rounded-xl px-4 py-3">
+            <span>{ratesError}</span>
+            <button type="button" onClick={() => setRetryCount(c => c + 1)} className="font-semibold underline whitespace-nowrap hover:text-red-700">
+              Retry
+            </button>
+          </div>
         )}
 
         {rates.length > 0 && (
