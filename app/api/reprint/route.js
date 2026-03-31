@@ -27,7 +27,7 @@ export async function POST(req) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const product = PRODUCT_VARIANTS[original.productType] ?? PRODUCT_VARIANTS['poster-16x20'];
 
-    const isDemo = !process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_demo';
+    const isDemo = PAYMENT_PROVIDER !== 'paypal' && (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_demo');
 
     if (isDemo) {
       // Create + fulfill immediately in demo mode
