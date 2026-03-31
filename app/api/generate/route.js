@@ -5,6 +5,7 @@ import { STYLE_PROMPTS } from '@/lib/replicate';
 import { prisma } from '@/lib/prisma';
 import { runGenerationPipeline } from '@/lib/generation';
 import { logger } from '@/lib/logger';
+import { rateLimit } from '@/lib/rateLimit';
 
 const FREE_LIMIT        = 3;
 const DEMO_EMAIL        = 'demo@artifyai.com';
@@ -22,6 +23,17 @@ async function getOrCreateGuestUser() {
 export async function POST(req) {
   const session    = await getSession();
   const cookieStore = cookies();
+
+  // Rate limit authenticated users: 10 generations per hour
+  if (session) {
+    const { allowed } = rateLimit(`generate:${session.id}`, 10, 60 * 60 * 1000);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Generation limit reached. Please try again in an hour.' },
+        { status: 429 }
+      );
+    }
+  }
 
   // ── Guest (not logged in): 1 generation per session ──────────────────────
   if (!session) {

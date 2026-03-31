@@ -32,8 +32,8 @@ async function checkForHuman(buffer, mimeType) {
     const answer = response.choices[0]?.message?.content?.trim().toUpperCase();
     return answer === 'YES';
   } catch (err) {
-    console.error('[upload] human-check error:', err.message);
-    return false; // fail open so a vision API error doesn't block all uploads
+    console.error('[upload] human-check error — failing closed:', err.message);
+    return true; // fail closed: if vision API is down, block upload to maintain ethics guard
   }
 }
 
