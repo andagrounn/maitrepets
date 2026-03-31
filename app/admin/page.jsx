@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback, Fragment, useRef } from 'react';
 import { PRODUCT_PRICES, URGENCY_FEES } from '@/lib/pricing';
 
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || 'maitrepets-admin-2025';
+const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY;
 const HEADERS   = { 'x-admin-key': ADMIN_KEY, 'Content-Type': 'application/json' };
 
 // ─── Status config ────────────────────────────────────────────────────────────
