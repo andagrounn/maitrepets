@@ -13,7 +13,7 @@ export async function POST(req) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const { orderId } = await req.json();
+    const { orderId, productKey: overrideProductKey } = await req.json();
     if (!orderId) return NextResponse.json({ error: 'orderId required' }, { status: 400 });
 
     const original = await prisma.order.findUnique({
@@ -25,7 +25,10 @@ export async function POST(req) {
     if (original.userId !== session.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const product = PRODUCT_VARIANTS[original.productType] ?? PRODUCT_VARIANTS['poster-16x20'];
+    const resolvedProductKey = overrideProductKey || original.productType || 'poster-16x20';
+    const sizeMatch = resolvedProductKey.match(/(\d+x\d+)/);
+    const resolvedSize = sizeMatch ? sizeMatch[1] : (original.size || '16x20');
+    const product = PRODUCT_VARIANTS[resolvedProductKey] ?? PRODUCT_VARIANTS['poster-16x20'];
 
     const isDemo = PAYMENT_PROVIDER !== 'paypal' && (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_demo');
 
@@ -64,8 +67,8 @@ export async function POST(req) {
       data: {
         userId:          session.id,
         imageId:         original.imageId,
-        productType:     original.productType,
-        size:            original.size,
+        productType:     resolvedProductKey,
+        size:            resolvedSize,
         price:           product.price,
         status:          'pending',
         frameColor:      original.frameColor,
