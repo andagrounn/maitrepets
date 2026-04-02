@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { fulfillOrder } from '@/lib/fulfillment';
 import { logger } from '@/lib/logger';
 import { sendEmail, orderConfirmationEmail } from '@/lib/email';
+import { getSession } from '@/lib/auth';
 
 /**
  * Called from the success page with ?session_id=...
@@ -11,6 +12,9 @@ import { sendEmail, orderConfirmationEmail } from '@/lib/email';
  */
 export async function POST(req) {
   try {
+    const userSession = await getSession();
+    if (!userSession) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const { sessionId, orderId } = await req.json();
 
     if (!sessionId || !orderId) {
@@ -26,6 +30,7 @@ export async function POST(req) {
     // Find order
     const order = await prisma.order.findUnique({ where: { id: orderId }, include: { image: true } });
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    if (order.userId !== userSession.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     // Verify the amount Stripe charged matches what we expect
     const paidAmount     = (session.amount_total ?? 0) / 100;

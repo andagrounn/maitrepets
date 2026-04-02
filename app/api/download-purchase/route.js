@@ -9,7 +9,7 @@ const DOWNLOAD_PRICE = 12;
 
 export async function POST(req) {
   const ip = getClientIp(req);
-  const { allowed, resetMs } = rateLimit(`dl-purchase:${ip}`, 10, 60 * 60 * 1000);
+  const { allowed, resetMs } = await rateLimit(`dl-purchase:${ip}`, 10, 60 * 60 * 1000);
   if (!allowed) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again later.' },

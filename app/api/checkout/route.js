@@ -12,7 +12,7 @@ const PAYMENT_PROVIDER = process.env.PAYMENT_PROVIDER || 'stripe';
 
 export async function POST(req) {
   const ip = getClientIp(req);
-  const { allowed, resetMs } = rateLimit(`checkout:${ip}`, 10, 60 * 60 * 1000);
+  const { allowed, resetMs } = await rateLimit(`checkout:${ip}`, 10, 60 * 60 * 1000);
   if (!allowed) {
     return NextResponse.json(
       { error: 'Too many checkout attempts. Please try again later.' },
@@ -26,7 +26,10 @@ export async function POST(req) {
   try {
     const { imageId, generatedUrl: clientUrl, productKey, price, shipping, extras, frameColor } = await req.json();
     // Always fetch generatedUrl server-side so it's never needed from the client
-    const imageRecord = imageId ? await prisma.image.findUnique({ where: { id: imageId }, select: { generatedUrl: true } }) : null;
+    const imageRecord = imageId ? await prisma.image.findUnique({ where: { id: imageId }, select: { generatedUrl: true, userId: true } }) : null;
+    if (imageRecord && imageRecord.userId !== session.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
     const generatedUrl = imageRecord?.generatedUrl || clientUrl || '';
 
     if (!imageId || !price) {

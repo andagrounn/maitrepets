@@ -66,7 +66,8 @@ export async function POST(req) {
 
     const isDemo = process.env.AWS_ACCESS_KEY_ID === 'demo';
     const ownerId = session?.id || 'guest';
-    const key = `uploads/${ownerId}/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 100);
+    const key = `uploads/${ownerId}/${Date.now()}-${safeName}`;
 
     let originalUrl;
     if (isDemo) {

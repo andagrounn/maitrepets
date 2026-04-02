@@ -37,6 +37,7 @@ export async function POST(req) {
         include: { image: true },
       });
       if (!originalOrder) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      if (originalOrder.userId !== session.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
       const surpriseStyle = pickRandomStyle(originalOrder.image?.style);
       const imageUrl      = originalOrder.image?.originalUrl;

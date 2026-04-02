@@ -1,6 +1,13 @@
 'use client';
 import { useEffect, useState, useCallback, Fragment, useRef } from 'react';
 import { PRODUCT_PRICES, URGENCY_FEES } from '@/lib/pricing';
+import DOMPurify from 'isomorphic-dompurify';
+
+// Attach the stored admin key to every /api/admin/* request
+function adminHeaders(extra = {}) {
+  const key = typeof window !== 'undefined' ? sessionStorage.getItem('admin_key') : null;
+  return { 'Content-Type': 'application/json', ...(key ? { 'x-admin-key': key } : {}), ...extra };
+}
 
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -269,7 +276,7 @@ function OrderEditModal({ order, onClose, onSaved }) {
     setSaving(true);
     const payload = { orderId: order.id, ...fields };
     if (canEditItems) payload.price = Number(newPrice);
-    await fetch('/api/admin/order', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    await fetch('/api/admin/order', { method: 'PATCH', headers: adminHeaders(), body: JSON.stringify(payload) });
     setSaving(false);
     onSaved();
     onClose();
@@ -739,10 +746,10 @@ function ProfitBreakdownCards() {
 
 // ─── Overview tab ─────────────────────────────────────────────────────────────
 function OverviewTab({ data, setTab }) {
-  const { stats, revenueByDay, themeCounts, productCounts, refundRequests, orders } = data;
-  const revenueEntries = Object.entries(revenueByDay).sort((a,b) => a[0].localeCompare(b[0])).slice(-14);
+  const { stats, revenueByDay, themeCounts, productCounts, refundRequests, orders = [] } = data;
+  const revenueEntries = Object.entries(revenueByDay ?? {}).sort((a,b) => a[0].localeCompare(b[0])).slice(-14);
   const maxRevenue     = Math.max(...revenueEntries.map(([,v]) => v), 1);
-  const topThemes      = Object.entries(themeCounts).sort((a,b) => b[1]-a[1]).slice(0, 6);
+  const topThemes      = Object.entries(themeCounts ?? {}).sort((a,b) => b[1]-a[1]).slice(0, 6);
   const errorOrders    = orders.filter(o => ['paid_fulfillment_failed','paid_printful_failed'].includes(o.status));
 
   const KPIs = [
@@ -813,7 +820,7 @@ function OverviewTab({ data, setTab }) {
           </div>
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Products</h3>
           <div className="space-y-1">
-            {Object.entries(productCounts).sort((a,b) => b[1]-a[1]).map(([p, c]) => (
+            {Object.entries(productCounts ?? {}).sort((a,b) => b[1]-a[1]).map(([p, c]) => (
               <div key={p} className="flex justify-between text-xs">
                 <span className="text-gray-400 capitalize">{p?.replace(/-/g,' ')}</span>
                 <span className="text-white font-medium">{c}</span>
@@ -1281,14 +1288,14 @@ function RefundsTab({ refundRequests, onRefresh }) {
 
   async function approve(order) {
     setProcessing(p => ({ ...p, [order.id]: 'approving' }));
-    await fetch('/api/admin/order', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id, status: 'refund_approved' }) });
+    await fetch('/api/admin/order', { method: 'PATCH', headers: adminHeaders(), body: JSON.stringify({ orderId: order.id, status: 'refund_approved' }) });
     setProcessing(p => ({ ...p, [order.id]: null }));
     setEmailing({ email: order.user?.email, template: 'refund_approved', order });
     onRefresh();
   }
 
   async function deny(order) {
-    await fetch('/api/admin/order', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id, status: 'refund_denied' }) });
+    await fetch('/api/admin/order', { method: 'PATCH', headers: adminHeaders(), body: JSON.stringify({ orderId: order.id, status: 'refund_denied' }) });
     setEmailing({ email: order.user?.email, template: 'refund_denied', order });
     onRefresh();
   }
@@ -1415,8 +1422,8 @@ function MessagingTab({ userList }) {
   async function fetchEmails() {
     setLoadingMail(true);
     const [inRes, sentRes] = await Promise.all([
-      fetch('/api/admin/emails?direction=received', { headers: { 'Content-Type': 'application/json' } }),
-      fetch('/api/admin/emails?direction=sent',     { headers: { 'Content-Type': 'application/json' } }),
+      fetch('/api/admin/emails?direction=received', { headers: adminHeaders() }),
+      fetch('/api/admin/emails?direction=sent',     { headers: adminHeaders() }),
     ]);
     const inData   = await inRes.json();
     const sentData = await sentRes.json();
@@ -1430,7 +1437,7 @@ function MessagingTab({ userList }) {
 
   async function markRead(email) {
     if (email.direction === 'received' && !email.read) {
-      await fetch('/api/admin/emails', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: email.id }) });
+      await fetch('/api/admin/emails', { method: 'PATCH', headers: adminHeaders(), body: JSON.stringify({ id: email.id }) });
       setInbox(prev => prev.map(e => e.id === email.id ? { ...e, read: true } : e));
       setUnread(u => Math.max(0, u - 1));
     }
@@ -1496,7 +1503,7 @@ function MessagingTab({ userList }) {
           </div>
           <div className="p-6">
             {openEmail.body.includes('<') ? (
-              <div className="prose prose-invert max-w-none text-sm" dangerouslySetInnerHTML={{ __html: openEmail.body }} />
+              <div className="prose prose-invert max-w-none text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(openEmail.body) }} />
             ) : (
               <pre className="text-gray-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">{openEmail.body}</pre>
             )}
@@ -1833,7 +1840,7 @@ function LogsTab({ highlightLogId = null, onHighlightClear = null }) {
   async function clearLevel(lvl) {
     if (!confirm(`Clear all ${lvl} logs?`)) return;
     setClearing(true);
-    await fetch(`/api/admin/logs?level=${lvl}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+    await fetch(`/api/admin/logs?level=${lvl}`, { method: 'DELETE', headers: adminHeaders() });
     setClearing(false);
     fetchLogs();
   }
@@ -1999,7 +2006,7 @@ function GenerationBankTab() {
   const [confirmId, setConfirmId] = useState(null); // id of image pending delete modal
 
   useEffect(() => {
-    fetch('/api/admin/generations', { headers: { 'Content-Type': 'application/json' } })
+    fetch('/api/admin/generations', { headers: adminHeaders() })
       .then(r => r.json())
       .then(d => { setImages(d.images || []); setLoading(false); })
       .catch(() => setLoading(false));
@@ -2055,7 +2062,7 @@ function GenerationBankTab() {
   async function deleteImage(id) {
     setDeleting(id);
     try {
-      const res = await fetch('/api/admin/generations', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      const res = await fetch('/api/admin/generations', { method: 'DELETE', headers: adminHeaders(), body: JSON.stringify({ id }) });
       if (!res.ok) throw new Error('Delete failed');
       setImages(prev => prev.filter(img => img.id !== id));
       if (lightbox?.img?.id === id) setLightbox(null);
@@ -2348,11 +2355,13 @@ function AdminLogin({ onAuth }) {
   const [error, setError]   = useState('');
   const [show, setShow]     = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    if (key === (process.env.NEXT_PUBLIC_ADMIN_KEY || '8133089')) {
-      sessionStorage.setItem('admin_auth', key);
-      onAuth(key);
+    const res = await fetch('/api/admin/stats', { headers: { 'x-admin-key': key }, credentials: 'include' });
+    if (res.ok) {
+      sessionStorage.setItem('admin_auth', 'true');
+      sessionStorage.setItem('admin_key', key);
+      onAuth();
     } else {
       setError('Invalid secret key.');
       setKey('');
@@ -2448,7 +2457,7 @@ function SettingsTab() {
   const [modelSaved,  setModelSaved]  = useState(false);
 
   useEffect(() => {
-    fetch('/api/admin/config', { headers: { 'Content-Type': 'application/json' } })
+    fetch('/api/admin/config', { headers: adminHeaders() })
       .then(r => r.json())
       .then(d => setActiveModel(d.config?.ai_model || 'gpt-image-1'))
       .catch(() => setActiveModel('gpt-image-1'));
@@ -2602,7 +2611,7 @@ export default function AdminPage() {
 
   const pollUnread = useCallback(async () => {
     try {
-      const res  = await fetch('/api/admin/emails', { headers: { 'Content-Type': 'application/json' } });
+      const res  = await fetch('/api/admin/emails', { headers: adminHeaders() });
       const json = await res.json();
       const count = json.unreadCount || 0;
       setUnreadEmails(count);
@@ -2642,7 +2651,7 @@ export default function AdminPage() {
 
   const pollErrors = useCallback(async () => {
     try {
-      const res  = await fetch('/api/admin/logs?level=error&limit=3', { headers: { 'Content-Type': 'application/json' } });
+      const res  = await fetch('/api/admin/logs?level=error&limit=3', { headers: adminHeaders() });
       const json = await res.json();
       const total = json.total || 0;
       if (prevErrorTotal.current === null) {
@@ -2701,7 +2710,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     const stored = sessionStorage.getItem('admin_auth');
-    if (stored === (process.env.NEXT_PUBLIC_ADMIN_KEY || '8133089')) {
+    if (stored === 'true') {
       setAuthed(true);
       return;
     }
@@ -2710,7 +2719,7 @@ export default function AdminPage() {
       .then(r => r.json())
       .then(d => {
         if (d.user?.isSuperAdmin) {
-          sessionStorage.setItem('admin_auth', process.env.NEXT_PUBLIC_ADMIN_KEY || '8133089');
+          sessionStorage.setItem('admin_auth', 'true');
           setAuthed(true);
         } else {
           setLoading(false);
@@ -2722,7 +2731,8 @@ export default function AdminPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await fetch('/api/admin/stats', { headers: { 'Content-Type': 'application/json' } });
+      const res  = await fetch('/api/admin/stats', { headers: adminHeaders(), credentials: 'include' });
+      if (!res.ok) { setLoading(false); return; }
       const json = await res.json();
       setData(json);
     } finally {

@@ -26,7 +26,7 @@ export async function POST(req) {
 
   // Rate limit authenticated users: 10 generations per hour
   if (session) {
-    const { allowed } = rateLimit(`generate:${session.id}`, 10, 60 * 60 * 1000);
+    const { allowed } = await rateLimit(`generate:${session.id}`, 10, 60 * 60 * 1000);
     if (!allowed) {
       return NextResponse.json(
         { error: 'Generation limit reached. Please try again in an hour.' },
@@ -88,6 +88,10 @@ export async function POST(req) {
     if (session) {
       // Logged-in user: update or create image record
       if (imageId) {
+        const existing = await prisma.image.findUnique({ where: { id: imageId } });
+        if (!existing || existing.userId !== session.id) {
+          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
         await prisma.image.update({
           where: { id: imageId },
           data:  { generatedUrl, status: 'generated', prompt: finalPrompt || styleConfig.prompt },

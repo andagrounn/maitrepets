@@ -8,7 +8,7 @@ const GUEST_SYSTEM_EMAIL = 'guest@system.maitrepets.com';
 
 export async function POST(req) {
   const ip = getClientIp(req);
-  const { allowed, resetMs } = rateLimit(`signup:${ip}`, 10, 60 * 60 * 1000);
+  const { allowed, resetMs } = await rateLimit(`signup:${ip}`, 10, 60 * 60 * 1000);
   if (!allowed) {
     return NextResponse.json(
       { error: 'Too many signup attempts. Please try again later.' },
