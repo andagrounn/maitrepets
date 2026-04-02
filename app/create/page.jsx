@@ -475,7 +475,7 @@ function CreatePageInner() {
                         onContextMenu={e => e.preventDefault()}
                         draggable={false}
                       />
-                      {/* Watermark — centered */}
+                      {/* Watermark — centered (commented out)
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none rounded-2xl overflow-hidden">
                         <span
                           style={{
@@ -491,6 +491,7 @@ function CreatePageInner() {
                           maitrepets.com
                         </span>
                       </div>
+                      */}
                       {/* Brand tag — bottom right (commented out)
                       <div className="absolute bottom-3 right-3 pointer-events-none select-none">
                         <span
