@@ -717,7 +717,7 @@ function CreatePageInner() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="card p-8 max-w-sm w-full shadow-2xl">
             <div className="text-center mb-6">
-              <div className="text-4xl mb-3">🐶</div>
+              <div className="text-4xl mb-3">🎨</div>
               <h3 className="text-xl font-bold text-gray-900">Sign in to continue</h3>
               <p className="text-gray-500 text-sm mt-1">Free account · 3 generations · No credit card required</p>
             </div>

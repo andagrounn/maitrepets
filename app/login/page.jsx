@@ -50,7 +50,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="relative z-10">
           <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-white">
-            <span>🐶</span>
+            <span>🎨</span>
             <span>Maîtrepets</span>
           </Link>
         </div>
@@ -102,7 +102,7 @@ export default function LoginPage() {
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold">
-              <span>🐶</span>
+              <span>🎨</span>
               <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Maîtrepets</span>
             </Link>
           </div>
