@@ -4,7 +4,6 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(req) {
   const session = await getSession();
-  if (!session) return new NextResponse('Unauthorized', { status: 401 });
 
   const { searchParams } = new URL(req.url);
   const imageId = searchParams.get('id');
@@ -12,6 +11,13 @@ export async function GET(req) {
 
   const image = await prisma.image.findUnique({ where: { id: imageId } });
   if (!image?.generatedUrl) return new NextResponse('Not found', { status: 404 });
+
+  // Allow guest images (status === 'guest') without auth.
+  // All other images require a logged-in session that owns the record.
+  if (image.status !== 'guest') {
+    if (!session) return new NextResponse('Unauthorized', { status: 401 });
+    if (image.userId !== session.id) return new NextResponse('Forbidden', { status: 403 });
+  }
 
   // Fetch from S3 server-side — never expose the real URL to the browser
   const upstream = await fetch(image.generatedUrl);
