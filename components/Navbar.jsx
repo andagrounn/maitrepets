@@ -84,6 +84,15 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
+            <svg width="22" height="22" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <path d="M50 10 C28 10 10 26 10 46 C10 62 20 74 36 78 C40 79 42 77 42 73 C42 71 42 69 42 67 C42 64 44 62 47 62 L60 62 C72 62 90 54 90 40 C90 23 72 10 50 10 Z" fill="#9333ea"/>
+              <circle cx="28" cy="38" r="6" fill="white"/>
+              <circle cx="42" cy="24" r="6" fill="white"/>
+              <circle cx="58" cy="20" r="6" fill="white"/>
+              <circle cx="72" cy="30" r="6" fill="white"/>
+              <circle cx="78" cy="46" r="6" fill="white"/>
+              <ellipse cx="32" cy="70" rx="7" ry="5" fill="#7e22ce"/>
+            </svg>
             <span className="text-xl font-black bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent tracking-tight">
               Maîtrepets
             </span>
