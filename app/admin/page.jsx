@@ -116,6 +116,7 @@ const Icon = {
   Truck:     () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
   Eye:       () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
   ChevronDown: () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+  Trash2:      () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>,
 };
 
 // ─── Email modal ──────────────────────────────────────────────────────────────
@@ -1199,11 +1200,26 @@ function OrdersTab({ orders, onRefresh }) {
 }
 
 // ─── Customers tab ────────────────────────────────────────────────────────────
-function CustomersTab({ userList }) {
-  const [search, setSearch]   = useState('');
+function CustomersTab({ userList, onRefresh }) {
+  const [search, setSearch]     = useState('');
   const [selected, setSelected] = useState(null);
   const [emailing, setEmailing] = useState(null);
-  const [sortBy, setSortBy]   = useState('ltv');
+  const [sortBy, setSortBy]     = useState('ltv');
+  const [confirmDelete, setConfirmDelete] = useState(null); // user object to delete
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    await fetch('/api/admin/user', {
+      method: 'DELETE',
+      headers: adminHeaders(),
+      body: JSON.stringify({ userId: confirmDelete.id }),
+    });
+    setDeleting(false);
+    setConfirmDelete(null);
+    onRefresh();
+  }
 
   const filtered = userList
     .filter(u => !search || u.email.toLowerCase().includes(search.toLowerCase()) || u.name?.toLowerCase().includes(search.toLowerCase()))
@@ -1219,6 +1235,27 @@ function CustomersTab({ userList }) {
       )}
       {emailing && (
         <EmailModal defaultTo={emailing} defaultTemplate="custom" onClose={() => setEmailing(null)} onSent={() => {}} />
+      )}
+
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 border border-red-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <p className="text-white font-bold text-lg mb-1">Delete customer?</p>
+            <p className="text-gray-400 text-sm mb-1">{confirmDelete.name || confirmDelete.email}</p>
+            <p className="text-red-400 text-xs mb-5">This permanently deletes the account, all orders, and all images. Cannot be undone.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDelete(null)}
+                className="flex-1 px-4 py-2 rounded-xl border border-white/10 text-gray-400 hover:text-white text-sm transition-all">
+                Cancel
+              </button>
+              <button onClick={handleDelete} disabled={deleting}
+                className="flex-1 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-all disabled:opacity-50">
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="flex gap-3 mb-4 flex-wrap items-center">
@@ -1266,10 +1303,14 @@ function CustomersTab({ userList }) {
                 <td className="px-4 py-3 font-semibold text-emerald-400">${u.ltv.toFixed(2)}</td>
                 <td className="px-4 py-3 text-gray-500 text-xs">{u.lastOrderAt ? new Date(u.lastOrderAt).toLocaleDateString() : '—'}</td>
                 <td className="px-4 py-3 text-gray-500 text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
-                <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                <td className="px-4 py-3 flex gap-2" onClick={e => e.stopPropagation()}>
                   <button onClick={() => setEmailing(u.email)}
                     className="p-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/40 text-purple-400 hover:text-purple-200 transition-all" title="Email customer">
                     <Icon.Mail />
+                  </button>
+                  <button onClick={() => setConfirmDelete(u)}
+                    className="p-1.5 rounded-lg bg-red-600/20 hover:bg-red-600/40 text-red-400 hover:text-red-200 transition-all" title="Delete customer">
+                    <Icon.Trash2 />
                   </button>
                 </td>
               </tr>
@@ -3089,7 +3130,7 @@ export default function AdminPage() {
             <>
               {tab === 'overview'  && <OverviewTab  data={data} setTab={setTab} />}
               {tab === 'orders'    && <OrdersTab    orders={data.orders}   onRefresh={fetchData} />}
-              {tab === 'customers' && <CustomersTab userList={data.userList} />}
+              {tab === 'customers' && <CustomersTab userList={data.userList} onRefresh={fetchData} />}
               {tab === 'refunds'   && <RefundsTab   refundRequests={data.refundRequests} onRefresh={fetchData} />}
               {tab === 'messaging' && <MessagingTab userList={data.userList} />}
               {tab === 'logs'      && <LogsTab highlightLogId={highlightLogId} onHighlightClear={() => setHighlightLogId(null)} />}
