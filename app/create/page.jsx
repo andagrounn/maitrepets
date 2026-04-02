@@ -190,6 +190,7 @@ function CreatePageInner() {
 
       setGenProgress(100);
       await new Promise((r) => setTimeout(r, 400));
+      if (genData.imageId) setImageId(genData.imageId);
       setGeneratedUrl(genData.output);
       setGenHash(genData.hash || null);
       setStep(3);
