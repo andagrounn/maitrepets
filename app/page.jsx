@@ -158,15 +158,10 @@ export default function Home() {
             </h1>
 
             {/* Subtitle */}
-            <p className="fade-up text-lg md:text-2xl text-gray-400 mb-10 max-w-md mx-auto leading-relaxed" style={{ animationDelay: '1.05s' }}>
+            <p className="fade-up text-base md:text-2xl text-gray-400 mb-8 max-w-lg mx-auto px-2" style={{ animationDelay: '1.05s' }}>
               Turn your pet into a{' '}
-              <span className="font-bold" style={{
-                background: 'linear-gradient(90deg, #a855f7, #ec4899)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}>masterpiece</span>
-              .<br className="hidden sm:block" /> Printed &amp; delivered to your door.
+              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold">masterpiece</span>
+              . Printed &amp; delivered to your door.
             </p>
 
             {/* CTAs */}
@@ -181,17 +176,9 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Social proof dots */}
-            <div className="fade-up flex items-center justify-center gap-4 mt-8" style={{ animationDelay: '1.45s' }}>
-              <div className="flex -space-x-2">
-                {['🐶','🐱','🐰','🐻'].map((e, i) => (
-                  <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-800 to-pink-800 border-2 border-[#0a0a0f] flex items-center justify-center text-sm">{e}</div>
-                ))}
-              </div>
-              <p className="text-gray-500 text-sm">
-                <span className="text-gray-300 font-semibold">500+</span> portraits created · Free preview · 16 styles
-              </p>
-            </div>
+            <p className="fade-up text-gray-600 text-sm mt-6" style={{ animationDelay: '1.45s' }}>
+              Free preview · No credit card required · 16 art styles
+            </p>
           </div>
 
           {/* Scroll indicator */}
