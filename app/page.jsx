@@ -161,7 +161,7 @@ export default function Home() {
             <p className="fade-up text-base md:text-2xl text-gray-400 mb-8 max-w-lg mx-auto px-2" style={{ animationDelay: '1.05s' }}>
               Turn your pet into a{' '}
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold">masterpiece</span>
-              . Printed &amp; delivered to your door.
+              . Printed &amp; delivered to your doorstep.
             </p>
 
             {/* CTAs */}
