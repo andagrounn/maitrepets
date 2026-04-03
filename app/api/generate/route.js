@@ -78,8 +78,7 @@ export async function POST(req) {
       await new Promise((r) => setTimeout(r, 2000));
       generatedUrl = 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&q=80';
     } else {
-      const quality = session ? 'high' : 'low';
-      ({ generatedUrl, finalPrompt } = await runGenerationPipeline(imageUrl, style, quality));
+      ({ generatedUrl, finalPrompt } = await runGenerationPipeline(imageUrl, style));
     }
 
     if (!generatedUrl) throw new Error('No output URL from any generation model');
