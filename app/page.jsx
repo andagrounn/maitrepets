@@ -40,12 +40,10 @@ const MARQUEE = [
 ];
 
 const STYLES_GRID = [
-  { url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&q=80', pet: '', style: 'Mosaic',        emoji: '🎨' },
-  { url: 'https://images.unsplash.com/photo-1541512416146-3cf58d6b27cc?w=600&q=80', pet: '', style: 'Renaissance',   emoji: '🖼️' },
-  { url: 'https://images.unsplash.com/photo-1604328471151-b52226907017?w=600&q=80', pet: '', style: 'Rococo',        emoji: '🎀' },
-  { url: 'https://images.unsplash.com/photo-1549490349-8643362247b5?w=600&q=80',    pet: '', style: 'Art Informel',  emoji: '🌊' },
-  { url: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=600&q=80',    pet: '', style: 'Cubism',        emoji: '🔲' },
-  { url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600&q=80', pet: '', style: 'Vernacular Art',emoji: '🏚️' },
+  ...GENERATED,
+  { url: `${S3}/generated/1774629095050-xzkiul0l8fn.png`,                               pet: 'Buddy', style: 'Art Informel', emoji: '🌊' },
+  { url: `${S3}/generated/1774643764809-ln2zqseugf8.png`,                               pet: 'Max',   style: 'Cubism',      emoji: '🔲' },
+  { url: `${S3}/generated/1774622686162-jetc92ep4u.png`,                                pet: 'Mochi', style: 'Vernacular Art', emoji: '🏚️' },
 ];
 
 const testimonials = [
