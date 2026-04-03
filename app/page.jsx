@@ -83,6 +83,36 @@ export default function Home() {
           0%, 100% { transform: rotate(-2deg) translateY(0px); }
           50%       { transform: rotate(-2deg) translateY(-11px); }
         }
+        @keyframes heroFloat1 {
+          0%, 100% { transform: rotate(-8deg) translateY(0px) scale(1); }
+          50%       { transform: rotate(-6deg) translateY(-20px) scale(1.02); }
+        }
+        @keyframes heroFloat2 {
+          0%, 100% { transform: rotate(7deg) translateY(0px) scale(1); }
+          50%       { transform: rotate(5deg) translateY(-16px) scale(1.02); }
+        }
+        @keyframes heroFloat3 {
+          0%, 100% { transform: rotate(-4deg) translateY(0px) scale(1); }
+          50%       { transform: rotate(-6deg) translateY(-22px) scale(1.01); }
+        }
+        @keyframes heroFloat4 {
+          0%, 100% { transform: rotate(10deg) translateY(0px) scale(1); }
+          50%       { transform: rotate(8deg) translateY(-14px) scale(1.02); }
+        }
+        @keyframes sparkle {
+          0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+          50%       { opacity: 1; transform: scale(1) rotate(180deg); }
+        }
+        @keyframes aurora {
+          0%   { transform: translateX(-10%) translateY(0%) rotate(0deg); opacity: 0.4; }
+          33%  { transform: translateX(5%)  translateY(-5%) rotate(2deg); opacity: 0.6; }
+          66%  { transform: translateX(-5%) translateY(3%) rotate(-1deg); opacity: 0.5; }
+          100% { transform: translateX(-10%) translateY(0%) rotate(0deg); opacity: 0.4; }
+        }
+        @keyframes shimmer {
+          0%   { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
         .letter-clip {
           display: inline-block;
           overflow: hidden;
@@ -105,6 +135,12 @@ export default function Home() {
         .float-1 { animation: float1 5s   ease-in-out infinite; }
         .float-2 { animation: float2 6s   ease-in-out infinite 0.8s; }
         .float-3 { animation: float3 5.5s ease-in-out infinite 1.6s; }
+        .hero-float-1 { animation: heroFloat1 6s ease-in-out infinite; }
+        .hero-float-2 { animation: heroFloat2 7s ease-in-out infinite 1s; }
+        .hero-float-3 { animation: heroFloat3 5.5s ease-in-out infinite 0.5s; }
+        .hero-float-4 { animation: heroFloat4 6.5s ease-in-out infinite 1.5s; }
+        .sparkle { animation: sparkle ease-in-out infinite; }
+        .aurora  { animation: aurora 12s ease-in-out infinite; }
         .polaroid {
           transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
           cursor: pointer;
@@ -114,7 +150,29 @@ export default function Home() {
           z-index: 50 !important;
           box-shadow: 0 50px 100px rgba(0,0,0,0.8), 0 0 60px rgba(168,85,247,0.3) !important;
         }
-
+        .hero-card {
+          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .hero-card:hover {
+          transform: rotate(0deg) scale(1.08) translateY(-12px) !important;
+          z-index: 50 !important;
+          box-shadow: 0 40px 80px rgba(0,0,0,0.9), 0 0 50px rgba(168,85,247,0.5) !important;
+        }
+        .cta-glow {
+          position: relative;
+        }
+        .cta-glow::before {
+          content: '';
+          position: absolute;
+          inset: -2px;
+          border-radius: 18px;
+          background: linear-gradient(90deg, #9333ea, #ec4899, #9333ea);
+          background-size: 200% auto;
+          animation: shimmer 2.5s linear infinite;
+          z-index: -1;
+          filter: blur(8px);
+          opacity: 0.7;
+        }
       `}</style>
 
       <Navbar />
@@ -124,36 +182,127 @@ export default function Home() {
         {/* ── HERO ── */}
         <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-16 overflow-hidden">
 
-          {/* ambient glows */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-purple-700/20 rounded-full blur-[140px]" />
-            <div className="absolute bottom-1/4 left-1/4 w-[350px] h-[350px] bg-pink-700/15 rounded-full blur-[100px]" />
+          {/* Aurora background layers */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="aurora absolute w-[120%] h-[70%] top-[-10%] left-[-10%] rounded-full opacity-40"
+              style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(139,92,246,0.35) 0%, rgba(168,85,247,0.15) 40%, transparent 70%)' }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full"
+              style={{ background: 'radial-gradient(circle, rgba(109,40,217,0.18) 0%, rgba(236,72,153,0.08) 50%, transparent 70%)' }} />
+            <div className="absolute bottom-0 left-0 right-0 h-[400px]"
+              style={{ background: 'linear-gradient(0deg, rgba(10,10,15,1) 0%, transparent 100%)' }} />
+            {/* Pink accent glow bottom-left */}
+            <div className="absolute bottom-1/3 left-1/5 w-[500px] h-[300px] rounded-full opacity-30"
+              style={{ background: 'radial-gradient(ellipse, rgba(236,72,153,0.3) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+            {/* Teal accent top-right */}
+            <div className="absolute top-1/4 right-1/5 w-[300px] h-[300px] rounded-full opacity-20"
+              style={{ background: 'radial-gradient(ellipse, rgba(99,102,241,0.4) 0%, transparent 70%)', filter: 'blur(60px)' }} />
           </div>
 
-          {/* dot grid */}
-          <div className="absolute inset-0 opacity-[0.06] pointer-events-none"
-            style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '52px 52px' }} />
+          {/* Dot grid */}
+          <div className="absolute inset-0 opacity-[0.045] pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(circle, #a78bfa 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
 
-          {/* center */}
-          <div className="relative z-10 text-center max-w-3xl">
+          {/* ── Floating art cards (left side) ── */}
+          <div className="absolute left-[2%] xl:left-[5%] top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-5 z-10">
+            <div className="hero-card hero-float-1" style={{ transform: 'rotate(-8deg)' }}>
+              <div style={{
+                padding: '8px', borderRadius: '6px',
+                background: 'linear-gradient(145deg, #1a0a2e, #2d1b4e)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(139,92,246,0.2), inset 0 1px 0 rgba(255,255,255,0.06)',
+                border: '1px solid rgba(139,92,246,0.2)',
+              }}>
+                <img src={`${S3}/generated/1774673789483-zzvbnopfst.png`} alt="Mosaic"
+                  style={{ width: '140px', height: '175px', objectFit: 'cover', borderRadius: '3px', display: 'block', filter: 'saturate(1.15)' }} />
+                <div style={{ textAlign: 'center', paddingTop: '6px', fontSize: '10px', color: 'rgba(167,139,250,0.8)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Mosaic</div>
+              </div>
+            </div>
+            <div className="hero-card hero-float-3" style={{ transform: 'rotate(-4deg)', marginLeft: '28px' }}>
+              <div style={{
+                padding: '8px', borderRadius: '6px',
+                background: 'linear-gradient(145deg, #1a0a2e, #2d1b4e)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(236,72,153,0.15), inset 0 1px 0 rgba(255,255,255,0.06)',
+                border: '1px solid rgba(236,72,153,0.2)',
+              }}>
+                <img src={`${S3}/generated/1774629095050-xzkiul0l8fn.png`} alt="Art Informel"
+                  style={{ width: '120px', height: '150px', objectFit: 'cover', borderRadius: '3px', display: 'block', filter: 'saturate(1.1)' }} />
+                <div style={{ textAlign: 'center', paddingTop: '6px', fontSize: '10px', color: 'rgba(251,113,133,0.8)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Art Informel</div>
+              </div>
+            </div>
+          </div>
 
-            {/* badge */}
-            <div className="fade-up inline-flex items-center gap-2 bg-purple-900/50 border border-purple-500/30 text-purple-300 text-xs font-semibold px-4 py-2 rounded-full mb-10 backdrop-blur-sm tracking-widest uppercase" style={{ animationDelay: '0.1s' }}>
-              ✦ AI Fine Art Pet Portraits
+          {/* ── Floating art cards (right side) ── */}
+          <div className="absolute right-[2%] xl:right-[5%] top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-5 z-10">
+            <div className="hero-card hero-float-2" style={{ transform: 'rotate(7deg)' }}>
+              <div style={{
+                padding: '8px', borderRadius: '6px',
+                background: 'linear-gradient(145deg, #1a0a2e, #2d1b4e)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(139,92,246,0.2), inset 0 1px 0 rgba(255,255,255,0.06)',
+                border: '1px solid rgba(139,92,246,0.2)',
+              }}>
+                <img src={`${S3}/generated/1774637301839-ij88yovb95n.png`} alt="Renaissance"
+                  style={{ width: '140px', height: '175px', objectFit: 'cover', borderRadius: '3px', display: 'block', filter: 'saturate(1.15)' }} />
+                <div style={{ textAlign: 'center', paddingTop: '6px', fontSize: '10px', color: 'rgba(167,139,250,0.8)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Renaissance</div>
+              </div>
+            </div>
+            <div className="hero-card hero-float-4" style={{ transform: 'rotate(10deg)', marginRight: '28px' }}>
+              <div style={{
+                padding: '8px', borderRadius: '6px',
+                background: 'linear-gradient(145deg, #1a0a2e, #2d1b4e)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(236,72,153,0.15), inset 0 1px 0 rgba(255,255,255,0.06)',
+                border: '1px solid rgba(236,72,153,0.2)',
+              }}>
+                <img src={`${S3}/generated/1774660430180-8754kz2iw4t.png`} alt="Rococo"
+                  style={{ width: '120px', height: '150px', objectFit: 'cover', borderRadius: '3px', display: 'block', filter: 'saturate(1.1)' }} />
+                <div style={{ textAlign: 'center', paddingTop: '6px', fontSize: '10px', color: 'rgba(251,113,133,0.8)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Rococo</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sparkle stars */}
+          {[
+            { x: '15%', y: '20%', s: 14, d: '0s',   t: '3s' },
+            { x: '80%', y: '15%', s: 10, d: '1.2s', t: '4s' },
+            { x: '88%', y: '70%', s: 16, d: '0.6s', t: '3.5s' },
+            { x: '10%', y: '75%', s: 12, d: '1.8s', t: '4.5s' },
+            { x: '50%', y: '10%', s: 8,  d: '0.3s', t: '2.8s' },
+            { x: '25%', y: '88%', s: 10, d: '2.1s', t: '3.2s' },
+            { x: '72%', y: '82%', s: 14, d: '0.9s', t: '5s' },
+          ].map((sp, i) => (
+            <div key={i} className="sparkle absolute pointer-events-none"
+              style={{ left: sp.x, top: sp.y, width: sp.s, height: sp.s, animationDelay: sp.d, animationDuration: sp.t }}>
+              <svg viewBox="0 0 24 24" fill="none" width={sp.s} height={sp.s}>
+                <path d="M12 2L13.5 9.5L21 8L14.5 13L17 21L12 16L7 21L9.5 13L3 8L10.5 9.5Z"
+                  fill="rgba(196,167,255,0.9)" />
+              </svg>
+            </div>
+          ))}
+
+          {/* Center content */}
+          <div className="relative z-10 text-center max-w-2xl">
+
+            {/* Badge */}
+            <div className="fade-up inline-flex items-center gap-2 bg-purple-950/60 border border-purple-500/40 text-purple-300 text-xs font-bold px-5 py-2.5 rounded-full mb-10 backdrop-blur-md tracking-widest uppercase shadow-lg shadow-purple-950/50" style={{ animationDelay: '0.1s' }}>
+              <span style={{ color: '#c084fc' }}>✦</span> AI Fine Art Pet Portraits
             </div>
 
-            {/* brand */}
-            <h1 className="mb-6 leading-[0.9]" aria-label={BRAND}>
+            {/* Brand name */}
+            <h1 className="mb-5 leading-[0.88]" aria-label={BRAND}>
               <span
-                className="font-black text-white tracking-tight"
-                style={{ fontSize: 'clamp(2.2rem, 9vw, 8rem)', display: 'block', whiteSpace: 'nowrap' }}
+                className="font-black tracking-tight"
+                style={{
+                  fontSize: 'clamp(2.8rem, 10vw, 9rem)',
+                  display: 'block',
+                  whiteSpace: 'nowrap',
+                  background: 'linear-gradient(135deg, #ffffff 0%, #e9d5ff 40%, #ffffff 60%, #fce7f3 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  filter: 'drop-shadow(0 0 40px rgba(168,85,247,0.4))',
+                }}
               >
                 {BRAND.split('').map((char, i) => (
                   <span key={i} className="letter-clip">
-                    <span
-                      className="letter-inner"
-                      style={{ animationDelay: `${0.2 + i * 0.055}s` }}
-                    >
+                    <span className="letter-inner" style={{ animationDelay: `${0.2 + i * 0.055}s` }}>
                       {char === ' ' ? '\u00A0' : char}
                     </span>
                   </span>
@@ -161,30 +310,48 @@ export default function Home() {
               </span>
             </h1>
 
-            <p className="fade-up text-base md:text-2xl text-gray-400 mb-8 max-w-lg mx-auto px-2" style={{ animationDelay: '1.05s' }}>
+            {/* Subtitle */}
+            <p className="fade-up text-lg md:text-2xl text-gray-400 mb-10 max-w-md mx-auto leading-relaxed" style={{ animationDelay: '1.05s' }}>
               Turn your pet into a{' '}
-              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold">masterpiece</span>
-              . Printed &amp; delivered to your door.
+              <span className="font-bold" style={{
+                background: 'linear-gradient(90deg, #a855f7, #ec4899)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>masterpiece</span>
+              .<br className="hidden sm:block" /> Printed &amp; delivered to your door.
             </p>
 
-            <div className="fade-up flex flex-col sm:flex-row gap-3 justify-center px-4" style={{ animationDelay: '1.25s' }}>
-              <Link href="/create"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base md:text-lg px-8 py-4 rounded-2xl hover:opacity-90 transition-all shadow-2xl shadow-purple-900/60">
-                Create Your Portrait →
-              </Link>
+            {/* CTAs */}
+            <div className="fade-up flex flex-col sm:flex-row gap-4 justify-center items-center px-4" style={{ animationDelay: '1.25s' }}>
+              <div className="cta-glow">
+                <Link href="/create"
+                  className="relative block bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white font-bold text-lg px-10 py-4 rounded-2xl transition-all hover:scale-105 hover:shadow-2xl hover:shadow-purple-700/60"
+                  style={{ boxShadow: '0 8px 32px rgba(168,85,247,0.45)' }}>
+                  Create Your Portrait →
+                </Link>
+              </div>
               <a href="#gallery"
-                className="border border-white/20 text-white font-semibold text-base md:text-lg px-8 py-4 rounded-2xl hover:bg-white/10 transition-all backdrop-blur-sm">
+                className="border border-white/20 bg-white/5 text-white font-semibold text-lg px-10 py-4 rounded-2xl hover:bg-white/10 hover:border-white/30 transition-all backdrop-blur-sm">
                 See Examples ↓
               </a>
             </div>
 
-            <p className="fade-up text-gray-600 text-sm mt-6" style={{ animationDelay: '1.45s' }}>
-              Free preview · No credit card required · 16 art styles
-            </p>
+            {/* Social proof dots */}
+            <div className="fade-up flex items-center justify-center gap-4 mt-8" style={{ animationDelay: '1.45s' }}>
+              <div className="flex -space-x-2">
+                {['🐶','🐱','🐰','🐻'].map((e, i) => (
+                  <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-800 to-pink-800 border-2 border-[#0a0a0f] flex items-center justify-center text-sm">{e}</div>
+                ))}
+              </div>
+              <p className="text-gray-500 text-sm">
+                <span className="text-gray-300 font-semibold">500+</span> portraits created · Free preview · 16 styles
+              </p>
+            </div>
           </div>
 
-          {/* scroll pill */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
+          {/* Scroll indicator */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">
             <div className="w-5 h-8 rounded-full border border-white/30 flex items-start justify-center pt-1.5">
               <div className="w-1 h-1.5 bg-white rounded-full animate-bounce" />
             </div>
