@@ -1,23 +1,28 @@
 'use client';
 import { STYLE_PROMPTS } from '@/lib/replicate';
 
+const S3 = 'https://artifyai-images-951411651703-us-east-2-an.s3.us-east-2.amazonaws.com';
+const RD = 'https://replicate.delivery/xezq';
+
 const themeImages = {
-  chibi:       'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&q=80',
-  naiveart:    'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
-  kawaii:      'https://images.unsplash.com/photo-1596079890701-dd42edf4f0a8?w=400&q=80',
-  mosaic:      'https://images.unsplash.com/photo-1558618047-f4e90e8c80be?w=400&q=80',
-  steampunk:   'https://images.unsplash.com/photo-1509515837298-2c67a3933321?w=400&q=80',
-  doodleart:   'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80',
-  folkart:     'https://images.unsplash.com/photo-1551913902-c92207136625?w=400&q=80',
-  lofiart:     'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=80',
-  rembrandt:   'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=400&q=80',
-  dadaism:     'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&q=80',
-  renaissance:   'https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=400&q=80',
+  // ── Generated pet portraits ──────────────────────────────────────────────
+  renaissance:   `${S3}/generated/1774629784284-j1rt4wukw6.png`,
+  rococo:        `${S3}/generated/1774660430180-8754kz2iw4t.png`,
+  mosaic:        `${S3}/generated/1774673789483-zzvbnopfst.png`,
+  cubism:        `${S3}/generated/1774643764809-ln2zqseugf8.png`,
+  artinformel:   `${S3}/generated/1774629095050-xzkiul0l8fn.png`,
+  vernacularart: `${S3}/generated/1774622686162-jetc92ep4u.png`,
+  naiveart:      `${RD}/FPe1wHE73xSSIKm2kbKbTtTeFxify14yQJsJfz49AX4UJMUZB/tmpum6q1mkm.jpg`,
+  steampunk:     `${RD}/cHfQpXb5JvwfR0lLA0s22ZR5JnZLEAgcngG1fFdTq5EcN5psA/tmpkaabssf3.jpg`,
+  rembrandt:     `${RD}/VzYQixW3ed1oJCb0jMIeDZSV1saHWCTll3b6Tat2kdAXn8UWA/tmpmv_w4lzz.jpg`,
+  davinci:       `${S3}/generated/1774629784284-j1rt4wukw6.png`,
+  // ── Fallbacks for styles without a dedicated generated image ─────────────
+  enhanced:      'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400&q=80',
+  weirdcore:     'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&q=80',
+  dadaism:       'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80',
   neoclassicism: 'https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?w=400&q=80',
-  davinci:       'https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=400&q=80',
   romanticism:   'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=80',
   expressionism: 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400&q=80',
-  rococo:        'https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=400&q=80',
 };
 
 export default function StyleCard({ styleKey, selected, onClick, popular = false, compact = false, previewUrl }) {
