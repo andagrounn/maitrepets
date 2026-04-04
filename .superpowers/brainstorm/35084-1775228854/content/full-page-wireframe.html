@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maîtrepets /welcome — Full Page Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #080614; color: #f0e8ff; font-family: 'Inter', sans-serif; font-size: 13px; }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    position: absolute; top: 10px; left: 16px;
+    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    color: rgba(200,168,75,0.5); font-family: 'Inter', sans-serif;
+    border: 1px solid rgba(200,168,75,0.2); padding: 3px 8px; border-radius: 20px;
+  }
+
+  /* ── 1. HERO ── */
+  .hero {
+    position: relative; min-height: 100vh;
+    background: linear-gradient(160deg, #080614 0%, #100820 50%, #080614 100%);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .hero-glow-1 {
+    position: absolute; top: 30%; left: 50%; transform: translate(-50%,-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .hero-glow-2 {
+    position: absolute; bottom: 20%; left: 15%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(200,32,138,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .ghost-letter {
+    position: absolute; bottom: -40px; right: -20px;
+    font-family: 'Playfair Display', serif; font-size: 340px; font-style: italic;
+    color: rgba(124,58,237,0.05); line-height: 1; pointer-events: none; user-select: none;
+  }
+
+  /* Portrait strip */
+  .portrait-strip {
+    display: flex; gap: 10px; padding: 28px 24px 16px;
+    overflow: hidden; position: relative; z-index: 2;
+  }
+  .portrait-frame {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #c8a84b, #7a5a14);
+    padding: 3px; border-radius: 2px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.6), 0 0 16px rgba(124,58,237,0.15);
+  }
+  .portrait-inner {
+    border-radius: 1px; background: #1a0830;
+  }
+  .portrait-label {
+    font-size: 7px; letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(200,168,75,0.7); text-align: center; padding: 4px 0 2px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Hero center text */
+  .hero-center {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 0 24px; position: relative; z-index: 2;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.35);
+    color: #c8a84b; font-size: 9px; letter-spacing: 4px; text-transform: uppercase;
+    padding: 6px 16px; border-radius: 20px; margin-bottom: 28px;
+    backdrop-filter: blur(8px);
+  }
+  .hero-headline {
+    font-family: 'Playfair Display', serif; font-style: italic; font-weight: 900;
+    font-size: clamp(56px, 10vw, 120px); color: #f0e8ff; line-height: 0.92;
+    text-shadow: 0 0 80px rgba(124,58,237,0.4); margin-bottom: 20px;
+    letter-spacing: -2px;
+  }
+  .hero-headline span {
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: 14px; color: rgba(240,232,255,0.5); letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 36px; font-weight: 300;
+  }
+  .hero-ctas { display: flex; gap: 14px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .btn-primary-nb {
+    padding: 14px 32px; border-radius: 4px;
+    background: linear-gradient(90deg, #7c3aed, #c8208a);
+    color: #fff; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    font-weight: 600; cursor: pointer; border: none;
+    box-shadow: 0 8px 32px rgba(124,58,237,0.4);
+  }
+  .btn-ghost-nb {
+    padding: 14px 24px; color: #c8a84b; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+    border-bottom: 1px solid rgba(200,168,75,0.4);
+  }
+  .hero-meta {
+    margin-top: 24px; font-size: 10px; color: rgba(240,232,255,0.25);
+    letter-spacing: 2px; text-transform: uppercase;
+  }
+
+  /* ── 2. DOUBLE MARQUEE ── */
+  .marquee-section {
+    position: relative; padding: 48px 0; overflow: hidden;
+    background: linear-gradient(180deg, #080614, #0d0820 50%, #080614);
+    border-top: 1px solid rgba(200,168,75,0.08);
+    border-bottom: 1px solid rgba(200,168,75,0.08);
+  }
+  .marquee-row { display: flex; gap: 12px; margin-bottom: 12px; }
+  .mq-card {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #c8a84b, #6a4a10);
+    padding: 3px; border-radius: 2px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  }
+  .mq-inner { border-radius: 1px; display: flex; align-items: flex-end; padding: 4px; }
+  .mq-badge {
+    background: rgba(0,0,0,0.7); color: #c8a84b; font-size: 7px;
+    letter-spacing: 1px; padding: 2px 5px; border-radius: 2px; text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .marquee-fade-l {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 80px;
+    background: linear-gradient(90deg, #080614, transparent); pointer-events: none; z-index: 2;
+  }
+  .marquee-fade-r {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 80px;
+    background: linear-gradient(270deg, #080614, transparent); pointer-events: none; z-index: 2;
+  }
+
+  /* ── 3. STYLE GRID ── */
+  .style-section {
+    position: relative; padding: 96px 40px;
+    background: #080614;
+  }
+  .section-eyebrow {
+    font-size: 9px; letter-spacing: 5px; text-transform: uppercase;
+    color: #c8a84b; margin-bottom: 14px; display: block;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif; font-style: italic; font-weight: 900;
+    font-size: clamp(32px, 5vw, 56px); color: #f0e8ff; line-height: 1.05;
+    margin-bottom: 48px;
+  }
+  .style-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    max-width: 900px; margin: 0 auto;
+  }
+  .style-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(200,168,75,0.15);
+    border-radius: 4px; overflow: hidden; cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .style-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(124,58,237,0.2); }
+  .style-img {
+    width: 100%; aspect-ratio: 3/4;
+    display: flex; align-items: flex-end; padding: 10px;
+  }
+  .style-name-tag {
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+    color: #f0e8ff; font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 2px;
+  }
+  .style-card-footer {
+    padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .style-emoji { font-size: 16px; }
+  .style-label { font-size: 11px; color: rgba(240,232,255,0.7); letter-spacing: 1px; }
+
+  /* ── 4. HOW IT WORKS ── */
+  .hiw-section {
+    position: relative; padding: 96px 40px;
+    background: linear-gradient(180deg, #080614, #0d0820);
+    text-align: center;
+  }
+  .hiw-steps { display: flex; gap: 0; max-width: 800px; margin: 0 auto; position: relative; }
+  .hiw-steps::before {
+    content: ''; position: absolute; top: 28px; left: 16%; right: 16%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,168,75,0.3) 30%, rgba(200,168,75,0.3) 70%, transparent);
+  }
+  .hiw-step { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0 16px; }
+  .step-num {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(200,32,138,0.2));
+    border: 1px solid rgba(200,168,75,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-style: italic; font-size: 22px;
+    color: #c8a84b; margin-bottom: 16px; position: relative; z-index: 1;
+  }
+  .step-title { font-size: 13px; font-weight: 600; color: #f0e8ff; margin-bottom: 8px; letter-spacing: 1px; }
+  .step-desc { font-size: 11px; color: rgba(240,232,255,0.45); line-height: 1.6; }
+
+  /* ── 5. TESTIMONIALS ── */
+  .testi-section {
+    padding: 96px 40px;
+    background: #080614;
+  }
+  .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 900px; margin: 0 auto; }
+  .testi-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(200,168,75,0.12);
+    border-radius: 4px; padding: 24px;
+    position: relative; overflow: hidden;
+  }
+  .testi-card::before {
+    content: '"'; position: absolute; top: -10px; left: 14px;
+    font-family: 'Playfair Display', serif; font-size: 80px; font-style: italic;
+    color: rgba(124,58,237,0.15); line-height: 1;
+  }
+  .testi-stars { color: #c8a84b; font-size: 12px; margin-bottom: 10px; letter-spacing: 2px; }
+  .testi-quote { font-size: 11px; color: rgba(240,232,255,0.6); line-height: 1.7; margin-bottom: 16px; font-style: italic; }
+  .testi-name { font-size: 11px; font-weight: 600; color: #f0e8ff; letter-spacing: 1px; }
+  .testi-pet { font-size: 10px; color: rgba(200,168,75,0.6); letter-spacing: 1px; margin-top: 2px; }
+
+  /* ── 6. CTA ── */
+  .cta-section {
+    padding: 120px 40px; text-align: center;
+    background: linear-gradient(160deg, #0d0820, #180a2a, #0d0820);
+    position: relative; overflow: hidden;
+  }
+  .cta-glow {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .cta-eyebrow { font-size: 9px; letter-spacing: 5px; color: #c8a84b; text-transform: uppercase; margin-bottom: 16px; display: block; }
+  .cta-headline {
+    font-family: 'Playfair Display', serif; font-style: italic; font-weight: 900;
+    font-size: clamp(36px, 6vw, 72px); color: #f0e8ff; line-height: 1.05;
+    margin-bottom: 16px; position: relative; z-index: 1;
+  }
+  .cta-sub { font-size: 13px; color: rgba(240,232,255,0.4); margin-bottom: 40px; letter-spacing: 1px; }
+  .cta-btn {
+    display: inline-block; padding: 18px 48px; border-radius: 4px;
+    background: linear-gradient(90deg, #7c3aed, #c8208a);
+    color: #fff; font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
+    font-weight: 600; cursor: pointer; border: none;
+    box-shadow: 0 12px 48px rgba(124,58,237,0.5);
+    position: relative; z-index: 1;
+  }
+  .cta-meta { margin-top: 20px; font-size: 10px; color: rgba(240,232,255,0.2); letter-spacing: 2px; text-transform: uppercase; }
+
+  /* Portrait color presets */
+  .pc-1 { background: linear-gradient(160deg,#4a1070,#1a0830); }
+  .pc-2 { background: linear-gradient(160deg,#7a1060,#2a0840); }
+  .pc-3 { background: linear-gradient(160deg,#102a70,#050a30); }
+  .pc-4 { background: linear-gradient(160deg,#4a2a10,#2a1008); }
+  .pc-5 { background: linear-gradient(160deg,#1a4a20,#0a1808); }
+  .pc-6 { background: linear-gradient(160deg,#4a1030,#1a0818); }
+</style>
+</head>
+<body>
+
+<!-- ─────────────── 1. HERO ─────────────── -->
+<section class="hero">
+  <span class="section-label">① Hero</span>
+  <div class="hero-glow-1"></div>
+  <div class="hero-glow-2"></div>
+  <div class="ghost-letter">M</div>
+
+  <!-- Portrait strip -->
+  <div class="portrait-strip">
+    <div class="portrait-frame"><div class="portrait-inner pc-1" style="width:64px;height:84px;"></div><div class="portrait-label">Renaissance</div></div>
+    <div class="portrait-frame"><div class="portrait-inner pc-2" style="width:64px;height:84px;"></div><div class="portrait-label">Rococo</div></div>
+    <div class="portrait-frame"><div class="portrait-inner pc-3" style="width:64px;height:84px;"></div><div class="portrait-label">Cubism</div></div>
+    <div class="portrait-frame"><div class="portrait-inner pc-4" style="width:64px;height:84px;"></div><div class="portrait-label">Baroque</div></div>
+    <div class="portrait-frame"><div class="portrait-inner pc-5" style="width:64px;height:84px;"></div><div class="portrait-label">Gothic</div></div>
+    <div class="portrait-frame"><div class="portrait-inner pc-6" style="width:64px;height:84px;"></div><div class="portrait-label">Mosaic</div></div>
+    <div class="portrait-frame"><div class="portrait-inner pc-1" style="width:64px;height:84px;"></div><div class="portrait-label">Vintage</div></div>
+    <div class="portrait-frame"><div class="portrait-inner pc-2" style="width:64px;height:84px;"></div><div class="portrait-label">Steampunk</div></div>
+  </div>
+
+  <!-- Center text -->
+  <div class="hero-center">
+    <div class="hero-badge">✦ &nbsp; Maîtrepets Fine Art &nbsp; ✦</div>
+    <h1 class="hero-headline">Master-<br/><span>pieces.</span></h1>
+    <p class="hero-sub">For the ones who deserve them.</p>
+    <div class="hero-ctas">
+      <button class="btn-primary-nb">Create Yours →</button>
+      <span class="btn-ghost-nb">↓ See the Gallery</span>
+    </div>
+    <p class="hero-meta">Free preview &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; 16 art styles</p>
+  </div>
+</section>
+
+<!-- ─────────────── 2. DOUBLE MARQUEE ─────────────── -->
+<section class="marquee-section">
+  <span class="section-label">② Portrait Marquee</span>
+  <div class="marquee-fade-l"></div>
+  <div class="marquee-fade-r"></div>
+
+  <!-- Row 1 (scrolls left) -->
+  <div class="marquee-row" style="margin-left:-20px;">
+    <div class="mq-card"><div class="mq-inner pc-1" style="width:100px;height:130px;"><span class="mq-badge">Renaissance</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-2" style="width:100px;height:130px;"><span class="mq-badge">Rococo</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-3" style="width:100px;height:130px;"><span class="mq-badge">Cubism</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-4" style="width:100px;height:130px;"><span class="mq-badge">Baroque</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-5" style="width:100px;height:130px;"><span class="mq-badge">Gothic</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-6" style="width:100px;height:130px;"><span class="mq-badge">Steampunk</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-1" style="width:100px;height:130px;"><span class="mq-badge">Mosaic</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-2" style="width:100px;height:130px;"><span class="mq-badge">Vintage</span></div></div>
+  </div>
+
+  <!-- Row 2 (scrolls right) -->
+  <div class="marquee-row" style="margin-left:-60px;">
+    <div class="mq-card"><div class="mq-inner pc-4" style="width:120px;height:150px;"><span class="mq-badge">Joker</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-3" style="width:120px;height:150px;"><span class="mq-badge">Lion King</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-6" style="width:120px;height:150px;"><span class="mq-badge">Gangster</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-5" style="width:120px;height:150px;"><span class="mq-badge">Naive Art</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-1" style="width:120px;height:150px;"><span class="mq-badge">Egypt</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-2" style="width:120px;height:150px;"><span class="mq-badge">Pirates</span></div></div>
+    <div class="mq-card"><div class="mq-inner pc-3" style="width:120px;height:150px;"><span class="mq-badge">Barbie</span></div></div>
+  </div>
+</section>
+
+<!-- ─────────────── 3. STYLE GRID ─────────────── -->
+<section class="style-section">
+  <span class="section-label">③ Style Gallery</span>
+  <div style="text-align:center;margin-bottom:48px;">
+    <span class="section-eyebrow">✦ The Collection ✦</span>
+    <h2 class="section-title">16 Styles.<br/>Infinite Masterpieces.</h2>
+  </div>
+  <div class="style-grid">
+    <div class="style-card">
+      <div class="style-img pc-1"><span class="style-name-tag">Renaissance</span></div>
+      <div class="style-card-footer"><span class="style-emoji">🎨</span><span class="style-label">Old Masters</span></div>
+    </div>
+    <div class="style-card">
+      <div class="style-img pc-2"><span class="style-name-tag">Rococo</span></div>
+      <div class="style-card-footer"><span class="style-emoji">🎀</span><span class="style-label">Ornate & Playful</span></div>
+    </div>
+    <div class="style-card">
+      <div class="style-img pc-3"><span class="style-name-tag">Cubism</span></div>
+      <div class="style-card-footer"><span class="style-emoji">🔲</span><span class="style-label">Geometric</span></div>
+    </div>
+    <div class="style-card">
+      <div class="style-img pc-4"><span class="style-name-tag">Baroque</span></div>
+      <div class="style-card-footer"><span class="style-emoji">🕯️</span><span class="style-label">Dramatic Light</span></div>
+    </div>
+    <div class="style-card">
+      <div class="style-img pc-5"><span class="style-name-tag">Gothic Art</span></div>
+      <div class="style-card-footer"><span class="style-emoji">🏰</span><span class="style-label">Medieval Mystique</span></div>
+    </div>
+    <div class="style-card">
+      <div class="style-img pc-6"><span class="style-name-tag">Mosaic</span></div>
+      <div class="style-card-footer"><span class="style-emoji">✨</span><span class="style-label">Shattered Glass</span></div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:36px;">
+    <span style="font-size:11px;color:rgba(200,168,75,0.5);letter-spacing:3px;text-transform:uppercase;">+ 10 more styles →</span>
+  </div>
+</section>
+
+<!-- ─────────────── 4. HOW IT WORKS ─────────────── -->
+<section class="hiw-section">
+  <span class="section-label">④ How It Works</span>
+  <div style="text-align:center;margin-bottom:56px;">
+    <span class="section-eyebrow">✦ The Process ✦</span>
+    <h2 class="section-title">From Photo<br/>to Portrait</h2>
+  </div>
+  <div class="hiw-steps">
+    <div class="hiw-step">
+      <div class="step-num">I</div>
+      <div class="step-title">Upload Your Photo</div>
+      <div class="step-desc">A clear, well-lit photo of your pet — that's all you need.</div>
+    </div>
+    <div class="hiw-step">
+      <div class="step-num">II</div>
+      <div class="step-title">Choose Your Style</div>
+      <div class="step-desc">Pick from 16 fine art styles. Preview free, no commitment.</div>
+    </div>
+    <div class="hiw-step">
+      <div class="step-num">III</div>
+      <div class="step-title">We Print & Deliver</div>
+      <div class="step-desc">Museum-quality print, shipped to your door. Framed or unframed.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── 5. TESTIMONIALS ─────────────── -->
+<section class="testi-section">
+  <span class="section-label" style="position:relative;left:auto;top:auto;display:inline-block;margin-bottom:40px;">⑤ Testimonials</span>
+  <div style="text-align:center;margin-bottom:48px;">
+    <span class="section-eyebrow">✦ Collectors Say ✦</span>
+    <h2 class="section-title">The Reviews<br/>Are In.</h2>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-quote">The Renaissance painting of my dog is insane — it looks like a real 16th century oil painting. Everyone who visits thinks I bought fine art.</p>
+      <div class="testi-name">Sarah M.</div>
+      <div class="testi-pet">Golden Retriever Owner</div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-quote">Got the Rococo style for my cat and it's absolutely unreal. Best $79 I've ever spent — it's hanging in my living room.</p>
+      <div class="testi-name">Jake T.</div>
+      <div class="testi-pet">Tabby Cat Owner</div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-quote">Ordered the Mosaic style as a memorial for my bird. I'll treasure this forever. The quality of the print is incredible.</p>
+      <div class="testi-name">Maria L.</div>
+      <div class="testi-pet">Pug Owner</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── 6. CTA ─────────────── -->
+<section class="cta-section">
+  <span class="section-label">⑥ Final CTA</span>
+  <div class="cta-glow"></div>
+  <span class="cta-eyebrow">✦ Begin Your Commission ✦</span>
+  <h2 class="cta-headline">Your pet's portrait<br/>is waiting.</h2>
+  <p class="cta-sub">Join thousands of pet lovers who turned their best friend into fine art.</p>
+  <button class="cta-btn">Create Your Masterpiece →</button>
+  <p class="cta-meta">Free preview &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; Ships worldwide</p>
+</section>
+
+</body>
+</html>

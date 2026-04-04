@@ -1,0 +1,119 @@
+<h2>Design Direction</h2>
+<p class="subtitle">Three distinct aesthetics — all luxury, all playful. Pick the vibe that feels right for Maîtrepets.</p>
+
+<div class="cards">
+
+  <!-- Option A: The Grand Gallery -->
+  <div class="card" data-choice="grand-gallery" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0c0a08;padding:24px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;border-bottom:1px solid #2a2118;">
+      <!-- Fake wall with frames -->
+      <div style="display:flex;gap:12px;justify-content:center;align-items:flex-end;margin-bottom:12px;">
+        <div style="width:54px;height:70px;background:linear-gradient(135deg,#c8a84b,#8b6914);border-radius:2px;box-shadow:0 0 20px rgba(200,168,75,0.3);display:flex;align-items:center;justify-content:center;">
+          <div style="width:36px;height:50px;background:linear-gradient(160deg,#3a2a4a,#1a0f2a);border-radius:1px;"></div>
+        </div>
+        <div style="width:80px;height:100px;background:linear-gradient(135deg,#c8a84b,#8b6914);border-radius:2px;box-shadow:0 0 30px rgba(200,168,75,0.4);display:flex;align-items:center;justify-content:center;">
+          <div style="width:60px;height:80px;background:linear-gradient(160deg,#4a2040,#2a1030);border-radius:1px;"></div>
+        </div>
+        <div style="width:60px;height:80px;background:linear-gradient(135deg,#c8a84b,#8b6914);border-radius:2px;box-shadow:0 0 20px rgba(200,168,75,0.3);display:flex;align-items:center;justify-content:center;">
+          <div style="width:42px;height:62px;background:linear-gradient(160deg,#1a2a4a,#0a1020);border-radius:1px;"></div>
+        </div>
+      </div>
+      <!-- Typography sample -->
+      <div style="text-align:center;">
+        <div style="font-family:Georgia,serif;font-size:11px;letter-spacing:4px;color:#c8a84b;text-transform:uppercase;margin-bottom:4px;">Maîtrepets</div>
+        <div style="font-family:Georgia,serif;font-size:22px;color:#f5f0e8;font-style:italic;line-height:1.2;">Your Pet,<br/>Immortalized</div>
+        <div style="margin-top:10px;display:inline-block;padding:6px 16px;border:1px solid #c8a84b;color:#c8a84b;font-size:9px;letter-spacing:3px;text-transform:uppercase;">Commission a Portrait</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>The Grand Gallery</h3>
+      <p>Dark museum walls, gold frames, dramatic spotlights. Serif typography, Italian Renaissance energy. Feels like the Louvre — but your dog is the Mona Lisa.</p>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <div style="width:20px;height:20px;border-radius:50%;background:#0c0a08;border:1px solid #444;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#c8a84b;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#f5f0e8;border:1px solid #444;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#3a1a2a;border:1px solid #444;"></div>
+        <span style="font-size:11px;color:#888;margin-left:4px;">Black · Gold · Cream · Plum</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B: Atelier Vivant -->
+  <div class="card" data-choice="atelier" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f7f2e8;padding:24px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;border-bottom:1px solid #e8dfc8;">
+      <!-- Editorial layout feel -->
+      <div style="display:flex;gap:10px;justify-content:center;align-items:center;margin-bottom:12px;">
+        <div style="width:55px;height:72px;background:#e8d5b0;border-radius:4px;position:relative;overflow:hidden;">
+          <div style="position:absolute;inset:4px;background:linear-gradient(135deg,#d4a86a,#8a5a30);border-radius:2px;"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:12px;background:#f7f2e8;display:flex;align-items:center;justify-content:center;">
+            <div style="width:30px;height:1px;background:#c4a86a;"></div>
+          </div>
+        </div>
+        <div style="width:75px;height:95px;background:#e8d5b0;border-radius:4px;position:relative;overflow:hidden;">
+          <div style="position:absolute;inset:5px;background:linear-gradient(135deg,#c84a6a,#7a2040);border-radius:2px;"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:14px;background:#f7f2e8;display:flex;align-items:center;justify-content:center;">
+            <div style="width:40px;height:1px;background:#c4a86a;"></div>
+          </div>
+        </div>
+        <div style="width:55px;height:72px;background:#e8d5b0;border-radius:4px;position:relative;overflow:hidden;">
+          <div style="position:absolute;inset:4px;background:linear-gradient(135deg,#4a7ac8,#1a3a70);border-radius:2px;"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:12px;background:#f7f2e8;display:flex;align-items:center;justify-content:center;">
+            <div style="width:30px;height:1px;background:#c4a86a;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:9px;letter-spacing:5px;color:#9a7a4a;text-transform:uppercase;margin-bottom:4px;font-weight:600;">Fine Art Studio</div>
+        <div style="font-family:Georgia,serif;font-size:24px;color:#2a1a0a;font-weight:700;line-height:1.1;">Every Pet<br/>is a <em style="color:#c84a30;">Work of Art</em></div>
+        <div style="margin-top:10px;display:inline-block;padding:7px 18px;background:#2a1a0a;color:#f7f2e8;font-size:9px;letter-spacing:2px;text-transform:uppercase;border-radius:2px;">Create Yours</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Atelier Vivant</h3>
+      <p>Warm ivory, terracotta, editorial. Like a high-end art magazine or Parisian studio. Playful and warm — less austere than a museum, still unmistakably luxury.</p>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <div style="width:20px;height:20px;border-radius:50%;background:#f7f2e8;border:1px solid #ccc;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#c84a30;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#2a1a0a;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#c8a84b;"></div>
+        <span style="font-size:11px;color:#888;margin-left:4px;">Ivory · Terracotta · Ink · Gold</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option C: Neo-Baroque -->
+  <div class="card" data-choice="neo-baroque" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:linear-gradient(145deg,#0a0818,#180a2a);padding:24px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;border-bottom:1px solid #2a1840;">
+      <!-- Rich jewel tones -->
+      <div style="display:flex;gap:12px;justify-content:center;align-items:flex-end;margin-bottom:12px;position:relative;">
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:120px;background:radial-gradient(circle,rgba(168,85,247,0.15) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="width:52px;height:68px;background:linear-gradient(135deg,#c8a84b,#7a5a14);border-radius:2px;padding:3px;box-shadow:0 0 25px rgba(168,85,247,0.3);">
+          <div style="width:100%;height:100%;background:linear-gradient(160deg,#4a1070,#1a0830);border-radius:1px;"></div>
+        </div>
+        <div style="width:78px;height:98px;background:linear-gradient(135deg,#c8a84b,#7a5a14);border-radius:2px;padding:4px;box-shadow:0 0 35px rgba(168,85,247,0.4);">
+          <div style="width:100%;height:100%;background:linear-gradient(160deg,#7a1060,#2a0840);border-radius:1px;"></div>
+        </div>
+        <div style="width:58px;height:76px;background:linear-gradient(135deg,#c8a84b,#7a5a14);border-radius:2px;padding:3px;box-shadow:0 0 25px rgba(168,85,247,0.3);">
+          <div style="width:100%;height:100%;background:linear-gradient(160deg,#102a70,#050a30);border-radius:1px;"></div>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:9px;letter-spacing:5px;color:#c8a84b;text-transform:uppercase;margin-bottom:6px;">Maîtrepets ✦</div>
+        <div style="font-family:Georgia,serif;font-size:20px;color:#f0e8ff;font-style:italic;line-height:1.2;text-shadow:0 0 30px rgba(168,85,247,0.5);">Masterpieces<br/>of Our Time</div>
+        <div style="margin-top:10px;display:inline-block;padding:6px 16px;background:linear-gradient(90deg,#7a20c8,#c8208a);color:#fff;font-size:9px;letter-spacing:2px;text-transform:uppercase;border-radius:20px;">Begin Your Portrait</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Neo-Baroque</h3>
+      <p>Deep navy, purple, gold. Maximalist and dramatic with a modern edge. Ornate but not stuffy — bold, theatrical, feels like a luxury fashion brand met the Met Gala.</p>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <div style="width:20px;height:20px;border-radius:50%;background:#0a0818;border:1px solid #444;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#7a20c8;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#c8a84b;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#c8208a;"></div>
+        <span style="font-size:11px;color:#888;margin-left:4px;">Midnight · Purple · Gold · Magenta</span>
+      </div>
+    </div>
+  </div>
+
+</div>
