@@ -13,7 +13,7 @@ const PORTRAITS = [
   { url: `${S3}/generated/1774673789483-zzvbnopfst.png`,                                    style: 'Mosaic',       pet: 'Rio'   },
   { url: `${S3}/generated/1774643764809-ln2zqseugf8.png`,                                   style: 'Cubism',       pet: 'Max'   },
   { url: `${S3}/generated/1774629095050-xzkiul0l8fn.png`,                                   style: 'Art Informel', pet: 'Buddy' },
-  { url: `${S3}/generated/1774622686162-jetc92ep4u.png`,                                    style: 'Vernacular',   pet: 'Mochi' },
+  { url: `${S3}/generated/1774622686162-jetc92ep4u.png`,                                    style: 'Vernacular Art', pet: 'Mochi' },
   { url: `${RD}/Aycym3aFMIYAPFJjYLvHtdkZehuUKrn030BC0NJ8CS0mDXKLA/tmp8loxrm6p.png`,       style: 'Titanic',      pet: 'Duke'  },
   { url: `${RD}/HjDQ4mIqF9JRANgmwsAIdgSbujNejFC3fyutG3eFVajwojpsA/tmp2owxmba1.webp`,      style: 'Joker',        pet: 'Bella' },
   { url: `${RD}/wWQOJ3ELKQoTKBgBW44fmjf5ddaeAyHUHJgqRY6SfZAUm6SZB/tmporzt5vx8.webp`,     style: 'Barbie',       pet: 'Daisy' },
@@ -21,8 +21,32 @@ const PORTRAITS = [
   { url: `${RD}/NxlZaUBW6Z61GBSbV8s183ce6tfOYEcLpeDiG8LYafqlaWSZB/out-0.webp`,            style: 'Lion King',    pet: 'Simba' },
   { url: `${RD}/rUsyzZ0FQDaUHVweUQxGR4s47k5Lat7DYe11GQ2QIpUjDlUWA/out-0.webp`,            style: 'Vintage',      pet: 'Pearl' },
   { url: `${RD}/n9Wkfk5PL3QEUSTm7wPxmHF4HRyesK8PXRkBzpbNV4WZJlUWA/out-0.webp`,           style: 'Egypt',        pet: 'Cleo'  },
-  { url: `${RD}/VzYQixW3ed1oJCb0jMIeDZSV1saHWCTll3b6Tat2kdAXn8UWA/tmpmv_w4lzz.jpg`,      style: 'Gothic',       pet: 'Shadow'},
+  { url: `${RD}/VzYQixW3ed1oJCb0jMIeDZSV1saHWCTll3b6Tat2kdAXn8UWA/tmpmv_w4lzz.jpg`,      style: 'Gothic Art',   pet: 'Shadow'},
   { url: `${RD}/cHfQpXb5JvwfR0lLA0s22ZR5JnZLEAgcngG1fFdTq5EcN5psA/tmpkaabssf3.jpg`,      style: 'Steampunk',    pet: 'Copper'},
+];
+
+/* One generated image per style — used in the gallery grid */
+const STYLES_GRID = [
+  { url: `${S3}/generated/1774629784284-j1rt4wukw6.png`,                                    style: 'Renaissance'   },
+  { url: `${S3}/generated/1774660430180-8754kz2iw4t.png`,                                   style: 'Rococo'        },
+  { url: `${S3}/generated/1774673789483-zzvbnopfst.png`,                                    style: 'Mosaic'        },
+  { url: `${S3}/generated/1774643764809-ln2zqseugf8.png`,                                   style: 'Cubism'        },
+  { url: `${S3}/generated/1774629095050-xzkiul0l8fn.png`,                                   style: 'Art Informel'  },
+  { url: `${S3}/generated/1774622686162-jetc92ep4u.png`,                                    style: 'Vernacular Art'},
+  { url: `${RD}/FPe1wHE73xSSIKm2kbKbTtTeFxify14yQJsJfz49AX4UJMUZB/tmpum6q1mkm.jpg`,       style: 'Naive Art'     },
+  { url: `${RD}/cHfQpXb5JvwfR0lLA0s22ZR5JnZLEAgcngG1fFdTq5EcN5psA/tmpkaabssf3.jpg`,       style: 'Steampunk'     },
+  { url: `${RD}/VzYQixW3ed1oJCb0jMIeDZSV1saHWCTll3b6Tat2kdAXn8UWA/tmpmv_w4lzz.jpg`,       style: 'Gothic Art'    },
+  { url: `${RD}/Aycym3aFMIYAPFJjYLvHtdkZehuUKrn030BC0NJ8CS0mDXKLA/tmp8loxrm6p.png`,        style: 'Titanic'       },
+  { url: `${RD}/HjDQ4mIqF9JRANgmwsAIdgSbujNejFC3fyutG3eFVajwojpsA/tmp2owxmba1.webp`,       style: 'Joker'         },
+  { url: `${RD}/wWQOJ3ELKQoTKBgBW44fmjf5ddaeAyHUHJgqRY6SfZAUm6SZB/tmporzt5vx8.webp`,      style: 'Barbie'        },
+  { url: `${RD}/Copg2e3wiWwoYiHBUjXjX3DvO39XAEzPm6pfCmvXilvt7kUWA/tmpc2i7i7j3.webp`,      style: 'Cartoon'       },
+  { url: `${RD}/MezlJ8KrKT2YJCnWJoTGUltnM5KofE6pPCxyPai99En7r7UWA/tmpk69qwu60.jpg`,        style: 'Gangster'      },
+  { url: `${RD}/NxlZaUBW6Z61GBSbV8s183ce6tfOYEcLpeDiG8LYafqlaWSZB/out-0.webp`,             style: 'Lion King'     },
+  { url: `${RD}/8wDbroj8qBZefkvBenBN2wTYOCy1HYao1qrMdcNcqxaH02psA/tmphwtjdml5.jpg`,        style: 'Harry Potter'  },
+  { url: `${RD}/0e2sqFDnujTmSyeUODntfAFS7cf07KmnPf2twlbdKk7HFimyC/tmp3s01uudu.webp`,       style: 'Pirates'       },
+  { url: `${RD}/rUsyzZ0FQDaUHVweUQxGR4s47k5Lat7DYe11GQ2QIpUjDlUWA/out-0.webp`,             style: 'Vintage'       },
+  { url: `${RD}/n9Wkfk5PL3QEUSTm7wPxmHF4HRyesK8PXRkBzpbNV4WZJlUWA/out-0.webp`,            style: 'Egypt'         },
+  { url: `${RD}/hPzgzf9QhR1rJyVWmxmWZmWRXWXUiFO73Kr2Of78ioUOH7UWA/tmp4y0am2hs.webp`,       style: 'Jurassic Park' },
 ];
 
 /* Portraits pinned to the hero gallery wall */
@@ -682,23 +706,23 @@ export default function WelcomePage() {
           >
             <span className="mpt-section-eyebrow">✦ &nbsp; The Collection &nbsp; ✦</span>
             <h2 className="mpt-section-title">
-              16 Styles.<br />Infinite Masterpieces.
+              Every Style.<br />One Masterpiece.
             </h2>
           </motion.div>
 
           <div className="mpt-style-grid">
-            {PORTRAITS.slice(0, 9).map((p, i) => (
+            {STYLES_GRID.map((p, i) => (
               <motion.div
                 key={i}
                 className="mpt-style-card"
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.55, delay: i * 0.06 }}
+                transition={{ duration: 0.55, delay: (i % 5) * 0.06 }}
               >
                 <div className="mpt-frame" style={{ position: 'relative' }}>
                   <img
-                    src={p.url} alt={`${p.pet} — ${p.style}`}
+                    src={p.url} alt={p.style}
                     className="mpt-frame-img"
                     style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover' }}
                   />
@@ -709,21 +733,9 @@ export default function WelcomePage() {
                 </div>
                 <div className="mpt-card-footer">
                   <span className="mpt-card-style">{p.style}</span>
-                  <span className="mpt-card-pet">{p.pet}</span>
                 </div>
               </motion.div>
             ))}
-          </div>
-
-          <div style={{ textAlign: 'center', marginTop: 48 }}>
-            <Link href="/create" style={{
-              fontFamily: 'Tenor Sans, sans-serif',
-              fontSize: 10, letterSpacing: 4, textTransform: 'uppercase',
-              color: 'rgba(201,168,76,0.45)', textDecoration: 'none',
-              borderBottom: '1px solid rgba(201,168,76,0.2)', paddingBottom: 2,
-            }}>
-              + 7 more styles
-            </Link>
           </div>
         </section>
 
