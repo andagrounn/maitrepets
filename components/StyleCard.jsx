@@ -16,13 +16,6 @@ const themeImages = {
   steampunk:     `${RD}/cHfQpXb5JvwfR0lLA0s22ZR5JnZLEAgcngG1fFdTq5EcN5psA/tmpkaabssf3.jpg`,
   rembrandt:     `${RD}/VzYQixW3ed1oJCb0jMIeDZSV1saHWCTll3b6Tat2kdAXn8UWA/tmpmv_w4lzz.jpg`,
   davinci:       `${S3}/generated/1774629784284-j1rt4wukw6.png`,
-  // ── Fallbacks for styles without a dedicated generated image ─────────────
-  enhanced:      'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400&q=80',
-  weirdcore:     'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&q=80',
-  dadaism:       'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80',
-  neoclassicism: 'https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?w=400&q=80',
-  romanticism:   'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=80',
-  expressionism: 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400&q=80',
 };
 
 export default function StyleCard({ styleKey, selected, onClick, popular = false, compact = false, previewUrl }) {
