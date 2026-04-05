@@ -15,7 +15,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
+      <body className="bg-cream min-h-screen antialiased flex flex-col">
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-0385Y0WJZV" strategy="afterInteractive" />
         <Script id="gtag-init" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];
@@ -23,8 +23,6 @@ export default function RootLayout({ children }) {
           gtag('js', new Date());
           gtag('config', 'G-0385Y0WJZV');
         `}</Script>
-      </head>
-      <body className="bg-cream min-h-screen antialiased flex flex-col">
         <DisableImageActions />
         <div className="flex-1">{children}</div>
         <Footer />

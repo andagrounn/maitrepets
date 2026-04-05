@@ -449,110 +449,50 @@ function CreatePageInner() {
 
           {/* ── RESULT ── */}
           {generatedUrl && !isLoading && (
-            <div className="grid lg:grid-cols-5 gap-8">
+            <div className="grid md:grid-cols-2 gap-8">
 
-              {/* Image reveal — 3 cols */}
-              <div className="md:col-span-3 space-y-4">
+              {/* Left — Generated image */}
+              <div className="space-y-4">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Your Portrait is Ready!</h2>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Your Portrait is Ready!</h2>
+                    <p className="text-xs font-semibold text-purple-500 uppercase tracking-wide mt-0.5">{STYLE_PROMPTS[selectedStyle]?.label} Style</p>
+                  </div>
                   <button onClick={startOver} className="text-sm text-gray-400 hover:text-gray-600 underline flex-shrink-0">Start over</button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Original</p>
-                    <img src={preview} alt="Your pet" className="w-full object-contain rounded-2xl shadow-sm bg-gray-900" style={{ aspectRatio: '4/3' }} />
-                  </div>
-                  <div className={`transition-all duration-700 ${imageRevealed ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-                    <p className="text-xs font-semibold text-purple-500 uppercase tracking-wide mb-2">
-                      {STYLE_PROMPTS[selectedStyle]?.label} Portrait
-                    </p>
-                    <div className="relative group">
-                      <img
-                        src={proxyUrl}
-                        alt="Generated Portrait"
-                        className={`w-full aspect-[2/3] object-cover rounded-2xl shadow-xl ring-2 ring-purple-200 ${freeLimitReached || guestLimitReached ? 'brightness-75' : ''}`}
-                        onContextMenu={e => e.preventDefault()}
-                        draggable={false}
-                      />
-                      {/* Watermark — centered (commented out)
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none rounded-2xl overflow-hidden">
+                <div className={`transition-all duration-700 ${imageRevealed ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+                  <div className="relative group">
+                    <img
+                      src={proxyUrl}
+                      alt="Generated Portrait"
+                      className={`w-full aspect-[2/3] object-cover rounded-2xl shadow-xl ring-2 ring-purple-200 ${freeLimitReached || guestLimitReached ? 'brightness-75' : ''}`}
+                      onContextMenu={e => e.preventDefault()}
+                      draggable={false}
+                    />
+                    {(freeLimitReached || guestLimitReached) && (
+                      <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none select-none">
                         <span
-                          style={{
-                            color: 'rgba(255,255,255,0.25)',
-                            fontSize: '13px',
-                            fontWeight: 900,
-                            letterSpacing: '0.02em',
-                            textTransform: 'uppercase',
-                            textAlign: 'center',
-                            userSelect: 'none',
-                            whiteSpace: 'nowrap',
-                          }}>
-                          maitrepets.com
+                          className="absolute inset-0 flex items-center justify-center text-white/20 font-black text-2xl tracking-widest uppercase"
+                          style={{ transform: 'rotate(-35deg)', letterSpacing: '0.3em', userSelect: 'none' }}
+                        >
+                          MAÎTREPETS
                         </span>
-                      </div>
-                      */}
-                      {/* Brand tag — bottom right (commented out)
-                      <div className="absolute bottom-3 right-3 pointer-events-none select-none">
-                        <span
-                          className="font-bold uppercase whitespace-nowrap"
-                          style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'rgba(255,255,255,0.48)', textShadow: '0 1px 3px rgba(0,0,0,0.5)', userSelect: 'none' }}>
-                          maitrepets.com
-                        </span>
-                      </div>
-                      */}
-                      {/* Watermark overlay — full L×W coverage (commented out) */}
-                      {/* <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none select-none">
-                        <div
-                          className="absolute flex flex-col"
-                          style={{ transform: 'rotate(-30deg)', top: '-60%', left: '-60%', width: '220%', height: '220%', gap: '18px' }}>
-                          {Array.from({ length: 22 }).map((_, row) => (
-                            <div key={row} className="flex items-center flex-shrink-0" style={{ gap: '20px', marginLeft: row % 2 === 0 ? '0px' : '52px' }}>
-                              {Array.from({ length: 16 }).map((_, col) => {
-                                const opacities = [0.48, 0.24, 0.40, 0.30, 0.52, 0.20];
-                                const op = opacities[(row * 2 + col) % opacities.length];
-                                return (
-                                  <span key={col}
-                                    className="font-bold uppercase whitespace-nowrap flex-shrink-0"
-                                    style={{
-                                      fontSize: '9px',
-                                      letterSpacing: '0.3em',
-                                      color: `rgba(255,255,255,${op})`,
-                                      textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-                                      userSelect: 'none',
-                                    }}>
-                                    MAÎTREPETS
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          ))}
+                        <div className="relative z-10 flex flex-col items-center gap-2">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-lg">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                          </svg>
+                          <p className="text-white text-xs font-semibold text-center drop-shadow px-3">
+                            {guestLimitReached ? 'Sign in to generate more' : 'Purchase to unlock more'}
+                          </p>
                         </div>
-                      </div> */}
-                      {(freeLimitReached || guestLimitReached) && (
-                        <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none select-none">
-                          <span
-                            className="absolute inset-0 flex items-center justify-center text-white/20 font-black text-2xl tracking-widest uppercase"
-                            style={{ transform: 'rotate(-35deg)', letterSpacing: '0.3em', userSelect: 'none' }}
-                          >
-                            MAÎTREPETS
-                          </span>
-                          <div className="relative z-10 flex flex-col items-center gap-2">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-lg">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                            <p className="text-white text-xs font-semibold text-center drop-shadow px-3">
-                              {guestLimitReached ? 'Sign in to generate more' : 'Purchase to unlock more'}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Regenerate CTA — all styles */}
+                {/* Try another style */}
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Try another style</p>
                   <div className="grid grid-cols-6 gap-1">
@@ -565,8 +505,8 @@ function CreatePageInner() {
                 </div>
               </div>
 
-              {/* Order panel — 2 cols */}
-              <div className="md:col-span-2 space-y-4">
+              {/* Right — Order panel */}
+              <div className="space-y-4">
                 <h2 className="text-xl font-bold text-gray-900">Order Your Portrait Print</h2>
 
                 {/* Live Price — prominent */}
